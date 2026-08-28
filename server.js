@@ -8,7 +8,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Разрешаем запросы с вашего фронтенда GitHub Pages и локального хоста
+// Настройка CORS для работы с GitHub Pages
 app.use(cors({
   origin: [
     'https://eee666777.github.io',
@@ -18,10 +18,10 @@ app.use(cors({
   credentials: true
 }));
 
-// Доверяем прокси-серверу Render для корректной передачи HTTPS-куки
+// Доверяем прокси Render для передачи HTTPS-куки
 app.set('trust proxy', 1);
 
-// Подключаем базу данных SQLite
+// Подключаем SQLite
 const dbPath = process.env.DB_PATH || path.join('/tmp', 'university.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
@@ -76,7 +76,7 @@ db.serialize(() => {
 
 app.use(express.json({ limit: '100kb' }));
 
-// Настройка авторизационных куки
+// Сессии
 const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 
 app.use(session({
@@ -101,7 +101,12 @@ function validUsername(u) {
   return typeof u === 'string' && /^[a-zA-Zа-яА-ЯіІїЇєЄґҐ0-9_.-]{3,32}$/.test(u);
 }
 
-// === ЭНДПОИНТЫ API ===
+// Главная страница (проверка статуса сервера)
+app.get('/', (req, res) => {
+  res.send('API Server "Digital University" is running.');
+});
+
+// API Эндпоинты
 
 // Регистрация
 app.post('/api/register', async (req, res) => {
@@ -131,7 +136,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Авторизация
+// Логин
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};
   db.get('SELECT * FROM users WHERE username = ?', [username || ''], async (err, user) => {
@@ -288,6 +293,13 @@ app.delete('/api/schedule', requireAuth, (req, res) => {
       });
     }
   );
+});
+
+// Статика и обработка несуществующих маршрутов
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use((req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
