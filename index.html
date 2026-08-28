@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital University Portal - Mobile & Admin Pro</title>
+<title>Digital University Portal - Offline & Mobile Pro</title>
 
 <style>
 :root {
@@ -29,7 +29,7 @@ body {
     color: var(--text);
     background: var(--bg);
     min-height: 100vh;
-    padding-bottom: 70px; /* Простір для мобільного меню */
+    padding-bottom: 70px;
 }
 body.dark {
     --bg: #0f121d;
@@ -39,9 +39,7 @@ body.dark {
     --border: #262c42;
 }
 
-@media(min-width: 769px) {
-    body { padding-bottom: 0; }
-}
+@media(min-width: 769px) { body { padding-bottom: 0; } }
 
 /* AUTH OVERLAY */
 .auth-overlay {
@@ -76,7 +74,7 @@ body.dark {
 .nav-item { border: 0; background: transparent; color: rgba(255,255,255,0.85); padding: 12px 14px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; text-align: left; transition: .2s; }
 .nav-item:hover { background: rgba(255,255,255,.15); color: white; }
 .nav-item.active { background: white; color: var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,.08); }
-.admin-only { display: none; } /* Показується тільки адміну */
+.admin-only { display: none; }
 
 /* MAIN CONTENT */
 .main { width: calc(100% - 280px); margin-left: 280px; padding: 25px 30px; }
@@ -88,12 +86,11 @@ body.dark {
 
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 20px; }
 
-/* NOTIFICATIONS & TASKS */
 .notification-item { background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 14px; border-radius: 10px; margin-bottom: 10px; font-size: 13px; }
 .task-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; }
 .task-item.completed span { text-decoration: line-through; opacity: 0.6; }
 
-/* STUDENT CARD PAGE */
+/* STUDENT CARD */
 .student-card {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white; border-radius: 20px; padding: 25px; position: relative;
@@ -102,82 +99,47 @@ body.dark {
 .student-card::before { content: ""; position: absolute; right: -30px; bottom: -30px; width: 140px; height: 140px; background: rgba(255,255,255,0.08); border-radius: 50%; }
 .card-header-student { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .student-photo { width: 70px; height: 70px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.8); background: #eee; display: flex; align-items: center; justify-content: center; font-size: 32px; }
-.student-info { margin-top: 10px; }
+.student-info { margin-top: 10px; text-align: left; }
 .student-name { font-size: 20px; font-weight: 800; }
 .student-detail { font-size: 13px; opacity: 0.85; margin-top: 4px; }
 
 .pass-timer { display: none; background: #22c55e; color: white; padding: 15px; border-radius: 14px; text-align: center; margin-top: 15px; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0% { opacity: 0.9; } 50% { opacity: 1; transform: scale(1.01); } 100% { opacity: 0.9; } }
 
-/* CALENDAR & SCHEDULE */
-.calendar-legend { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; justify-content: center; background: var(--card); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
-.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
-.legend-box { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
+/* SCHEDULE & CALENDAR */
+.columns-grid { display: grid; grid-template-columns: repeat(6, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+.column-day { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 380px; }
+.column-header { font-weight: 800; font-size: 14px; color: var(--primary); padding-bottom: 8px; border-bottom: 2px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-.calendar-grid-months { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; }
-.month-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; }
-.month-title { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
-.month-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-.month-table th { padding: 4px; font-weight: 700; border-bottom: 2px solid var(--border); }
-.month-table td { width: 14.28%; height: 32px; text-align: center; vertical-align: middle; border: 1px solid var(--border); font-weight: 700; position: relative; }
-
-.td-week1 { background-color: var(--c-week1); color: #000; }
-.td-week2 { background-color: var(--c-week2); color: #000; }
-.td-session { background-color: var(--c-session); color: #fff; }
-.td-vacation { background-color: var(--c-vacation); color: #000; }
-.td-default { background-color: transparent; }
-.sub-note { font-size: 8px; display: block; line-height: 1; font-weight: 800; }
+.lesson-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; margin-bottom: 8px; font-size: 12px; }
+.lesson-time { font-size: 10px; color: var(--muted); font-weight: 700; }
+.lesson-title { font-weight: 700; margin-top: 2px; }
 
 .week-toggle { display: flex; gap: 10px; margin-bottom: 18px; }
 .toggle-btn { padding: 8px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); font-weight: 700; cursor: pointer; color: var(--text); }
 .toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-.columns-grid { display: grid; grid-template-columns: repeat(6, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 10px; }
-.column-day { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 380px; }
-.column-header { font-weight: 800; font-size: 14px; color: var(--primary); padding-bottom: 8px; border-bottom: 2px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-
-.lesson-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; margin-bottom: 8px; font-size: 12px; position: relative; }
-.lesson-time { font-size: 10px; color: var(--muted); font-weight: 700; }
-.lesson-title { font-weight: 700; margin-top: 2px; }
-.lesson-room { font-size: 10px; opacity: 0.8; margin-top: 2px; }
-
 .btn-primary { background: var(--primary); color: white; border: 0; padding: 9px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-small { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
-.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
 .btn-danger { background: #ef4444; color: white; border: 0; }
-.btn-danger:hover { background: #dc2626; }
 
 .input-field { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px; font-size: 13px; }
 
-/* MODALS */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
-.modal { background: var(--card); padding: 24px; border-radius: 18px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--border); }
-.modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-
-/* ADMIN & SETTINGS STYLES */
 .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
 .data-table th, .data-table td { padding: 10px; border-bottom: 1px solid var(--border); }
 .data-table th { background: var(--bg); font-weight: 700; }
 
-/* MOBILE NAVIGATION BAR (BOTTOM) */
+/* MOBILE BOTTOM BAR */
 .mobile-nav {
-    display: none;
-    position: fixed; bottom: 0; left: 0; right: 0;
+    display: none; position: fixed; bottom: 0; left: 0; right: 0;
     height: 65px; background: var(--card); border-top: 1px solid var(--border);
     z-index: 1000; justify-content: space-around; align-items: center; padding: 0 10px;
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
 }
-.mobile-nav-item {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: var(--muted); border: 0; background: none; font-size: 11px; font-weight: 600;
-    gap: 3px; cursor: pointer; flex: 1;
-}
+.mobile-nav-item { display: flex; flex-direction: column; align-items: center; color: var(--muted); border: 0; background: none; font-size: 11px; font-weight: 600; gap: 3px; cursor: pointer; flex: 1; }
 .mobile-nav-item.active { color: var(--primary); }
-.mobile-nav-icon { font-size: 18px; }
 
-/* MOBILE RESPONSIVE MEDIA QUERIES */
 @media(max-width: 768px) {
     .sidebar { display: none; }
     .main { width: 100%; margin: 0; padding: 15px; }
@@ -189,7 +151,7 @@ body.dark {
 </head>
 <body>
 
-<!-- AUTH SCREEN OVERLAY -->
+<!-- AUTH OVERLAY -->
 <div class="auth-overlay" id="authOverlay">
     <div class="auth-card">
         <div class="logo" style="margin: 0 auto 10px auto; background: var(--primary); color: white;">DU</div>
@@ -226,26 +188,22 @@ body.dark {
 
 <div class="app">
 
-<!-- SIDEBAR (DESKTOP) -->
 <aside class="sidebar">
     <div class="brand">
         <div class="logo">DU</div>
         <div class="brand-title">ЦИФРОВИЙ<br>УНІВЕРСИТЕТ</div>
     </div>
-
     <nav class="nav">
         <button class="nav-item active" data-page="home">🏠 Головна сторінка</button>
         <button class="nav-item" data-page="student-card-page">🪪 Студентський квиток</button>
         <button class="nav-item" data-page="tasks-page">📝 Завдання</button>
         <button class="nav-item" data-page="schedule">📚 Розклад</button>
-        <button class="nav-item" data-page="calendar">📆 Календар</button>
         <button class="nav-item" data-page="settings-page">⚙️ Налаштування</button>
         <button class="nav-item admin-only" id="adminSidebarBtn" data-page="admin-page">🛡️ Панель Адміна</button>
         <button class="nav-item" onclick="openTelegramApp()">✈️ Телеграм</button>
     </nav>
 </aside>
 
-<!-- MAIN CONTENT -->
 <main class="main">
     <header class="header">
         <div>
@@ -263,13 +221,8 @@ body.dark {
     <section class="page active" id="home">
         <div class="card">
             <h3>🔔 Сповіщення про пари</h3>
-            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Оперативні оновлення від адміністрації та викладачів:</p>
-            <div id="notificationsContainer">
-                <div class="notification-item">
-                    <strong>⏰ Наступна пара о 10:15</strong>
-                    <div>Об'єктно-орієнтоване програмування (Ауд. 402)</div>
-                </div>
-            </div>
+            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Оперативні оновлення системи:</p>
+            <div id="notificationsContainer"></div>
         </div>
     </section>
 
@@ -284,11 +237,11 @@ body.dark {
                         <span style="font-size:11px; font-weight:800;">СТУДЕНТСЬКИЙ КВИТОК</span>
                         <span style="font-size:11px; font-weight:700;" id="cardNumDisplay">№ KB 849201</span>
                     </div>
-                    <div style="display:flex; gap:15px; align-items:center; text-align: left;">
+                    <div style="display:flex; gap:15px; align-items:center;">
                         <div class="student-photo">🎓</div>
                         <div class="student-info">
                             <div class="student-name" id="cardNameDisplay">Студент</div>
-                            <div class="student-detail" id="cardFacultyDisplay">Факультет комп'ютерних наук</div>
+                            <div class="student-detail">Факультет комп'ютерних наук</div>
                             <div class="student-detail" id="cardGroupDisplay">Група: -</div>
                         </div>
                     </div>
@@ -341,71 +294,53 @@ body.dark {
         </div>
     </section>
 
-    <!-- 5. CALENDAR -->
-    <section class="page" id="calendar">
-        <div class="card">
-            <h2>📆 Календар семестру</h2>
-            <br>
-            <div class="calendar-grid-months" id="calendarMonthsContainer"></div>
-        </div>
-    </section>
-
-    <!-- 6. SETTINGS (НАЛАШТУВАННЯ) -->
+    <!-- 5. SETTINGS -->
     <section class="page" id="settings-page">
         <div class="card">
             <h2>⚙️ Налаштування профілю</h2>
-            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Персональні параметри та безпека:</p>
-
+            <br>
             <div style="max-width: 500px;">
-                <label style="font-size:12px; font-weight:bold;">Змінити секретне слово для відновлення:</label>
+                <label style="font-size:12px; font-weight:bold;">Змінити секретне слово:</label>
                 <input type="text" id="updateSecretInput" class="input-field" placeholder="Нове секретне слово" style="margin-top:5px;">
-                <button class="btn-primary" onclick="updateSecretWord()" style="margin-bottom:20px;">Оновити секретне слово</button>
+                <button class="btn-primary" onclick="updateSecretWord()" style="margin-bottom:20px;">Оновити</button>
 
                 <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
 
                 <h3>📱 Опції додатку</h3>
                 <br>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:14px;">Темна тема:</span>
                     <button class="btn-primary btn-small" onclick="toggleDarkMode()">Переключити</button>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:14px;">Очистити локальні кеш-дані:</span>
-                    <button class="btn-primary btn-small btn-danger" onclick="localStorage.clear(); alert('Кеш очищено!'); location.reload();">Очистити</button>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 7. ADMIN PANEL (ПАНЕЛЬ АДМІНІСТРАТОРА) -->
+    <!-- 6. ADMIN PANEL -->
     <section class="page" id="admin-page">
         <div class="card">
             <h2>🛡️ Панель Адміністратора</h2>
-            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Керування користувачами та системами порталу:</p>
-
+            <br>
             <div style="margin-bottom: 25px;">
-                <h4>📢 Опублікувати глобальне сповіщення:</h4>
-                <input type="text" id="adminGlobalNotice" class="input-field" placeholder="Текст сповіщення для всіх студентів..." style="margin-top:8px;">
+                <h4>📢 Опублікувати сповіщення для всіх:</h4>
+                <input type="text" id="adminGlobalNotice" class="input-field" placeholder="Текст сповіщення..." style="margin-top:8px;">
                 <button class="btn-primary" onclick="postGlobalNotification()">Опублікувати</button>
             </div>
 
             <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
 
-            <h4>👥 Список користувачів системи</h4>
+            <h4>👥 Список користувачів</h4>
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Логін</th>
                             <th>Роль</th>
                             <th>Статус</th>
                             <th>Дії</th>
                         </tr>
                     </thead>
-                    <tbody id="adminUsersTable">
-                        <!-- Динамічно завантажується JS -->
-                    </tbody>
+                    <tbody id="adminUsersTable"></tbody>
                 </table>
             </div>
         </div>
@@ -414,75 +349,32 @@ body.dark {
 </main>
 </div>
 
-<!-- MOBILE BOTTOM NAVIGATION -->
+<!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-nav">
-    <button class="mobile-nav-item active" data-page="home">
-        <span class="mobile-nav-icon">🏠</span>
-        <span>Головна</span>
-    </button>
-    <button class="mobile-nav-item" data-page="schedule">
-        <span class="mobile-nav-icon">📚</span>
-        <span>Розклад</span>
-    </button>
-    <button class="mobile-nav-item" data-page="student-card-page">
-        <span class="mobile-nav-icon">🪪</span>
-        <span>Квиток</span>
-    </button>
-    <button class="mobile-nav-item" data-page="tasks-page">
-        <span class="mobile-nav-icon">📝</span>
-        <span>Завдання</span>
-    </button>
-    <button class="mobile-nav-item" data-page="settings-page">
-        <span class="mobile-nav-icon">⚙️</span>
-        <span>Опції</span>
-    </button>
+    <button class="mobile-nav-item active" data-page="home"><span>🏠</span><span>Головна</span></button>
+    <button class="mobile-nav-item" data-page="schedule"><span>📚</span><span>Розклад</span></button>
+    <button class="mobile-nav-item" data-page="student-card-page"><span>🪪</span><span>Квиток</span></button>
+    <button class="mobile-nav-item" data-page="tasks-page"><span>📝</span><span>Завдання</span></button>
+    <button class="mobile-nav-item" data-page="settings-page"><span>⚙️</span><span>Опції</span></button>
 </nav>
 
 <script>
-let currentUser = null;
+/* LOCAL STORAGE ENGINE */
+const DB = {
+    getUsers: () => JSON.parse(localStorage.getItem('app_users')) || [],
+    setUsers: (users) => localStorage.setItem('app_users', JSON.stringify(users)),
+    getCurrentUser: () => JSON.parse(localStorage.getItem('app_current_user')),
+    setCurrentUser: (user) => localStorage.setItem('app_current_user', JSON.stringify(user)),
+    getNotices: () => JSON.parse(localStorage.getItem('app_notices')) || ["Ласкаво просимо до Цифрового Порталу!"],
+    setNotices: (n) => localStorage.setItem('app_notices', JSON.stringify(n))
+};
 
-async function api(path, options = {}) {
-    const response = await fetch(path, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-        ...options
-    });
-    let data = {};
-    try { data = await response.json(); } catch (_) {}
-    if (!response.ok) throw new Error(data.error || 'Помилка сервера');
-    return data;
+// Створення тестового адміна admin / admin123
+if (DB.getUsers().length === 0) {
+    DB.setUsers([{ username: 'admin', password: '123', secret: 'admin', isAdmin: true, blocked: false }]);
 }
 
-async function checkAuth() {
-    try {
-        const data = await api('/api/me');
-        currentUser = data.user || null;
-        if (currentUser) {
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('currentUserLabel').textContent = currentUser.username + (currentUser.isAdmin ? ' (Admin)' : '');
-
-            // Показ адмінської панелі при наявності прав
-            if (currentUser.isAdmin) {
-                document.getElementById('adminSidebarBtn').style.display = 'flex';
-                loadAdminData();
-            } else {
-                document.getElementById('adminSidebarBtn').style.display = 'none';
-            }
-
-            await loadUserData();
-        } else {
-            document.getElementById('authOverlay').style.display = 'flex';
-        }
-    } catch (e) {
-        document.getElementById('authOverlay').style.display = 'flex';
-    }
-}
-
-async function loadUserData() {
-    await checkCardStatus();
-    await loadTasks();
-    await loadSchedule();
-}
+let currentUser = DB.getCurrentUser();
 
 function switchAuthTab(type) {
     document.getElementById('formLogin').style.display = type === 'login' ? 'block' : 'none';
@@ -492,96 +384,281 @@ function switchAuthTab(type) {
     document.getElementById('tabRegister').classList.toggle('active', type === 'register');
 }
 
-async function handleLogin() {
-    const username = document.getElementById('loginUser').value.trim();
-    const password = document.getElementById('loginPass').value;
-    try {
-        await api('/api/login', { method: 'POST', body: JSON.stringify({ username, password }) });
-        await checkAuth();
-    } catch (e) { alert(e.message); }
-}
-
-async function handleRegister() {
+function handleRegister() {
     const username = document.getElementById('regUser').value.trim();
     const password = document.getElementById('regPass').value;
     const secret = document.getElementById('regSecret').value.trim();
-    try {
-        await api('/api/register', { method: 'POST', body: JSON.stringify({ username, password, secret }) });
-        alert("Успішно! Тепер увійдіть.");
-        switchAuthTab('login');
-    } catch (e) { alert(e.message); }
+
+    if (!username || !password || !secret) return alert("Заповніть усі поля!");
+
+    let users = DB.getUsers();
+    if (users.find(u => u.username === username)) return alert("Користувач з таким логіном вже існує!");
+
+    users.push({ username, password, secret, isAdmin: false, blocked: false, tasks: [], card: null, schedule: {} });
+    DB.setUsers(users);
+    alert("Реєстрація успішна! Увійдіть.");
+    switchAuthTab('login');
 }
 
-async function handleResetPassword() {
+function handleLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+
+    let users = DB.getUsers();
+    let user = users.find(u => u.username === username && u.password === password);
+
+    if (!user) return alert("Невірний логін або пароль!");
+    if (user.blocked) return alert("Ваш акаунт заблоковано адміністратором!");
+
+    DB.setCurrentUser(user);
+    currentUser = user;
+    initApp();
+}
+
+function handleResetPassword() {
     const username = document.getElementById('forgotUser').value.trim();
     const secret = document.getElementById('forgotSecret').value.trim();
     const newPassword = document.getElementById('forgotNewPass').value;
-    try {
-        await api('/api/reset-password', { method: 'POST', body: JSON.stringify({ username, secret, newPassword }) });
-        alert("Пароль змінено!");
-        switchAuthTab('login');
-    } catch (e) { alert(e.message); }
+
+    let users = DB.getUsers();
+    let user = users.find(u => u.username === username && u.secret === secret);
+    if (!user) return alert("Невірний логін або секретне слово!");
+
+    user.password = newPassword;
+    DB.setUsers(users);
+    alert("Пароль змінено! Увійдіть.");
+    switchAuthTab('login');
 }
 
-async function handleLogout() {
-    try { await api('/api/logout', { method: 'POST' }); } catch (_) {}
+function handleLogout() {
+    localStorage.removeItem('app_current_user');
     currentUser = null;
-    checkAuth();
+    document.getElementById('authOverlay').style.display = 'flex';
 }
 
-/* SETTINGS & ADMIN FUNCTIONS */
-async function updateSecretWord() {
-    const secret = document.getElementById('updateSecretInput').value.trim();
-    if (!secret) return alert("Введіть секретне слово!");
-    try {
-        await api('/api/user/secret', { method: 'PATCH', body: JSON.stringify({ secret }) });
-        alert("Секретне слово оновлено!");
-        document.getElementById('updateSecretInput').value = '';
-    } catch (e) { alert(e.message); }
+function initApp() {
+    if (!currentUser) {
+        document.getElementById('authOverlay').style.display = 'flex';
+        return;
+    }
+    document.getElementById('authOverlay').style.display = 'none';
+    document.getElementById('currentUserLabel').textContent = currentUser.username + (currentUser.isAdmin ? ' (Admin)' : '');
+
+    if (currentUser.isAdmin) {
+        document.getElementById('adminSidebarBtn').style.display = 'flex';
+        loadAdminTable();
+    } else {
+        document.getElementById('adminSidebarBtn').style.display = 'none';
+    }
+
+    renderNotifications();
+    renderTasks();
+    renderCard();
+    renderSchedule();
 }
 
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
+/* TASKS & DATA ENGINE */
+function saveUserData() {
+    let users = DB.getUsers();
+    let idx = users.findIndex(u => u.username === currentUser.username);
+    if (idx !== -1) {
+        users[idx] = currentUser;
+        DB.setUsers(users);
+        DB.setCurrentUser(currentUser);
+    }
 }
 
-async function loadAdminData() {
-    try {
-        const data = await api('/api/admin/users');
-        const tbody = document.getElementById('adminUsersTable');
-        tbody.innerHTML = (data.users || []).map(u => `
-            <tr>
-                <td>${u.id}</td>
-                <td>${escapeHtml(u.username)}</td>
-                <td>${u.isAdmin ? '<b>Admin</b>' : 'Student'}</td>
-                <td><span style="color:${u.blocked ? 'red':'green'}">${u.blocked ? 'Заблоковано':'Активний'}</span></td>
-                <td>
-                    <button class="btn-primary btn-small ${u.blocked ? '':'btn-danger'}" onclick="toggleUserBlock(${u.id}, ${!u.blocked})">
-                        ${u.blocked ? 'Розблокувати' : 'Заблокувати'}
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-    } catch (e) { console.error(e); }
+function renderNotifications() {
+    const container = document.getElementById('notificationsContainer');
+    const notices = DB.getNotices();
+    container.innerHTML = notices.map(n => `<div class="notification-item"><strong>📢 Сповіщення:</strong><div>${n}</div></div>`).join('');
 }
 
-async function toggleUserBlock(userId, block) {
-    try {
-        await api(`/api/admin/users/${userId}/block`, { method: 'POST', body: JSON.stringify({ block }) });
-        await loadAdminData();
-    } catch (e) { alert(e.message); }
+function addNewTask() {
+    const input = document.getElementById('newTaskInput');
+    const text = input.value.trim();
+    if (!text) return;
+    if (!currentUser.tasks) currentUser.tasks = [];
+    currentUser.tasks.push({ text, done: false });
+    saveUserData();
+    input.value = '';
+    renderTasks();
 }
 
-async function postGlobalNotification() {
+function renderTasks() {
+    const container = document.getElementById('tasksContainer');
+    const tasks = currentUser.tasks || [];
+    if (!tasks.length) return container.innerHTML = '<p style="font-size:12px; color:var(--muted); text-align:center;">Немає завдань</p>';
+    container.innerHTML = tasks.map((t, i) => `
+        <div class="task-item ${t.done ? 'completed':''}">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" ${t.done ? 'checked':''} onchange="toggleTask(${i})">
+                <span>${t.text}</span>
+            </div>
+            <button style="border:0; background:none; color:#ef4444; cursor:pointer;" onclick="deleteTask(${i})">Видалити</button>
+        </div>
+    `).join('');
+}
+
+function toggleTask(i) {
+    currentUser.tasks[i].done = !currentUser.tasks[i].done;
+    saveUserData();
+    renderTasks();
+}
+
+function deleteTask(i) {
+    currentUser.tasks.splice(i, 1);
+    saveUserData();
+    renderTasks();
+}
+
+/* CARD ENGINE */
+function bindCard() {
+    const name = document.getElementById('bindName').value.trim();
+    const group = document.getElementById('bindGroup').value.trim();
+    const num = document.getElementById('bindNum').value.trim();
+    if (!name || !group || !num) return alert("Заповніть поля!");
+    currentUser.card = { name, group, num };
+    saveUserData();
+    renderCard();
+}
+
+function renderCard() {
+    if (currentUser.card) {
+        document.getElementById('bindForm').style.display = 'none';
+        document.getElementById('displayStudentCard').style.display = 'block';
+        document.getElementById('cardActions').style.display = 'block';
+        document.getElementById('cardNameDisplay').textContent = currentUser.card.name;
+        document.getElementById('cardGroupDisplay').textContent = "Група: " + currentUser.card.group;
+        document.getElementById('cardNumDisplay').textContent = "№ " + currentUser.card.num;
+    } else {
+        document.getElementById('bindForm').style.display = 'block';
+        document.getElementById('displayStudentCard').style.display = 'none';
+        document.getElementById('cardActions').style.display = 'none';
+    }
+}
+
+function deleteStudentCard() {
+    currentUser.card = null;
+    saveUserData();
+    renderCard();
+}
+
+let timerInt = null;
+function startPassTimer() {
+    let s = 60;
+    const box = document.getElementById('passTimerBox');
+    const cnt = document.getElementById('timerCount');
+    box.style.display = 'block';
+    if(timerInt) clearInterval(timerInt);
+    timerInt = setInterval(() => {
+        s--; cnt.textContent = s + " с";
+        if (s <= 0) { clearInterval(timerInt); box.style.display = 'none'; }
+    }, 1000);
+}
+
+/* SCHEDULE ENGINE */
+let currentWeek = 'week1';
+const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
+
+function switchWeek(w) {
+    currentWeek = w;
+    document.getElementById('btnW1').classList.toggle('active', w === 'week1');
+    document.getElementById('btnW2').classList.toggle('active', w === 'week2');
+    renderSchedule();
+}
+
+function renderSchedule() {
+    const container = document.getElementById('scheduleColumnsContainer');
+    if (!currentUser.schedule) currentUser.schedule = { week1: {}, week2: {} };
+    const weekData = currentUser.schedule[currentWeek] || {};
+
+    container.innerHTML = days.map((d, i) => {
+        const list = weekData[i] || [];
+        return `
+            <div class="column-day">
+                <div class="column-header">
+                    <span>${d}</span>
+                    <button class="btn-primary btn-small" onclick="addLesson(${i})">+</button>
+                </div>
+                <div>${list.map((l, li) => `
+                    <div class="lesson-card">
+                        <div class="lesson-time">⏰ ${l.time}</div>
+                        <div class="lesson-title">${l.name}</div>
+                        <button style="border:0; background:none; color:red; font-size:10px; cursor:pointer;" onclick="deleteLesson(${i}, ${li})">Видалити</button>
+                    </div>
+                `).join('') || '<p style="font-size:11px; color:var(--muted); text-align:center;">Немає пар</p>'}</div>
+            </div>`;
+    }).join('');
+}
+
+function addLesson(dayIdx) {
+    const name = prompt("Назва предмета:");
+    if (!name) return;
+    const time = prompt("Час занять (напр. 08:30):", "08:30") || "08:30";
+
+    if (!currentUser.schedule[currentWeek]) currentUser.schedule[currentWeek] = {};
+    if (!currentUser.schedule[currentWeek][dayIdx]) currentUser.schedule[currentWeek][dayIdx] = [];
+
+    currentUser.schedule[currentWeek][dayIdx].push({ name, time });
+    saveUserData();
+    renderSchedule();
+}
+
+function deleteLesson(dayIdx, lessonIdx) {
+    currentUser.schedule[currentWeek][dayIdx].splice(lessonIdx, 1);
+    saveUserData();
+    renderSchedule();
+}
+
+/* ADMIN PANEL ENGINE */
+function loadAdminTable() {
+    const tbody = document.getElementById('adminUsersTable');
+    const users = DB.getUsers();
+    tbody.innerHTML = users.map(u => `
+        <tr>
+            <td>${u.username}</td>
+            <td>${u.isAdmin ? '<b>Admin</b>' : 'Student'}</td>
+            <td><span style="color:${u.blocked ? 'red':'green'}">${u.blocked ? 'Заблоковано':'Активний'}</span></td>
+            <td>
+                ${!u.isAdmin ? `<button class="btn-primary btn-small ${u.blocked ? '':'btn-danger'}" onclick="toggleBlock('${u.username}')">${u.blocked ? 'Розблокувати':'Заблокувати'}</button>` : ''}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function toggleBlock(username) {
+    let users = DB.getUsers();
+    let u = users.find(x => x.username === username);
+    if (u) {
+        u.blocked = !u.blocked;
+        DB.setUsers(users);
+        loadAdminTable();
+    }
+}
+
+function postGlobalNotification() {
     const text = document.getElementById('adminGlobalNotice').value.trim();
     if (!text) return;
-    try {
-        await api('/api/admin/notifications', { method: 'POST', body: JSON.stringify({ text }) });
-        alert("Сповіщення надіслано!");
-        document.getElementById('adminGlobalNotice').value = '';
-    } catch (e) { alert(e.message); }
+    let notices = DB.getNotices();
+    notices.unshift(text);
+    DB.setNotices(notices);
+    alert("Опубліковано!");
+    document.getElementById('adminGlobalNotice').value = '';
+    renderNotifications();
 }
 
-/* NAVIGATION ENGINE (DESKTOP & MOBILE) */
+function updateSecretWord() {
+    const sec = document.getElementById('updateSecretInput').value.trim();
+    if (!sec) return;
+    currentUser.secret = sec;
+    saveUserData();
+    alert("Оновлено!");
+}
+
+function toggleDarkMode() { document.body.classList.toggle('dark'); }
+function openTelegramApp() { window.location.href = "tg://"; }
+
 function navigateTo(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(n => {
@@ -592,17 +669,12 @@ function navigateTo(pageId) {
 }
 
 document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (btn.dataset.page) navigateTo(btn.dataset.page);
-    });
+    btn.addEventListener('click', () => { if (btn.dataset.page) navigateTo(btn.dataset.page); });
 });
-
-function openTelegramApp() { window.location.href = "tg://"; }
-function escapeHtml(v) { return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
 
 document.getElementById('currentDateStr').textContent = new Date().toLocaleDateString('uk-UA', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
-(async () => { await checkAuth(); })();
+initApp();
 </script>
 </body>
 </html>
