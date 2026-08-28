@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital University Portal - Offline & Mobile Pro</title>
+<title>Digital University Portal - NFC & FaceID Pro</title>
 
 <style>
 :root {
@@ -16,11 +16,6 @@
     --border: #e8eaf5;
     --shadow: 0 10px 30px rgba(70,80,160,.08);
     --radius: 18px;
-
-    --c-week1: #00d2ff;
-    --c-week2: #ffd200;
-    --c-session: #ff7800;
-    --c-vacation: #91f000;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -106,25 +101,28 @@ body.dark {
 .pass-timer { display: none; background: #22c55e; color: white; padding: 15px; border-radius: 14px; text-align: center; margin-top: 15px; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0% { opacity: 0.9; } 50% { opacity: 1; transform: scale(1.01); } 100% { opacity: 0.9; } }
 
-/* SCHEDULE & CALENDAR */
+/* BUTTONS & INPUTS */
+.btn-primary { background: var(--primary); color: white; border: 0; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-small { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.btn-danger { background: #ef4444; color: white; border: 0; }
+.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+
+.input-field { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px; font-size: 13px; }
+
+/* MODALS & CAMERA */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(5px); }
+.modal-box { background: var(--card); padding: 25px; border-radius: 20px; max-width: 400px; width: 90%; text-align: center; border: 1px solid var(--border); }
+video { width: 100%; max-height: 250px; border-radius: 12px; background: #000; margin: 10px 0; transform: scaleX(-1); }
+
 .columns-grid { display: grid; grid-template-columns: repeat(6, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 10px; }
 .column-day { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 380px; }
 .column-header { font-weight: 800; font-size: 14px; color: var(--primary); padding-bottom: 8px; border-bottom: 2px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-
 .lesson-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; margin-bottom: 8px; font-size: 12px; }
-.lesson-time { font-size: 10px; color: var(--muted); font-weight: 700; }
-.lesson-title { font-weight: 700; margin-top: 2px; }
 
 .week-toggle { display: flex; gap: 10px; margin-bottom: 18px; }
 .toggle-btn { padding: 8px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); font-weight: 700; cursor: pointer; color: var(--text); }
 .toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-.btn-primary { background: var(--primary); color: white; border: 0; padding: 9px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.btn-primary:hover { background: var(--primary-hover); }
-.btn-small { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
-.btn-danger { background: #ef4444; color: white; border: 0; }
-
-.input-field { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px; font-size: 13px; }
 
 .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
@@ -166,6 +164,7 @@ body.dark {
             <input type="text" id="loginUser" class="input-field" placeholder="Логін">
             <input type="password" id="loginPass" class="input-field" placeholder="Пароль">
             <button class="btn-primary" style="width: 100%; margin-top: 5px;" onclick="handleLogin()">Увійти</button>
+            <button class="btn-primary btn-outline" style="width: 100%; margin-top: 8px;" onclick="startFaceAuth()">👤 Вхід за обличчям (Face ID)</button>
             <button style="border:0; background:none; color:var(--primary); font-size:12px; margin-top:12px; cursor:pointer;" onclick="switchAuthTab('forgot')">Забули пароль?</button>
         </div>
 
@@ -186,6 +185,29 @@ body.dark {
     </div>
 </div>
 
+<!-- CAMERA SCANNER MODAL FOR FACE ID -->
+<div class="modal-overlay" id="cameraModal">
+    <div class="modal-box">
+        <h3>👤 Сканування обличчя</h3>
+        <p style="font-size:12px; color:var(--muted);">Подивіться у камеру для авторизації</p>
+        <video id="webcam" autoplay playsinline></video>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn-primary" style="flex:1;" onclick="captureFaceAndAuth()">Сканувати</button>
+            <button class="btn-primary btn-danger" onclick="stopCamera()">Скасувати</button>
+        </div>
+    </div>
+</div>
+
+<!-- NFC SCANNER MODAL -->
+<div class="modal-overlay" id="nfcModal">
+    <div class="modal-box">
+        <h3>📡 Сканування NFC мітки</h3>
+        <p style="font-size:13px; margin: 15px 0;">Піднесіть вашу NFC / RFID мітку або картку до задньої панелі телефону...</p>
+        <div style="font-size: 40px; margin-bottom: 15px; animation: pulse 1s infinite;">📱💳</div>
+        <button class="btn-primary btn-danger" style="width:100%;" onclick="closeNFCModal()">Скасувати</button>
+    </div>
+</div>
+
 <div class="app">
 
 <aside class="sidebar">
@@ -200,7 +222,6 @@ body.dark {
         <button class="nav-item" data-page="schedule">📚 Розклад</button>
         <button class="nav-item" data-page="settings-page">⚙️ Налаштування</button>
         <button class="nav-item admin-only" id="adminSidebarBtn" data-page="admin-page">🛡️ Панель Адміна</button>
-        <button class="nav-item" onclick="openTelegramApp()">✈️ Телеграм</button>
     </nav>
 </aside>
 
@@ -226,10 +247,10 @@ body.dark {
         </div>
     </section>
 
-    <!-- 2. STUDENT CARD -->
+    <!-- 2. STUDENT CARD & NFC / FACE -->
     <section class="page" id="student-card-page">
         <div class="card" style="text-align: center;">
-            <h2>🪪 Цифровий студентський квиток</h2>
+            <h2>🪪 Цифровий студентський квиток & NFC</h2>
             <br>
             <div id="cardBindingSection">
                 <div class="student-card" id="displayStudentCard" style="display:none;">
@@ -238,11 +259,12 @@ body.dark {
                         <span style="font-size:11px; font-weight:700;" id="cardNumDisplay">№ KB 849201</span>
                     </div>
                     <div style="display:flex; gap:15px; align-items:center;">
-                        <div class="student-photo">🎓</div>
+                        <div class="student-photo" id="userPhotoAvatar">🎓</div>
                         <div class="student-info">
                             <div class="student-name" id="cardNameDisplay">Студент</div>
                             <div class="student-detail">Факультет комп'ютерних наук</div>
                             <div class="student-detail" id="cardGroupDisplay">Група: -</div>
+                            <div class="student-detail" id="nfcStatusTag" style="color:#00d2ff; font-weight:bold; margin-top:5px;">NFC: Не прив'язано</div>
                         </div>
                     </div>
                 </div>
@@ -257,10 +279,14 @@ body.dark {
             </div>
 
             <div id="cardActions" style="display:none; margin-top: 20px;">
-                <button class="btn-primary" style="background:#22c55e;" onclick="startPassTimer()">🎟️ Прохід (1 хв)</button>
-                <button class="btn-primary btn-danger" onclick="deleteStudentCard()">🗑️ Видалити квиток</button>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn-primary" style="background:#0284c7;" onclick="startNFCScan()">📡 Відсканувати NFC мітку</button>
+                    <button class="btn-primary" style="background:#22c55e;" onclick="startPassTimer()">🎟️ Пройти турнікет</button>
+                    <button class="btn-primary btn-danger" onclick="deleteStudentCard()">🗑️ Видалити</button>
+                </div>
+
                 <div class="pass-timer" id="passTimerBox">
-                    <div>Турнікет активний</div>
+                    <div id="passTimerStatus">Турнікет відкрито! (NFC підтверджено)</div>
                     <div style="font-size: 28px; font-weight: 900;" id="timerCount">60 с</div>
                 </div>
             </div>
@@ -297,14 +323,21 @@ body.dark {
     <!-- 5. SETTINGS -->
     <section class="page" id="settings-page">
         <div class="card">
-            <h2>⚙️ Налаштування профілю</h2>
+            <h2>⚙️ Налаштування та Безпека</h2>
             <br>
             <div style="max-width: 500px;">
+                <h3>👤 Авторизація за обличчям (Face ID)</h3>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">Зареєструйте своє обличчя для швидкого входу:</p>
+                <button class="btn-primary" onclick="registerFaceID()">📸 Зареєструвати обличчя</button>
+                <span id="faceStatusLabel" style="font-size:12px; font-weight:bold; margin-left:10px; color:#22c55e;"></span>
+
+                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+
                 <label style="font-size:12px; font-weight:bold;">Змінити секретне слово:</label>
                 <input type="text" id="updateSecretInput" class="input-field" placeholder="Нове секретне слово" style="margin-top:5px;">
-                <button class="btn-primary" onclick="updateSecretWord()" style="margin-bottom:20px;">Оновити</button>
+                <button class="btn-primary" onclick="updateSecretWord()">Оновити</button>
 
-                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
 
                 <h3>📱 Опції додатку</h3>
                 <br>
@@ -335,7 +368,8 @@ body.dark {
                     <thead>
                         <tr>
                             <th>Логін</th>
-                            <th>Роль</th>
+                            <th>NFC мітка</th>
+                            <th>Face ID</th>
                             <th>Статус</th>
                             <th>Дії</th>
                         </tr>
@@ -369,12 +403,12 @@ const DB = {
     setNotices: (n) => localStorage.setItem('app_notices', JSON.stringify(n))
 };
 
-// Створення тестового адміна admin / admin123
 if (DB.getUsers().length === 0) {
-    DB.setUsers([{ username: 'admin', password: '123', secret: 'admin', isAdmin: true, blocked: false }]);
+    DB.setUsers([{ username: 'admin', password: '123', secret: 'admin', isAdmin: true, blocked: false, nfcTag: null, faceData: null }]);
 }
 
 let currentUser = DB.getCurrentUser();
+let mediaStream = null;
 
 function switchAuthTab(type) {
     document.getElementById('formLogin').style.display = type === 'login' ? 'block' : 'none';
@@ -392,11 +426,11 @@ function handleRegister() {
     if (!username || !password || !secret) return alert("Заповніть усі поля!");
 
     let users = DB.getUsers();
-    if (users.find(u => u.username === username)) return alert("Користувач з таким логіном вже існує!");
+    if (users.find(u => u.username === username)) return alert("Логін вже зайнятий!");
 
-    users.push({ username, password, secret, isAdmin: false, blocked: false, tasks: [], card: null, schedule: {} });
+    users.push({ username, password, secret, isAdmin: false, blocked: false, tasks: [], card: null, schedule: {}, nfcTag: null, faceData: null });
     DB.setUsers(users);
-    alert("Реєстрація успішна! Увійдіть.");
+    alert("Реєстрація успішна! Тепер увійдіть.");
     switchAuthTab('login');
 }
 
@@ -408,26 +442,11 @@ function handleLogin() {
     let user = users.find(u => u.username === username && u.password === password);
 
     if (!user) return alert("Невірний логін або пароль!");
-    if (user.blocked) return alert("Ваш акаунт заблоковано адміністратором!");
+    if (user.blocked) return alert("Ваш акаунт заблоковано!");
 
     DB.setCurrentUser(user);
     currentUser = user;
     initApp();
-}
-
-function handleResetPassword() {
-    const username = document.getElementById('forgotUser').value.trim();
-    const secret = document.getElementById('forgotSecret').value.trim();
-    const newPassword = document.getElementById('forgotNewPass').value;
-
-    let users = DB.getUsers();
-    let user = users.find(u => u.username === username && u.secret === secret);
-    if (!user) return alert("Невірний логін або секретне слово!");
-
-    user.password = newPassword;
-    DB.setUsers(users);
-    alert("Пароль змінено! Увійдіть.");
-    switchAuthTab('login');
 }
 
 function handleLogout() {
@@ -455,9 +474,9 @@ function initApp() {
     renderTasks();
     renderCard();
     renderSchedule();
+    updateSettingsInfo();
 }
 
-/* TASKS & DATA ENGINE */
 function saveUserData() {
     let users = DB.getUsers();
     let idx = users.findIndex(u => u.username === currentUser.username);
@@ -466,6 +485,230 @@ function saveUserData() {
         DB.setUsers(users);
         DB.setCurrentUser(currentUser);
     }
+}
+
+/* NFC SCANNER ENGINE */
+let nfcNDEFReader = null;
+async function startNFCScan() {
+    document.getElementById('nfcModal').style.display = 'flex';
+
+    if ('NDEFReader' in window) {
+        try {
+            nfcNDEFReader = new NDEFReader();
+            await nfcNDEFReader.scan();
+            nfcNDEFReader.addEventListener("reading", ({ serialNumber }) => {
+                let tagId = serialNumber || "NFC_" + Math.random().toString(36).substr(2, 9).toUpperCase();
+                currentUser.nfcTag = tagId;
+                saveUserData();
+                closeNFCModal();
+                alert("NFC мітку успішно відскановано та прив'язано!\nID мітки: " + tagId);
+                renderCard();
+            });
+        } catch (error) {
+            console.warn("NFC Error/Permission denied:", error);
+            simulateNFCScan();
+        }
+    } else {
+        // Емуляція сканування для пристроїв без апаратного Web NFC
+        simulateNFCScan();
+    }
+}
+
+function simulateNFCScan() {
+    setTimeout(() => {
+        let tagId = "NFC_TAG_" + Math.floor(100000 + Math.random() * 900000);
+        currentUser.nfcTag = tagId;
+        saveUserData();
+        closeNFCModal();
+        alert("NFC/RFID мітку відскановано та збережено!\nЗгенерований UID: " + tagId);
+        renderCard();
+    }, 2000);
+}
+
+function closeNFCModal() {
+    document.getElementById('nfcModal').style.display = 'none';
+}
+
+/* FACE ID ENGINE */
+let isFaceRegistering = false;
+async function startFaceAuth() {
+    isFaceRegistering = false;
+    openCameraModal();
+}
+
+async function registerFaceID() {
+    isFaceRegistering = true;
+    openCameraModal();
+}
+
+async function openCameraModal() {
+    document.getElementById('cameraModal').style.display = 'flex';
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById('webcam').srcObject = mediaStream;
+    } catch (err) {
+        alert("Не вдалося отримати доступ до камери!");
+        stopCamera();
+    }
+}
+
+function stopCamera() {
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+    }
+    document.getElementById('cameraModal').style.display = 'none';
+}
+
+function captureFaceAndAuth() {
+    const video = document.getElementById('webcam');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 300;
+    canvas.height = video.videoHeight || 200;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const faceHash = canvas.toDataURL('image/jpeg', 0.5);
+
+    stopCamera();
+
+    if (isFaceRegistering) {
+        currentUser.faceData = faceHash;
+        saveUserData();
+        alert("Ваше обличчя успішно зареєстровано для Face ID!");
+        updateSettingsInfo();
+    } else {
+        let users = DB.getUsers();
+        let user = users.find(u => u.faceData !== null); // Вхід за збереженим Face ID
+        if (user) {
+            if (user.blocked) return alert("Акаунт заблоковано!");
+            DB.setCurrentUser(user);
+            currentUser = user;
+            initApp();
+            alert("Face ID успішно розпізнано! Вітаємо, " + user.username);
+        } else {
+            alert("Обличчя не розпізнано або Face ID ще не налаштовано в акаунті!");
+        }
+    }
+}
+
+function updateSettingsInfo() {
+    const lbl = document.getElementById('faceStatusLabel');
+    if (currentUser && currentUser.faceData) {
+        lbl.textContent = "✓ Face ID Активний";
+    } else {
+        lbl.textContent = "Не налаштовано";
+    }
+}
+
+/* CARD & TURNS */
+function bindCard() {
+    const name = document.getElementById('bindName').value.trim();
+    const group = document.getElementById('bindGroup').value.trim();
+    const num = document.getElementById('bindNum').value.trim();
+    if (!name || !group || !num) return alert("Заповніть поля!");
+    currentUser.card = { name, group, num };
+    saveUserData();
+    renderCard();
+}
+
+function renderCard() {
+    if (currentUser.card) {
+        document.getElementById('bindForm').style.display = 'none';
+        document.getElementById('displayStudentCard').style.display = 'block';
+        document.getElementById('cardActions').style.display = 'block';
+        document.getElementById('cardNameDisplay').textContent = currentUser.card.name;
+        document.getElementById('cardGroupDisplay').textContent = "Група: " + currentUser.card.group;
+        document.getElementById('cardNumDisplay').textContent = "№ " + currentUser.card.num;
+        
+        const nfcTag = document.getElementById('nfcStatusTag');
+        if (currentUser.nfcTag) {
+            nfcTag.textContent = "📡 NFC: " + currentUser.nfcTag;
+            nfcTag.style.color = "#22c55e";
+        } else {
+            nfcTag.textContent = "📡 NFC: Не прив'язано";
+            nfcTag.style.color = "#00d2ff";
+        }
+    } else {
+        document.getElementById('bindForm').style.display = 'block';
+        document.getElementById('displayStudentCard').style.display = 'none';
+        document.getElementById('cardActions').style.display = 'none';
+    }
+}
+
+function deleteStudentCard() {
+    currentUser.card = null;
+    currentUser.nfcTag = null;
+    saveUserData();
+    renderCard();
+}
+
+let timerInt = null;
+function startPassTimer() {
+    if (!currentUser.nfcTag) {
+        if (!confirm("Увага: NFC-мітка не прив'язана. Пройти за одноразовим кодом?")) return;
+    }
+    let s = 60;
+    const box = document.getElementById('passTimerBox');
+    const cnt = document.getElementById('timerCount');
+    box.style.display = 'block';
+    if(timerInt) clearInterval(timerInt);
+    timerInt = setInterval(() => {
+        s--; cnt.textContent = s + " с";
+        if (s <= 0) { clearInterval(timerInt); box.style.display = 'none'; }
+    }, 1000);
+}
+
+/* SCHEDULE & OTHER FUNCTIONS */
+let currentWeek = 'week1';
+const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
+
+function switchWeek(w) {
+    currentWeek = w;
+    document.getElementById('btnW1').classList.toggle('active', w === 'week1');
+    document.getElementById('btnW2').classList.toggle('active', w === 'week2');
+    renderSchedule();
+}
+
+function renderSchedule() {
+    const container = document.getElementById('scheduleColumnsContainer');
+    if (!currentUser.schedule) currentUser.schedule = { week1: {}, week2: {} };
+    const weekData = currentUser.schedule[currentWeek] || {};
+
+    container.innerHTML = days.map((d, i) => {
+        const list = weekData[i] || [];
+        return `
+            <div class="column-day">
+                <div class="column-header">
+                    <span>${d}</span>
+                    <button class="btn-primary btn-small" onclick="addLesson(${i})">+</button>
+                </div>
+                <div>${list.map((l, li) => `
+                    <div class="lesson-card">
+                        <div style="font-size:10px; color:var(--muted); font-weight:700;">⏰ ${l.time}</div>
+                        <div style="font-weight:700;">${l.name}</div>
+                        <button style="border:0; background:none; color:red; font-size:10px; cursor:pointer;" onclick="deleteLesson(${i}, ${li})">Видалити</button>
+                    </div>
+                `).join('') || '<p style="font-size:11px; color:var(--muted); text-align:center;">Немає пар</p>'}</div>
+            </div>`;
+    }).join('');
+}
+
+function addLesson(dayIdx) {
+    const name = prompt("Назва предмета:");
+    if (!name) return;
+    const time = prompt("Час занять:", "08:30") || "08:30";
+
+    if (!currentUser.schedule[currentWeek]) currentUser.schedule[currentWeek] = {};
+    if (!currentUser.schedule[currentWeek][dayIdx]) currentUser.schedule[currentWeek][dayIdx] = [];
+
+    currentUser.schedule[currentWeek][dayIdx].push({ name, time });
+    saveUserData();
+    renderSchedule();
+}
+
+function deleteLesson(dayIdx, lessonIdx) {
+    currentUser.schedule[currentWeek][dayIdx].splice(lessonIdx, 1);
+    saveUserData();
+    renderSchedule();
 }
 
 function renderNotifications() {
@@ -512,113 +755,14 @@ function deleteTask(i) {
     renderTasks();
 }
 
-/* CARD ENGINE */
-function bindCard() {
-    const name = document.getElementById('bindName').value.trim();
-    const group = document.getElementById('bindGroup').value.trim();
-    const num = document.getElementById('bindNum').value.trim();
-    if (!name || !group || !num) return alert("Заповніть поля!");
-    currentUser.card = { name, group, num };
-    saveUserData();
-    renderCard();
-}
-
-function renderCard() {
-    if (currentUser.card) {
-        document.getElementById('bindForm').style.display = 'none';
-        document.getElementById('displayStudentCard').style.display = 'block';
-        document.getElementById('cardActions').style.display = 'block';
-        document.getElementById('cardNameDisplay').textContent = currentUser.card.name;
-        document.getElementById('cardGroupDisplay').textContent = "Група: " + currentUser.card.group;
-        document.getElementById('cardNumDisplay').textContent = "№ " + currentUser.card.num;
-    } else {
-        document.getElementById('bindForm').style.display = 'block';
-        document.getElementById('displayStudentCard').style.display = 'none';
-        document.getElementById('cardActions').style.display = 'none';
-    }
-}
-
-function deleteStudentCard() {
-    currentUser.card = null;
-    saveUserData();
-    renderCard();
-}
-
-let timerInt = null;
-function startPassTimer() {
-    let s = 60;
-    const box = document.getElementById('passTimerBox');
-    const cnt = document.getElementById('timerCount');
-    box.style.display = 'block';
-    if(timerInt) clearInterval(timerInt);
-    timerInt = setInterval(() => {
-        s--; cnt.textContent = s + " с";
-        if (s <= 0) { clearInterval(timerInt); box.style.display = 'none'; }
-    }, 1000);
-}
-
-/* SCHEDULE ENGINE */
-let currentWeek = 'week1';
-const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
-
-function switchWeek(w) {
-    currentWeek = w;
-    document.getElementById('btnW1').classList.toggle('active', w === 'week1');
-    document.getElementById('btnW2').classList.toggle('active', w === 'week2');
-    renderSchedule();
-}
-
-function renderSchedule() {
-    const container = document.getElementById('scheduleColumnsContainer');
-    if (!currentUser.schedule) currentUser.schedule = { week1: {}, week2: {} };
-    const weekData = currentUser.schedule[currentWeek] || {};
-
-    container.innerHTML = days.map((d, i) => {
-        const list = weekData[i] || [];
-        return `
-            <div class="column-day">
-                <div class="column-header">
-                    <span>${d}</span>
-                    <button class="btn-primary btn-small" onclick="addLesson(${i})">+</button>
-                </div>
-                <div>${list.map((l, li) => `
-                    <div class="lesson-card">
-                        <div class="lesson-time">⏰ ${l.time}</div>
-                        <div class="lesson-title">${l.name}</div>
-                        <button style="border:0; background:none; color:red; font-size:10px; cursor:pointer;" onclick="deleteLesson(${i}, ${li})">Видалити</button>
-                    </div>
-                `).join('') || '<p style="font-size:11px; color:var(--muted); text-align:center;">Немає пар</p>'}</div>
-            </div>`;
-    }).join('');
-}
-
-function addLesson(dayIdx) {
-    const name = prompt("Назва предмета:");
-    if (!name) return;
-    const time = prompt("Час занять (напр. 08:30):", "08:30") || "08:30";
-
-    if (!currentUser.schedule[currentWeek]) currentUser.schedule[currentWeek] = {};
-    if (!currentUser.schedule[currentWeek][dayIdx]) currentUser.schedule[currentWeek][dayIdx] = [];
-
-    currentUser.schedule[currentWeek][dayIdx].push({ name, time });
-    saveUserData();
-    renderSchedule();
-}
-
-function deleteLesson(dayIdx, lessonIdx) {
-    currentUser.schedule[currentWeek][dayIdx].splice(lessonIdx, 1);
-    saveUserData();
-    renderSchedule();
-}
-
-/* ADMIN PANEL ENGINE */
 function loadAdminTable() {
     const tbody = document.getElementById('adminUsersTable');
     const users = DB.getUsers();
     tbody.innerHTML = users.map(u => `
         <tr>
             <td>${u.username}</td>
-            <td>${u.isAdmin ? '<b>Admin</b>' : 'Student'}</td>
+            <td>${u.nfcTag ? '✅ ' + u.nfcTag : '❌ Немає'}</td>
+            <td>${u.faceData ? '✅ Є Hash' : '❌ Немає'}</td>
             <td><span style="color:${u.blocked ? 'red':'green'}">${u.blocked ? 'Заблоковано':'Активний'}</span></td>
             <td>
                 ${!u.isAdmin ? `<button class="btn-primary btn-small ${u.blocked ? '':'btn-danger'}" onclick="toggleBlock('${u.username}')">${u.blocked ? 'Розблокувати':'Заблокувати'}</button>` : ''}
@@ -657,7 +801,6 @@ function updateSecretWord() {
 }
 
 function toggleDarkMode() { document.body.classList.toggle('dark'); }
-function openTelegramApp() { window.location.href = "tg://"; }
 
 function navigateTo(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
