@@ -1,411 +1,789 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Студентський Портал</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #0f172a;
-            --muted: #64748b;
-            --border: #e2e8f0;
-            --radius: 16px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital University Portal</title>
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 90px; }
+<style>
+:root {
+    --primary: #4d5be4;
+    --primary-hover: #3b49cb;
+    --bg: #f4f6ff;
+    --card: #ffffff;
+    --text: #111735;
+    --muted: #747b99;
+    --border: #e8eaf5;
+    --shadow: 0 10px 30px rgba(70,80,160,.08);
+    --radius: 18px;
 
-        /* HEADER & SIDEBAR (Desktop) */
-        header { background: var(--card); border-bottom: 1px solid var(--border); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .logo { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
-        .layout { display: flex; max-width: 1200px; margin: 0 auto; min-height: calc(100vh - 65px); }
+    --c-week1: #00d2ff;
+    --c-week2: #ffd200;
+    --c-session: #ff7800;
+    --c-vacation: #91f000;
+}
 
-        .sidebar { width: 250px; background: var(--card); border-right: 1px solid var(--border); padding: 20px 10px; display: flex; flex-direction: column; gap: 8px; }
-        .nav-item { border: 0; background: none; text-align: left; padding: 12px 16px; border-radius: 12px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; width: 100%; }
-        .nav-item:hover, .nav-item.active { background: #eff6ff; color: var(--primary); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+}
+body.dark {
+    --bg: #0f121d;
+    --card: #181c2e;
+    --text: #f0f3ff;
+    --muted: #8e95b3;
+    --border: #262c42;
+}
 
-        .main { flex: 1; padding: 25px; }
-        .page { display: none; }
-        .page.active { display: block; }
+/* AUTH OVERLAY & SCREEN */
+.auth-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; padding: 20px;
+}
+.auth-card {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 30px; border-radius: 22px; width: 100%; max-width: 400px;
+    box-shadow: var(--shadow); text-align: center;
+}
+.auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+.auth-tab { flex: 1; border: 0; background: none; font-weight: 700; color: var(--muted); cursor: pointer; padding: 8px; font-size: 14px; }
+.auth-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -12px; }
 
-        /* CARDS & COMPONENTS */
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        
-        .btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-        .btn:hover { background: var(--primary-hover); }
-        .btn-secondary { background: #e2e8f0; color: var(--text); }
-        .btn-danger { background: #ef4444; color: white; }
+.app { display: flex; min-height: 100vh; }
 
-        input, select, textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; margin-top: 6px; margin-bottom: 14px; }
+/* SIDEBAR */
+.sidebar {
+    position: fixed; top: 15px; left: 15px; bottom: 15px;
+    width: 250px; border-radius: 22px; padding: 25px 16px;
+    background: linear-gradient(180deg, #4d5be4 0%, #3f4cc7 100%);
+    color: white; box-shadow: 0 15px 35px rgba(68,80,210,.25);
+    z-index: 100; display: flex; flex-direction: column; gap: 15px;
+}
+.brand { display: flex; align-items: center; gap: 12px; padding: 0 5px; }
+.logo { width: 42px; height: 42px; border: 2px solid white; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: 900; letter-spacing: -0.5px; }
+.brand-title { font-weight: 800; font-size: 13px; line-height: 1.1; }
 
-        /* MOBILE BOTTOM NAVIGATION */
-        .mobile-nav-container { display: none; }
+.nav { display: flex; flex-direction: column; gap: 6px; flex: 1; margin-top: 15px; }
+.nav-item { border: 0; background: transparent; color: rgba(255,255,255,0.85); padding: 12px 14px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; text-align: left; transition: .2s; }
+.nav-item:hover { background: rgba(255,255,255,.15); color: white; }
+.nav-item.active { background: white; color: var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,.08); }
 
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main { padding: 15px; }
-            
-            /* Floating Rounded Navigation Bar */
-            .mobile-nav-container {
-                display: flex;
-                position: fixed;
-                bottom: 15px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: calc(100% - 30px);
-                max-width: 420px;
-                height: 64px;
-                background: #ffffff;
-                border-radius: 35px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-                border: 1px solid var(--border);
-                align-items: center;
-                justify-content: space-around;
-                padding: 0 10px;
-                z-index: 999;
-            }
+/* MAIN CONTENT */
+.main { width: calc(100% - 280px); margin-left: 280px; padding: 25px 30px; }
+.header { background: var(--card); border-radius: var(--radius); padding: 18px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 20px; }
 
-            .mobile-nav-btn {
-                background: none;
-                border: none;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                color: var(--muted);
-                font-size: 1.2rem;
-                cursor: pointer;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-            }
+.page { display: none; }
+.page.active { display: block; animation: fadeIn .25s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-            .mobile-nav-btn.active { color: var(--primary); }
-            
-            /* Central Blue Circle for Student Card */
-            .mobile-nav-btn.card-center-btn {
-                background: var(--primary);
-                color: white;
-                width: 56px;
-                height: 56px;
-                border-radius: 50%;
-                margin-top: -25px;
-                box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
-                font-size: 1.4rem;
-            }
-        }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 20px; }
 
-        /* MODAL */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-        
-        .announcement-item { border-left: 4px solid var(--primary); padding-left: 12px; margin-bottom: 12px; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: #dbeafe; color: var(--primary); }
-    </style>
+/* NOTIFICATIONS & TASKS */
+.notification-item { background: var(--bg); border: 1px solid var(--border); border-left: 4px solid var(--primary); padding: 14px; border-radius: 10px; margin-bottom: 10px; font-size: 13px; }
+.task-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; }
+.task-item.completed span { text-decoration: line-through; opacity: 0.6; }
+
+/* STUDENT CARD PAGE */
+.student-card {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white; border-radius: 20px; padding: 25px; position: relative;
+    box-shadow: 0 15px 30px rgba(30,60,114,0.3); overflow: hidden; max-width: 450px; margin: 0 auto 20px auto;
+}
+.student-card::before { content: ""; position: absolute; right: -30px; bottom: -30px; width: 140px; height: 140px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+.card-header-student { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.student-photo { width: 70px; height: 70px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.8); background: #eee; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+.student-info { margin-top: 10px; }
+.student-name { font-size: 20px; font-weight: 800; }
+.student-detail { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+
+.pass-timer { display: none; background: #22c55e; color: white; padding: 15px; border-radius: 14px; text-align: center; margin-top: 15px; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 0.9; } 50% { opacity: 1; transform: scale(1.01); } 100% { opacity: 0.9; } }
+
+/* CALENDAR & SCHEDULE */
+.calendar-legend { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; justify-content: center; background: var(--card); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.legend-box { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
+
+.calendar-grid-months { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; }
+.month-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; text-align: center; }
+.month-title { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+.month-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.month-table th { padding: 4px; font-weight: 700; border-bottom: 2px solid var(--border); }
+.month-table td { width: 14.28%; height: 32px; text-align: center; vertical-align: middle; border: 1px solid var(--border); font-weight: 700; position: relative; }
+
+.td-week1 { background-color: var(--c-week1); color: #000; }
+.td-week2 { background-color: var(--c-week2); color: #000; }
+.td-session { background-color: var(--c-session); color: #fff; }
+.td-vacation { background-color: var(--c-vacation); color: #000; }
+.td-default { background-color: transparent; }
+.sub-note { font-size: 8px; display: block; line-height: 1; font-weight: 800; }
+
+.week-toggle { display: flex; gap: 10px; margin-bottom: 18px; }
+.toggle-btn { padding: 8px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); font-weight: 700; cursor: pointer; color: var(--text); }
+.toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.columns-grid { display: grid; grid-template-columns: repeat(6, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+.column-day { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-height: 380px; }
+.column-header { font-weight: 800; font-size: 14px; color: var(--primary); padding-bottom: 8px; border-bottom: 2px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+.lesson-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; margin-bottom: 8px; font-size: 12px; position: relative; }
+.lesson-time { font-size: 10px; color: var(--muted); font-weight: 700; }
+.lesson-title { font-weight: 700; margin-top: 2px; }
+.lesson-room { font-size: 10px; opacity: 0.8; margin-top: 2px; }
+
+.btn-primary { background: var(--primary); color: white; border: 0; padding: 9px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-small { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+.btn-danger { background: #ef4444; color: white; border: 0; }
+.btn-danger:hover { background: #dc2626; }
+
+.input-field { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px; font-size: 13px; }
+
+/* MODALS */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(4px); }
+.modal { background: var(--card); padding: 24px; border-radius: 18px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--border); }
+.modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+
+@media(max-width:1100px) { .columns-grid { grid-template-columns: repeat(3, minmax(220px, 1fr)); } }
+@media(max-width:700px) {
+    .sidebar { display: none; }
+    .main { width: 100%; margin: 0; padding: 15px; }
+    .columns-grid { grid-template-columns: repeat(1, 1fr); }
+}
+</style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">🎓 СтудПортал</div>
-        <button class="btn btn-secondary" onclick="requestNotificationPermission()">🔔 Увімкнути сповіщення</button>
-    </header>
+<!-- AUTH SCREEN OVERLAY -->
+<div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+        <div class="logo" style="margin: 0 auto 10px auto; background: var(--primary); color: white;">DU</div>
+        <h3 style="margin-bottom: 15px;">Цифровий Університет</h3>
 
-    <div class="layout">
-        <!-- DESKTOP SIDEBAR -->
-        <aside class="sidebar">
-            <button class="nav-item active" onclick="switchPage('home')">🏠 Головна</button>
-            <button class="nav-item" onclick="switchPage('student-card')">🪪 Студентський квиток</button>
-            <button class="nav-item" onclick="switchPage('schedule')">📚 Розклад</button>
-            <button class="nav-item" onclick="switchPage('tasks')">📝 Завдання</button>
-            <button class="nav-item" onclick="switchPage('nfs')">📡 NFC Таг</button>
-            <button class="nav-item" onclick="switchPage('settings')">⚙️ Налаштування</button>
-        </aside>
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Вхід</button>
+            <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Реєстрація</button>
+        </div>
 
-        <!-- MAIN CONTENT AREA -->
-        <main class="main">
-            
-            <!-- GOVNA PAGE -->
-            <section id="home" class="page active">
-                <h2>Головна сторінка</h2>
-                <br>
-                <div class="card">
-                    <h3>📢 Оголошення щодо пар та завдань</h3>
-                    <br>
-                    <div id="announcements-list">
-                        <div class="announcement-item">
-                            <span class="badge">Пара</span>
-                            <h4>Зміна аудиторії з Вищої Математики</h4>
-                            <p>Завтра пара о 08:30 відбудеться в 402 аудиторії замість 305.</p>
-                        </div>
-                        <div class="announcement-item">
-                            <span class="badge">Завдання</span>
-                            <h4>Дедлайн з Фізики</h4>
-                            <p>Не забудьте здати Лабораторну №3 до 23:59 сьогодні!</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        <!-- LOGIN FORM -->
+        <div id="formLogin">
+            <input type="text" id="loginUser" class="input-field" placeholder="Логін">
+            <input type="password" id="loginPass" class="input-field" placeholder="Пароль">
+            <button class="btn-primary" style="width: 100%; margin-top: 5px;" onclick="handleLogin()">Увійти</button>
+            <button style="border:0; background:none; color:var(--primary); font-size:12px; margin-top:12px; cursor:pointer;" onclick="switchAuthTab('forgot')">Забули пароль?</button>
+        </div>
 
-            <!-- STUDENT CARD PAGE -->
-            <section id="student-card" class="page">
-                <h2>Студентський квиток</h2>
-                <br>
-                <div class="card" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white;">
-                    <p>Студентський квиток</p>
-                    <h3 style="margin-top: 15px;" id="card-user-name">Іван Іванов</h3>
-                    <p>Група: КН-31</p>
-                    <p>Квиток: №7748201</p>
-                    <div style="margin-top:20px; font-size: 2rem; text-align: center;">📱 [QR-CODE]</div>
-                </div>
-            </section>
+        <!-- REGISTER FORM -->
+        <div id="formRegister" style="display: none;">
+            <input type="text" id="regUser" class="input-field" placeholder="Логін">
+            <input type="password" id="regPass" class="input-field" placeholder="Пароль">
+            <input type="text" id="regSecret" class="input-field" placeholder="Секретне кодове слово або число">
+            <p style="font-size: 11px; color: var(--muted); margin-bottom: 10px;">*Потрібне для відновлення пароля</p>
+            <button class="btn-primary" style="width: 100%;" onclick="handleRegister()">Зареєструватися</button>
+        </div>
 
-            <!-- SCHEDULE PAGE -->
-            <section id="schedule" class="page">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h2>Розклад занять</h2>
-                    <span id="schedule-lock-status" class="badge">Режим перегляду</span>
-                </div>
-                <br>
-                <div class="card">
-                    <div id="schedule-content">
-                        <p><b>08:30 - 10:05</b> | Програмування (Ауд. 204)</p>
-                        <hr style="margin: 10px 0;">
-                        <p><b>10:25 - 12:00</b> | Комп'ютерні мережі (Ауд. 101)</p>
-                    </div>
-                    <div id="admin-schedule-controls" style="display: none; margin-top: 15px;">
-                        <textarea id="schedule-editor" rows="4"></textarea>
-                        <button class="btn" onclick="saveScheduleAdmin()">Зберегти розклад для всіх</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TASKS PAGE -->
-            <section id="tasks" class="page">
-                <h2>Завдання та дедлайни</h2>
-                <br>
-                <div class="card">
-                    <h3>Додати нове завдання</h3>
-                    <br>
-                    <input type="text" id="task-title" placeholder="Назва завдання">
-                    <label>Дата та час виконання:</label>
-                    <input type="datetime-local" id="task-datetime">
-                    <button class="btn" onclick="addTask()">Додати завдання</button>
-                </div>
-                <div class="card">
-                    <h3>Список завдань</h3>
-                    <br>
-                    <ul id="tasks-list" style="list-style: none;"></ul>
-                </div>
-            </section>
-
-            <!-- NFC PAGE -->
-            <section id="nfs" class="page">
-                <h2>NFC / Tag Мітки</h2>
-                <br>
-                <div class="card">
-                    <p>Зчитування та запис студентських NFC міток для швидкого доступу.</p>
-                    <br>
-                    <button class="btn" onclick="readNfc()">Зчитати NFC мітку</button>
-                    <button class="btn btn-secondary" onclick="writeNfc()">Записати дані на NFC</button>
-                    <p id="nfc-status" style="margin-top: 15px; color: var(--muted);"></p>
-                </div>
-            </section>
-
-            <!-- SETTINGS PAGE -->
-            <section id="settings" class="page">
-                <h2>Налаштування</h2>
-                <br>
-                <div class="card">
-                    <h3>Профіль</h3>
-                    <br>
-                    <label>Ім'я користувача:</label>
-                    <input type="text" id="settings-name" value="Іван Іванов">
-                    <button class="btn" onclick="alert('Профіль оновлено!')">Зберегти змінити</button>
-                </div>
-                <div class="card">
-                    <h3>Адміністрування</h3>
-                    <p style="color: var(--muted); margin-bottom: 10px;">Доступ до керування користувачами та розкладом.</p>
-                    <button class="btn btn-danger" onclick="openAdminAuth()">Кнопка Адмін 🔐</button>
-                </div>
-            </section>
-
-        </main>
-    </div>
-
-    <!-- MOBILE BOTTOM NAVIGATION (Rounded Bar) -->
-    <div class="mobile-nav-container">
-        <button class="mobile-nav-btn active" onclick="switchPage('home', this)">🏠</button>
-        <button class="mobile-nav-btn" onclick="switchPage('schedule', this)">📚</button>
-        <!-- Center Floating Blue Card Button -->
-        <button class="mobile-nav-btn card-center-btn" onclick="switchPage('student-card', this)">🪪</button>
-        <button class="mobile-nav-btn" onclick="switchPage('tasks', this)">📝</button>
-        <button class="mobile-nav-btn" onclick="switchPage('settings', this)">⚙️</button>
-    </div>
-
-    <!-- ADMIN MODAL -->
-    <div id="admin-modal" class="modal">
-        <div class="modal-content">
-            <h3>Вхід в панель Адміністратора</h3>
-            <br>
-            <div id="admin-auth-form">
-                <label>Введіть пароль адміністратора:</label>
-                <input type="password" id="admin-password-input" placeholder="Пароль">
-                <button class="btn" onclick="loginAdmin()">Увійти</button>
-                <button class="btn btn-secondary" onclick="closeAdminModal()">Скасувати</button>
-            </div>
-            <div id="admin-panel" style="display: none;">
-                <span class="badge" style="background:#dcfce7; color:#15803d;">Авторизовано як Адмін</span>
-                <br><br>
-                <h4>Користувачі та паролі:</h4>
-                <ul id="users-list" style="margin: 10px 0; font-size: 0.9rem;">
-                    <li><b>User1:</b> Іван Іванов | Пароль: <code>student123</code> <button onclick="editUser('Іван Іванов')">✏️</button></li>
-                    <li><b>User2:</b> Марія Петрівна | Пароль: <code>stud2024</code> <button onclick="editUser('Марія Петрівна')">✏️</button></li>
-                </ul>
-                <button class="btn btn-secondary" onclick="closeAdminModal()">Закрити</button>
-            </div>
+        <!-- FORGOT PASSWORD FORM -->
+        <div id="formForgot" style="display: none;">
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Введіть ваш логін та секретне слово:</p>
+            <input type="text" id="forgotUser" class="input-field" placeholder="Логін">
+            <input type="text" id="forgotSecret" class="input-field" placeholder="Секретне слово/число">
+            <input type="password" id="forgotNewPass" class="input-field" placeholder="Новий пароль">
+            <button class="btn-primary" style="width: 100%;" onclick="handleResetPassword()">Змінити пароль</button>
+            <button style="border:0; background:none; color:var(--muted); font-size:12px; margin-top:10px; cursor:pointer;" onclick="switchAuthTab('login')">Повернутися до входу</button>
         </div>
     </div>
+</div>
 
-    <script>
-        let isAdmin = false;
+<div class="app">
 
-        // Page Navigation
-        function switchPage(pageId, btnElement) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="brand">
+        <div class="logo">DU</div>
+        <div class="brand-title">ЦИФРОВИЙ<br>УНІВЕРСИТЕТ</div>
+    </div>
 
-            // Update bottom nav styles
-            if (btnElement) {
-                document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('active'));
-                btnElement.classList.add('active');
-            }
+    <nav class="nav">
+        <button class="nav-item active" data-page="home">🏠 Головна сторінка</button>
+        <button class="nav-item" data-page="student-card-page">🪪 Студентський квиток</button>
+        <button class="nav-item" data-page="tasks-page">📝 Завдання</button>
+        <button class="nav-item" data-page="schedule">📚 Розклад у колонках</button>
+        <button class="nav-item" data-page="calendar">📆 Календар семестру</button>
+        <button class="nav-item" onclick="openTelegramApp()">✈️ Телеграм</button>
+    </nav>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+    <header class="header">
+        <div>
+            <h2>Навчальний портал</h2>
+            <p style="color:var(--muted); font-size:12px;" id="currentDateStr"></p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <span style="font-size:13px; font-weight:bold;" id="currentUserLabel">Студент</span>
+            <button class="btn-primary" style="background:var(--bg); color:var(--text); border:1px solid var(--border);" onclick="document.body.classList.toggle('dark')">🌙 Тема</button>
+            <button class="btn-primary btn-danger" onclick="handleLogout()">Вийти</button>
+        </div>
+    </header>
+
+    <!-- 1. HOME: NOTIFICATIONS -->
+    <section class="page active" id="home">
+        <div class="card">
+            <h3>🔔 Сповіщення про пари</h3>
+            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Наближення занять та оперативні оновлення:</p>
+            <div class="notification-item">
+                <strong>⏰ Наступна пара о 10:15</strong>
+                <div>Об'єктно-орієнтоване програмування (Ауд. 402)</div>
+            </div>
+            <div class="notification-item" style="border-left-color: #ff7800;">
+                <strong>⚠️ Зміна в розкладі на завтра</strong>
+                <div>Лекція з «Основи авіації» перенесена на 12:00.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. STUDENT CARD PAGE -->
+    <section class="page" id="student-card-page">
+        <div class="card" style="text-align: center;">
+            <h2>🪪 Цифровий студентський квиток</h2>
+            <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">Використовуйте для проходу в університет та в міському транспорті</p>
+
+            <div id="cardBindingSection">
+                <div class="student-card" id="displayStudentCard" style="display:none;">
+                    <div class="card-header-student">
+                        <span style="font-size:11px; font-weight:800; letter-spacing:1px; opacity:0.9;">СТУДЕНТСЬКИЙ КВИТОК</span>
+                        <span style="font-size:11px; font-weight:700;" id="cardNumDisplay">№ KB 849201</span>
+                    </div>
+                    <div style="display:flex; gap:15px; align-items:center; text-align: left;">
+                        <div class="student-photo">🎓</div>
+                        <div class="student-info">
+                            <div class="student-name" id="cardNameDisplay">Студент Навчальний</div>
+                            <div class="student-detail" id="cardFacultyDisplay">Факультет комп'ютерних наук</div>
+                            <div class="student-detail" id="cardGroupDisplay">Група: КН-31</div>
+                            <div class="student-detail">Статус: <span style="color:#4ade80; font-weight:bold;">Активний</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bindForm" style="max-width: 380px; margin: 0 auto; background: var(--bg); padding: 20px; border-radius: 14px; border: 1px solid var(--border);">
+                    <h3>🔗 Прив'язати квиток</h3>
+                    <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Введіть дані для створення студенстького квитка:</p>
+                    <input type="text" id="bindName" class="input-field" placeholder="ПІБ студента">
+                    <input type="text" id="bindGroup" class="input-field" placeholder="Група (напр. КН-31)">
+                    <input type="text" id="bindNum" class="input-field" placeholder="Номер квитка (напр. KB 849201)">
+                    <button class="btn-primary" style="width: 100%;" onclick="bindCard()">Створити / Прив'язати квиток</button>
+                </div>
+            </div>
+
+            <div id="cardActions" style="display:none; margin-top: 20px;">
+                <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+                    <button class="btn-primary btn-outline" onclick="triggerNFCScan()">📡 Відсканувати NFC / TAG</button>
+                    <button class="btn-primary" style="background:#22c55e;" onclick="startPassTimer()">🎟️ Прохід (1 хвилина)</button>
+                    <button class="btn-primary btn-danger" onclick="deleteStudentCard()">🗑️ Видалити / Змінити квиток</button>
+                </div>
+
+                <div class="pass-timer" id="passTimerBox">
+                    <div style="font-size: 14px; font-weight: bold;">Турнікет активний! Прикладіть телефон</div>
+                    <div style="font-size: 28px; font-weight: 900; margin-top: 4px;" id="timerCount">60 с</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. TASKS PAGE -->
+    <section class="page" id="tasks-page">
+        <div class="card">
+            <h2>📝 Мої Завдання</h2>
+            <p style="font-size:13px; color:var(--muted); margin-bottom:15px;">Додавайте та керуйте своїми навчальними завданнями:</p>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="newTaskInput" class="input-field" placeholder="Введіть текст завдання..." style="margin-bottom:0;">
+                <button class="btn-primary" onclick="addNewTask()">Додати</button>
+            </div>
+
+            <div id="tasksContainer"></div>
+        </div>
+    </section>
+
+    <!-- 4. SCHEDULE IN COLUMNS -->
+    <section class="page" id="schedule">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                <h2>📚 Розклад занять (Понеділок — Субота)</h2>
+                <div class="week-toggle">
+                    <button class="toggle-btn active" id="btnW1" onclick="switchWeek('week1')">🟦 I Тиждень</button>
+                    <button class="toggle-btn" id="btnW2" onclick="switchWeek('week2')">🨨 II Тиждень</button>
+                </div>
+            </div>
+            <div class="columns-grid" id="scheduleColumnsContainer"></div>
+        </div>
+    </section>
+
+    <!-- 5. CALENDAR -->
+    <section class="page" id="calendar">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                <h2>📆 Графік осіннього семестру</h2>
+                <button class="btn-primary btn-danger" onclick="resetCalendar()">Скинути календар</button>
+            </div>
+
+            <div class="calendar-legend">
+                <div class="legend-item"><div class="legend-box" style="background:var(--c-week1);"></div> - I тиждень</div>
+                <div class="legend-item"><div class="legend-box" style="background:var(--c-week2);"></div> - II тиждень</div>
+                <div class="legend-item"><div class="legend-box" style="background:var(--c-session);"></div> - Сесія</div>
+                <div class="legend-item"><div class="legend-box" style="background:var(--c-vacation);"></div> - Канікули</div>
+            </div>
+
+            <div class="calendar-grid-months" id="calendarMonthsContainer"></div>
+        </div>
+    </section>
+
+</main>
+</div>
+
+<!-- MODAL ADD LESSON -->
+<div class="modal-overlay" id="lessonModal">
+    <div class="modal">
+        <h3>➕ Додати пару</h3>
+        <p id="lessonModalSub" style="font-size:11px; color:var(--muted); margin-bottom:12px;"></p>
+        <input type="text" class="input-field" id="lesTime" placeholder="Час (напр. 08:30 - 10:05)">
+        <input type="text" class="input-field" id="lesName" placeholder="Назва предмета">
+        <input type="text" class="input-field" id="lesRoom" placeholder="Аудиторія / Посилання">
+        <div class="modal-actions">
+            <button class="btn-primary" onclick="saveLesson()">Зберегти</button>
+            <button class="btn-primary" style="background:#888;" onclick="closeLessonModal()">Скасувати</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* 0. AUTHENTICATION SYSTEM — SERVER BACKEND */
+let currentUser = null;
+
+async function api(path, options = {}) {
+    const response = await fetch(path, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        ...options
+    });
+    let data = {};
+    try { data = await response.json(); } catch (_) {}
+    if (!response.ok) throw new Error(data.error || 'Помилка сервера');
+    return data;
+}
+
+async function loadUserData() {
+    await checkCardStatus();
+    await loadTasks();
+    await loadSchedule();
+    renderCalendar();
+}
+
+async function checkAuth() {
+    try {
+        const data = await api('/api/me');
+        currentUser = data.user || null;
+        if (currentUser) {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('currentUserLabel').textContent =
+                currentUser.username || 'Студент';
+            await loadUserData();
+        } else {
+            document.getElementById('authOverlay').style.display = 'flex';
         }
+    } catch (e) {
+        document.getElementById('authOverlay').style.display = 'flex';
+        console.error(e);
+    }
+}
 
-        // Admin Auth & Functions
-        function openAdminAuth() {
-            document.getElementById('admin-modal').classList.add('active');
+function switchAuthTab(type) {
+    document.getElementById('formLogin').style.display = type === 'login' ? 'block' : 'none';
+    document.getElementById('formRegister').style.display = type === 'register' ? 'block' : 'none';
+    document.getElementById('formForgot').style.display = type === 'forgot' ? 'block' : 'none';
+    document.getElementById('tabLogin').classList.toggle('active', type === 'login');
+    document.getElementById('tabRegister').classList.toggle('active', type === 'register');
+}
+
+async function handleRegister() {
+    const username = document.getElementById('regUser').value.trim();
+    const password = document.getElementById('regPass').value;
+    const secret = document.getElementById('regSecret').value.trim();
+
+    if (!username || !password || !secret) return alert("Заповніть усі поля!");
+
+    try {
+        await api('/api/register', {
+            method: 'POST',
+            body: JSON.stringify({ username, password, secret })
+        });
+        alert("Реєстрація успішна! Тепер увійдіть.");
+        document.getElementById('loginUser').value = username;
+        switchAuthTab('login');
+    } catch (e) {
+        alert(e.message);
+    }
+}
+
+async function handleLogin() {
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+    if (!username || !password) return alert("Введіть логін і пароль!");
+
+    try {
+        await api('/api/login', {
+            method: 'POST',
+            body: JSON.stringify({ username, password })
+        });
+        await checkAuth();
+    } catch (e) {
+        alert(e.message);
+    }
+}
+
+async function handleResetPassword() {
+    const username = document.getElementById('forgotUser').value.trim();
+    const secret = document.getElementById('forgotSecret').value.trim();
+    const newPassword = document.getElementById('forgotNewPass').value;
+
+    if (!username || !secret || !newPassword) return alert("Заповніть усі поля!");
+
+    try {
+        await api('/api/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ username, secret, newPassword })
+        });
+        alert("Пароль успішно змінено! Увійдіть з новим паролем.");
+        switchAuthTab('login');
+    } catch (e) {
+        alert(e.message);
+    }
+}
+
+async function handleLogout() {
+    try { await api('/api/logout', { method: 'POST' }); } catch (_) {}
+    currentUser = null;
+    if (passTimerInterval) clearInterval(passTimerInterval);
+    checkAuth();
+}
+
+/* TELEGRAM REDIRECT DIRECTLY */
+
+function openTelegramApp() {
+    window.location.href = "tg://";
+}
+
+/* 1. TASKS MANAGEMENT — SERVER BACKEND */
+let userTasks = [];
+
+async function loadTasks() {
+    try {
+        const data = await api('/api/tasks');
+        userTasks = data.tasks || [];
+        renderTasks();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderTasks() {
+    const container = document.getElementById('tasksContainer');
+    if (userTasks.length === 0) {
+        container.innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:15px;">Немає збережених завдань</p>';
+        return;
+    }
+    container.innerHTML = userTasks.map((t, idx) => `
+        <div class="task-item ${t.done ? 'completed' : ''}">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${idx})">
+                <span>${escapeHtml(t.text)}</span>
+            </div>
+            <button style="border:0; background:none; color:#ef4444; font-size:11px; cursor:pointer;" onclick="deleteTask(${idx})">Видалити</button>
+        </div>
+    `).join('');
+}
+
+async function addNewTask() {
+    const input = document.getElementById('newTaskInput');
+    const text = input.value.trim();
+    if (!text) return;
+    try {
+        await api('/api/tasks', { method: 'POST', body: JSON.stringify({ text }) });
+        input.value = '';
+        await loadTasks();
+    } catch (e) { alert(e.message); }
+}
+
+async function toggleTask(idx) {
+    try {
+        await api('/api/tasks/' + encodeURIComponent(userTasks[idx].id), {
+            method: 'PATCH',
+            body: JSON.stringify({ done: !userTasks[idx].done })
+        });
+        await loadTasks();
+    } catch (e) { alert(e.message); }
+}
+
+async function deleteTask(idx) {
+    try {
+        await api('/api/tasks/' + encodeURIComponent(userTasks[idx].id), { method: 'DELETE' });
+        await loadTasks();
+    } catch (e) { alert(e.message); }
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, c => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+    }[c]));
+}
+
+/* 2. СТУДЕНТСЬКИЙ КВИТОК ТА NFC — SERVER BACKEND */
+let savedCard = null;
+let passTimerInterval = null;
+
+async function checkCardStatus() {
+    try {
+        const data = await api('/api/student-card');
+        savedCard = data.card || null;
+        if (savedCard) {
+            document.getElementById('bindForm').style.display = 'none';
+            document.getElementById('displayStudentCard').style.display = 'block';
+            document.getElementById('cardActions').style.display = 'block';
+            document.getElementById('cardNameDisplay').textContent = savedCard.name;
+            document.getElementById('cardGroupDisplay').textContent = "Група: " + savedCard.group;
+            document.getElementById('cardNumDisplay').textContent = "№ " + savedCard.num;
+        } else {
+            document.getElementById('bindForm').style.display = 'block';
+            document.getElementById('displayStudentCard').style.display = 'none';
+            document.getElementById('cardActions').style.display = 'none';
         }
+    } catch (e) { console.error(e); }
+}
 
-        function closeAdminModal() {
-            document.getElementById('admin-modal').classList.remove('active');
+async function bindCard() {
+    const name = document.getElementById('bindName').value.trim();
+    const group = document.getElementById('bindGroup').value.trim();
+    const num = document.getElementById('bindNum').value.trim();
+    if (!name || !group || !num) return alert("Будь ласка, заповніть усі поля!");
+
+    try {
+        await api('/api/student-card', {
+            method: 'PUT',
+            body: JSON.stringify({ name, group, num })
+        });
+        document.getElementById('bindName').value = '';
+        document.getElementById('bindGroup').value = '';
+        document.getElementById('bindNum').value = '';
+        await checkCardStatus();
+    } catch (e) { alert(e.message); }
+}
+
+async function deleteStudentCard() {
+    if (!confirm("Ви дійсно хочете видалити цей студентський квиток?")) return;
+    try {
+        await api('/api/student-card', { method: 'DELETE' });
+        if (passTimerInterval) clearInterval(passTimerInterval);
+        document.getElementById('passTimerBox').style.display = 'none';
+        await checkCardStatus();
+    } catch (e) { alert(e.message); }
+}
+
+function triggerNFCScan() {
+    alert("📡 Відскануйте NFC-мітку або TAG термінала...");
+}
+
+function startPassTimer() {
+    const box = document.getElementById('passTimerBox');
+    const counter = document.getElementById('timerCount');
+    let seconds = 60;
+    if (passTimerInterval) clearInterval(passTimerInterval);
+    box.style.display = 'block';
+    counter.textContent = seconds + " с";
+    passTimerInterval = setInterval(() => {
+        seconds--;
+        counter.textContent = seconds + " с";
+        if (seconds <= 0) {
+            clearInterval(passTimerInterval);
+            box.style.display = 'none';
+            alert("Час проходу вичерпано. Натисніть кнопку знову за потреби.");
         }
+    }, 1000);
+}
 
-        function loginAdmin() {
-            const pass = document.getElementById('admin-password-input').value;
-            if (pass === "1234") { // Простий пароль для демо
-                isAdmin = true;
-                document.getElementById('admin-auth-form').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-                
-                // Вмикаємо панель редагування розкладу
-                document.getElementById('admin-schedule-controls').style.display = 'block';
-                document.getElementById('schedule-lock-status').innerText = "Режим редагування (Адмін)";
-                document.getElementById('schedule-lock-status').style.background = "#dcfce7";
-                document.getElementById('schedule-lock-status').style.color = "#15803d";
-            } else {
-                alert("Невірний пароль!");
-            }
-        }
+/* 3. РОЗКЛАД У КОЛОНКАХ (ПН-СБ) — SERVER BACKEND */
+const daysNames = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
+let currentWeek = 'week1';
+let scheduleData = { week1: {}, week2: {} };
+let targetDayIdx = null;
 
-        function editUser(name) {
-            const newName = prompt("Редагувати ім'я користувача:", name);
-            if(newName) alert(`Дані користувача ${name} змінено на ${newName}`);
-        }
+async function loadSchedule() {
+    try {
+        const data = await api('/api/schedule');
+        scheduleData = data.schedule || { week1: {}, week2: {} };
+        renderScheduleColumns();
+    } catch (e) { console.error(e); }
+}
 
-        function saveScheduleAdmin() {
-            if(!isAdmin) return;
-            const content = document.getElementById('schedule-editor').value;
-            if(content) {
-                document.getElementById('schedule-content').innerText = content;
-                alert("Розклад успішно збережено та заблоковано для редагування звичайними користувачами!");
-            }
-        }
+function switchWeek(w) {
+    currentWeek = w;
+    document.getElementById('btnW1').classList.toggle('active', w === 'week1');
+    document.getElementById('btnW2').classList.toggle('active', w === 'week2');
+    renderScheduleColumns();
+}
 
-        // Tasks System
-        function addTask() {
-            const title = document.getElementById('task-title').value;
-            const datetime = document.getElementById('task-datetime').value;
-            
-            if(!title || !datetime) {
-                alert("Заповніть назву та час!");
-                return;
-            }
+function renderScheduleColumns() {
+    const container = document.getElementById('scheduleColumnsContainer');
+    container.innerHTML = "";
+    daysNames.forEach((dayName, idx) => {
+        const lessons = (scheduleData[currentWeek] && scheduleData[currentWeek][idx]) || [];
+        let lessonsHtml = lessons.map((l, lIdx) => `
+            <div class="lesson-card">
+                <div class="lesson-time">⏰ ${escapeHtml(l.time)}</div>
+                <div class="lesson-title">${escapeHtml(l.name)}</div>
+                ${l.room ? `<div class="lesson-room">🚪 ${escapeHtml(l.room)}</div>` : ''}
+                <button style="border:0; background:none; color:#ef4444; font-size:10px; cursor:pointer; margin-top:4px;" onclick="deleteLesson(${idx}, ${lIdx})">Видалити</button>
+            </div>
+        `).join('');
+        container.innerHTML += `
+            <div class="column-day">
+                <div class="column-header">
+                    <span>${dayName}</span>
+                    <button class="btn-primary btn-small" onclick="openAddLessonModal(${idx})">+</button>
+                </div>
+                <div style="flex:1;">${lessonsHtml || '<p style="font-size:11px; color:var(--muted); text-align:center; margin-top:20px;">Немає пар</p>'}</div>
+            </div>`;
+    });
+}
 
-            const li = document.createElement('li');
-            li.style.padding = "10px 0";
-            li.style.borderBottom = "1px solid var(--border)";
-            li.innerHTML = `📌 <b>${title}</b> <br><small style="color:var(--muted)">Виконати до: ${new Date(datetime).toLocaleString()}</small>`;
-            
-            document.getElementById('tasks-list').appendChild(li);
-            document.getElementById('task-title').value = '';
-            document.getElementById('task-datetime').value = '';
-        }
+function openAddLessonModal(dayIdx) {
+    targetDayIdx = dayIdx;
+    document.getElementById('lessonModalSub').textContent = `${daysNames[dayIdx]} (${currentWeek === 'week1' ? 'I Тиждень' : 'II Тиждень'})`;
+    document.getElementById('lesTime').value = "";
+    document.getElementById('lesName').value = "";
+    document.getElementById('lesRoom').value = "";
+    document.getElementById('lessonModal').style.display = "flex";
+}
 
-        // NFC Tag System (Web NFC API)
-        async function readNfc() {
-            const status = document.getElementById('nfc-status');
-            if ('NDEFReader' in window) {
-                try {
-                    const ndef = new NDEFReader();
-                    await ndef.scan();
-                    status.innerText = "Піднесіть NFC мітку...";
-                    ndef.onreading = event => {
-                        status.innerText = `Зчитано серійний номер: ${event.serialNumber}`;
-                    };
-                } catch (error) {
-                    status.innerText = "Помилка: " + error;
+async function saveLesson() {
+    const name = document.getElementById('lesName').value.trim();
+    if (!name) return alert("Введіть назву предмета!");
+    try {
+        await api('/api/schedule', {
+            method: 'POST',
+            body: JSON.stringify({
+                week: currentWeek,
+                day: targetDayIdx,
+                time: document.getElementById('lesTime').value.trim() || "08:30",
+                name,
+                room: document.getElementById('lesRoom').value.trim()
+            })
+        });
+        closeLessonModal();
+        await loadSchedule();
+    } catch (e) { alert(e.message); }
+}
+
+async function deleteLesson(dayIdx, lIdx) {
+    try {
+        await api('/api/schedule', {
+            method: 'DELETE',
+            body: JSON.stringify({ week: currentWeek, day: dayIdx, index: lIdx })
+        });
+        await loadSchedule();
+    } catch (e) { alert(e.message); }
+}
+
+function closeLessonModal() { document.getElementById('lessonModal').style.display = "none"; }
+
+/* 4. КАЛЕНДАР СЕМЕСТРУ */
+const defaultCalendar = {
+    "9": {
+        name: "Вересень", firstDay: 1, daysCount: 30,
+        statuses: { 31: "week1", 1: "week1", 2: "week1", 3: "week1", 4: "week1", 7: "week2", 8: "week2", 9: "week2", 10: "week2", 11: "week2", 12: "week2", 14: "week1", 15: "week1", 16: "week1", 17: "week1", 18: "week1", 19: "week2", 21: "week2", 22: "week2", 23: "week2", 24: "week2", 25: "week2", 26: "week2", 28: "week1", 29: "week1", 30: "week1" },
+        notes: { 12: "Пн (II)", 19: "Вт (II)", 26: "Ср (II)" }
+    },
+    "10": {
+        name: "Жовтень", firstDay: 4, daysCount: 31,
+        statuses: { 1: "week1", 2: "week1", 3: "week2", 5: "week2", 6: "week2", 7: "week2", 8: "week2", 9: "week2", 10: "week2", 12: "week1", 13: "week1", 14: "week1", 15: "week1", 16: "week1", 17: "week1", 19: "week2", 20: "week2", 21: "week2", 22: "week2", 23: "week2", 24: "week1", 26: "week1", 27: "week1", 28: "week1", 29: "week1", 30: "week1", 31: "week1" },
+        notes: { 3: "Чт (II)", 10: "Пт (II)", 17: "Пн (I)", 24: "Вт (I)", 31: "Ср (I)" }
+    },
+    "11": {
+        name: "Листопад", firstDay: 7, daysCount: 30,
+        statuses: { 2: "week2", 3: "week2", 4: "week2", 5: "week2", 6: "week2", 7: "week1", 9: "week1", 10: "week1", 11: "week1", 12: "week1", 13: "week1", 14: "week1", 16: "week2", 17: "week2", 18: "week2", 19: "week2", 20: "week2", 21: "week2", 23: "week1", 24: "week1", 25: "week1", 26: "week1", 27: "week1", 28: "week2", 30: "session" },
+        notes: { 7: "Чт (I)", 14: "Пт (I)", 21: "Пн (II)", 28: "Вт (II)" }
+    },
+    "12": {
+        name: "Грудень", firstDay: 2, daysCount: 31,
+        statuses: { 1: "session", 2: "session", 3: "session", 4: "session", 7: "session", 8: "session", 9: "session", 10: "session", 11: "session", 14: "vacation", 15: "vacation", 16: "vacation", 17: "vacation", 18: "vacation", 19: "vacation", 20: "vacation", 21: "vacation", 22: "vacation", 23: "vacation", 24: "vacation", 25: "vacation", 26: "vacation", 27: "vacation", 28: "vacation", 29: "vacation", 30: "vacation", 31: "vacation" },
+        notes: {}
+    }
+};
+
+let semCalendar = JSON.parse(localStorage.getItem('exact_cal_data')) || defaultCalendar;
+
+function renderCalendar() {
+    const container = document.getElementById('calendarMonthsContainer');
+    container.innerHTML = "";
+    ["9", "10", "11", "12"].forEach(mKey => {
+        const m = semCalendar[mKey];
+        if(!m) return;
+        let cardHtml = `<div class="month-card"><div class="month-title">${m.name}</div><table class="month-table"><thead><tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr></thead><tbody>`;
+        let dayCounter = (mKey === "9") ? 31 : 1;
+        let isAug = (mKey === "9");
+
+        for (let r = 0; r < 6; r++) {
+            cardHtml += "<tr>";
+            for (let c = 0; c < 7; c++) {
+                if (r === 0 && c < m.firstDay - 1) {
+                    cardHtml += `<td class="empty"></td>`;
+                } else {
+                    if (isAug) {
+                        cardHtml += `<td class="td-${m.statuses[31]||'week1'}">31</td>`;
+                        isAug = false; dayCounter = 1;
+                    } else if (dayCounter <= m.daysCount) {
+                        const st = m.statuses[dayCounter] || "default";
+                        const note = m.notes[dayCounter] ? `<span class="sub-note">${m.notes[dayCounter]}</span>` : "";
+                        cardHtml += `<td class="td-${st}">${dayCounter}${note}</td>`;
+                        dayCounter++;
+                    } else { cardHtml += `<td class="empty"></td>`; }
                 }
-            } else {
-                status.innerText = "Web NFC не підтримується на цьому пристрої/браузері.";
             }
+            cardHtml += "</tr>";
+            if (dayCounter > m.daysCount && !isAug) break;
         }
+        cardHtml += `</tbody></table></div>`;
+        container.innerHTML += cardHtml;
+    });
+    localStorage.setItem('exact_cal_data', JSON.stringify(semCalendar));
+}
 
-        async function writeNfc() {
-            const status = document.getElementById('nfc-status');
-            if ('NDEFReader' in window) {
-                try {
-                    const ndef = new NDEFReader();
-                    await ndef.write("Студентський квиток №7748201");
-                    status.innerText = "Дані успішно записані на NFC!";
-                } catch (error) {
-                    status.innerText = "Помилка запису: " + error;
-                }
-            } else {
-                status.innerText = "Web NFC не підтримується на цьому пристрої.";
-            }
-        }
+function resetCalendar() {
+    semCalendar = JSON.parse(JSON.stringify(defaultCalendar));
+    renderCalendar();
+}
 
-        // Web Notifications (Сповіщення про пари)
-        function requestNotificationPermission() {
-            if ("Notification" in window) {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        alert("Сповіщення увімкнено!");
-                        scheduleDummyNotification();
-                    }
-                });
-            } else {
-                alert("Ваш браузер не підтримує сповіщення.");
-            }
-        }
+/* NAVIGATION */
+document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if (!btn.dataset.page) return;
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.page).classList.add('active');
+    });
+});
 
-        function scheduleDummyNotification() {
-            // Тестове сповіщення через 5 секунд
-            setTimeout(() => {
-                if (Notification.permission === "granted") {
-                    new Notification("📚 Початок пари!", {
-                        body: "Через 5 хвилин починається пара: Комп'ютерні мережі (Ауд. 101). Наступна пара: Фізика.",
-                        icon: "https://via.placeholder.com/128"
-                    });
-                }
-            }, 5000);
-        }
-    </script>
+document.getElementById('currentDateStr').textContent = new Date().toLocaleDateString('uk-UA', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+(async () => {
+    await checkAuth();
+})();
+</script>
 </body>
 </html>
