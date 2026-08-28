@@ -8,7 +8,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Настройка CORS для работы с GitHub Pages
+// Настройка CORS для работы с GitHub Pages и локальным хостом
 app.use(cors({
   origin: [
     'https://eee666777.github.io',
@@ -25,9 +25,9 @@ app.set('trust proxy', 1);
 const dbPath = process.env.DB_PATH || path.join('/tmp', 'university.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('Ошибка подключения к БД:', err.message);
+    console.error('Помилка подключения до БД:', err.message);
   } else {
-    console.log('Подключено к базе данных SQLite.');
+    console.log('Подключено до базе данных SQLite.');
   }
 });
 
@@ -101,12 +101,7 @@ function validUsername(u) {
   return typeof u === 'string' && /^[a-zA-Zа-яА-ЯіІїЇєЄґҐ0-9_.-]{3,32}$/.test(u);
 }
 
-// Главная страница (проверка статуса сервера)
-app.get('/', (req, res) => {
-  res.send('API Server "Digital University" is running.');
-});
-
-// API Эндпоинты
+// === API ЭНДПОИНТЫ ===
 
 // Регистрация
 app.post('/api/register', async (req, res) => {
@@ -117,7 +112,7 @@ app.post('/api/register', async (req, res) => {
     if (typeof secret !== 'string' || secret.length < 2) return res.status(400).json({ error: 'Введіть секретне слово.' });
 
     db.get('SELECT id FROM users WHERE username = ?', [username], async (err, user) => {
-      if (err) return res.status(500).json({ error: 'Помилка базы данных.' });
+      if (err) return res.status(500).json({ error: 'Помилка бази данных.' });
       if (user) return res.status(409).json({ error: 'Користувач з таким логіном вже існує.' });
 
       const passwordHash = await bcrypt.hash(password, 12);
@@ -295,11 +290,15 @@ app.delete('/api/schedule', requireAuth, (req, res) => {
   );
 });
 
-// Статика и обработка несуществующих маршрутов
-app.use(express.static(path.join(__dirname, 'public')));
+// === РАЗДАЧА СТАТИКИ ИЗ КОРНЯ ===
 
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
+app.use(express.static(__dirname));
+
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Endpoint not found' });
+  }
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
