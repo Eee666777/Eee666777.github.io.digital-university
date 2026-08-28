@@ -8,26 +8,30 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Разрешаем CORS-запросы с вашего фронтенда на GitHub Pages
+// Разрешаем запросы с вашего фронтенда GitHub Pages и локального хоста
 app.use(cors({
-  origin: ['https://eee666777.github.io', 'http://localhost:3000'],
+  origin: [
+    'https://eee666777.github.io',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500'
+  ],
   credentials: true
 }));
 
-// Обязательно для работы сессий через прокси Render (HTTPS)
+// Доверяем прокси-серверу Render для корректной передачи HTTPS-куки
 app.set('trust proxy', 1);
 
-// Инициализация базы данных SQLite
+// Подключаем базу данных SQLite
 const dbPath = process.env.DB_PATH || path.join('/tmp', 'university.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('Помилка подключения до БД:', err.message);
+    console.error('Ошибка подключения к БД:', err.message);
   } else {
-    console.log('Подключено до SQLite БД.');
+    console.log('Подключено к базе данных SQLite.');
   }
 });
 
-// Создание таблиц
+// Создание таблиц при запуске
 db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS users (
@@ -72,16 +76,18 @@ db.serialize(() => {
 
 app.use(express.json({ limit: '100kb' }));
 
-// Настройка сессий для работы между GitHub Pages и Render
+// Настройка авторизационных куки
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'CHANGE_THIS_IN_PRODUCTION',
+  secret: process.env.SESSION_SECRET || 'university_secret_key_change_me',
   resave: false,
   saveUninitialized: false,
   proxy: true,
   cookie: {
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction,
     maxAge: 1000 * 60 * 60 * 24 * 7
   }
 }));
@@ -95,6 +101,8 @@ function validUsername(u) {
   return typeof u === 'string' && /^[a-zA-Zа-яА-ЯіІїЇєЄґҐ0-9_.-]{3,32}$/.test(u);
 }
 
+// === ЭНДПОИНТЫ API ===
+
 // Регистрация
 app.post('/api/register', async (req, res) => {
   try {
@@ -104,7 +112,7 @@ app.post('/api/register', async (req, res) => {
     if (typeof secret !== 'string' || secret.length < 2) return res.status(400).json({ error: 'Введіть секретне слово.' });
 
     db.get('SELECT id FROM users WHERE username = ?', [username], async (err, user) => {
-      if (err) return res.status(500).json({ error: 'Помилка бази даних.' });
+      if (err) return res.status(500).json({ error: 'Помилка базы данных.' });
       if (user) return res.status(409).json({ error: 'Користувач з таким логіном вже існує.' });
 
       const passwordHash = await bcrypt.hash(password, 12);
@@ -123,7 +131,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Логин
+// Авторизация
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body || {};
   db.get('SELECT * FROM users WHERE username = ?', [username || ''], async (err, user) => {
@@ -282,14 +290,4 @@ app.delete('/api/schedule', requireAuth, (req, res) => {
   );
 });
 
-// Раздача статики (если репозиторий содержит папку public)
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, 'public', 'index.html');
-  res.sendFile(indexPath, (err) => {
-    if (err) res.status(404).send('API Server is running.');
-  });
-});
-
-app.listen(PORT, () => console.log(`Digital University running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
