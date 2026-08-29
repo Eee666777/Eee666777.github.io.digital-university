@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital University Portal - Admin & QR Student ID</title>
+<title>Digital University Portal - Admin & QR Student Document</title>
 
 <!-- Сканер QR-кодів -->
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -115,17 +115,29 @@ body.dark {
 .badge-online { background: #dcfce7; color: #15803d; }
 .badge-offline { background: #f3f4f6; color: #6b7280; }
 
-/* STUDENT CARD */
-.student-card-display {
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-    color: white; border-radius: 20px; padding: 25px;
-    box-shadow: 0 15px 30px rgba(30,27,75,0.3); max-width: 450px; margin: 0 auto;
-    position: relative; overflow: hidden;
+/* DIGITAL STUDENT DOCUMENT CARD (DIIA STYLE) */
+.document-card {
+    background: linear-gradient(145deg, #182038 0%, #0d1222 100%);
+    color: #ffffff; border-radius: 24px; padding: 25px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3); max-width: 480px; margin: 0 auto;
+    position: relative; border: 1px solid rgba(255,255,255,0.12);
+    text-align: left; overflow: hidden;
 }
-.student-card-display::after {
-    content: ''; position: absolute; right: -30px; bottom: -30px;
-    width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%;
+.document-card::before {
+    content: ''; position: absolute; top: -50px; right: -50px;
+    width: 180px; height: 180px; background: rgba(77,91,228,0.15); border-radius: 50%; blur: 20px;
 }
+.doc-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 12px; margin-bottom: 18px; }
+.doc-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #8e95b3; font-weight: 700; }
+.doc-badge { background: #22c55e; color: #000; font-weight: 800; font-size: 10px; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; }
+
+.doc-body { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 18px; }
+.doc-avatar { width: 85px; height: 105px; background: #262c42; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 38px; flex-shrink: 0; }
+.doc-fields { flex: 1; }
+.doc-label { font-size: 10px; color: #8e95b3; text-transform: uppercase; margin-top: 6px; }
+.doc-value { font-size: 14px; font-weight: 700; color: #ffffff; line-height: 1.2; }
+
+.doc-footer { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; }
 
 /* MODALS */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(5px); }
@@ -235,49 +247,75 @@ body.dark {
         </div>
     </section>
 
-    <!-- 2. STUDENT CARD (QR SCANNER) -->
+    <!-- 2. STUDENT CARD (DOCUMENT SCANNER & VIEWER) -->
     <section class="page" id="student-card-page">
         <div class="card" style="text-align:center;">
-            <h2>🪪 Студентський квиток</h2>
-            <p style="font-size:12px; color:var(--muted); margin-bottom:20px;">Цифровий ID для підтвердження особи та пропуску</p>
+            <h2>🪪 Електронний Студентський Квиток</h2>
+            <p style="font-size:12px; color:var(--muted); margin-bottom:20px;">Офіційний цифровий документ студента</p>
 
             <!-- Блок сканування -->
             <div id="qrScanBox" style="max-width:400px; margin:0 auto; display:none;">
-                <p style="font-size:13px; margin-bottom:10px; color:var(--primary); font-weight:bold;">Наведіть камеру на QR-код вашого квитка:</p>
+                <p style="font-size:13px; margin-bottom:10px; color:var(--primary); font-weight:bold;">Наведіть камеру на QR-код для зчитування документа:</p>
                 <div id="qr-reader" style="width:100%; border-radius:14px; overflow:hidden;"></div>
                 <button class="btn-primary btn-danger" style="margin-top:15px;" onclick="stopQrScanner()">Скасувати сканування</button>
             </div>
 
-            <!-- Кнопка роздруку/сканування якщо квиток відсутній -->
+            <!-- Блок додавання якщо документ відсутній -->
             <div id="qrStartBox" style="display:none;">
-                <p style="font-size:14px; color:var(--muted); margin-bottom:15px;">У вас ще немає прив'язаного студентського квитка.</p>
-                <button class="btn-primary" onclick="startQrScanner()">📷 Відсканувати QR-код</button>
+                <p style="font-size:14px; color:var(--muted); margin-bottom:15px;">У системі немає збереженого студентського документа.</p>
+                <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                    <button class="btn-primary" onclick="startQrScanner()">📷 Відсканувати QR-код</button>
+                    <button class="btn-primary" style="background:#059669;" onclick="generateDemoDocument()">🧪 Додати демо-документ</button>
+                </div>
             </div>
 
-            <!-- Відображення готового квитка -->
+            <!-- ВІДОБРАЖЕННЯ ЦИФРОВОГО ДОКУМЕНТА -->
             <div id="studentCardDisplay" style="display:none;">
-                <div class="student-card-display">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+                <div class="document-card">
+                    <div class="doc-header">
                         <div>
-                            <div style="font-size:10px; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Цифровий Квиток</div>
-                            <div style="font-size:18px; font-weight:800; margin-top:2px;">Студент ДІЇ / DU</div>
+                            <div class="doc-title">Україна • Студентський квиток</div>
+                            <div style="font-size:12px; font-weight:700; color:#4d5be4;" id="docUnivName">Цифровий Університет</div>
                         </div>
-                        <div style="font-size:24px;">🎓</div>
+                        <div class="doc-badge" id="docStatusBadge">Дійсний</div>
                     </div>
 
-                    <div style="text-align:left; margin-bottom:20px;">
-                        <div style="font-size:11px; opacity:0.7;">Власник:</div>
-                        <div style="font-size:20px; font-weight:bold;" id="cardOwnerName"></div>
+                    <div class="doc-body">
+                        <div class="doc-avatar">🎓</div>
+                        <div class="doc-fields">
+                            <div class="doc-label">Прізвище, Ім'я</div>
+                            <div class="doc-value" id="docFullName">—</div>
+
+                            <div class="doc-label">Факультет</div>
+                            <div class="doc-value" style="font-size:12px;" id="docFaculty">—</div>
+
+                            <div style="display:flex; gap:15px; margin-top:4px;">
+                                <div>
+                                    <div class="doc-label">Група</div>
+                                    <div class="doc-value" style="font-size:12px;" id="docGroup">—</div>
+                                </div>
+                                <div>
+                                    <div class="doc-label">Форма навч.</div>
+                                    <div class="doc-value" style="font-size:12px;" id="docForm">Денна</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div style="text-align:left; background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:12px; word-break:break-all;">
-                        <div style="font-size:10px; opacity:0.7; margin-bottom:2px;">Дані QR-коду ID:</div>
-                        <span id="cardQrData" style="font-family:monospace; font-weight:bold;"></span>
+                    <div class="doc-footer">
+                        <div>
+                            <div class="doc-label" style="margin:0;">Номер документа</div>
+                            <div style="font-size:12px; font-weight:800; font-family:monospace;" id="docNumber">KB-00000000</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="doc-label" style="margin:0;">Дійсний до</div>
+                            <div style="font-size:12px; font-weight:700;" id="docExpiry">30.06.2028</div>
+                        </div>
                     </div>
                 </div>
 
                 <div style="margin-top:20px;">
-                    <button class="btn-primary btn-danger" onclick="deleteStudentCard()">🗑️ Видалити студентський квиток</button>
+                    <button class="btn-primary btn-danger" onclick="deleteStudentCard()">🗑️ Видалити документ</button>
                 </div>
             </div>
 
@@ -372,7 +410,7 @@ body.dark {
                             <th>Роль</th>
                             <th>Статус</th>
                             <th>Останній вхід</th>
-                            <th>Студ. квиток</th>
+                            <th>Студ. документ</th>
                             <th>Розклад</th>
                             <th>Дії з акаунтом</th>
                         </tr>
@@ -568,7 +606,7 @@ function initApp() {
     renderSchedule();
 }
 
-/* STUDENT CARD & QR SCANNER ENGINE */
+/* STUDENT CARD & QR DOCUMENT PARSER */
 function renderStudentCardView() {
     const startBox = document.getElementById('qrStartBox');
     const scanBox = document.getElementById('qrScanBox');
@@ -579,8 +617,17 @@ function renderStudentCardView() {
     if (currentUser.studentCard) {
         startBox.style.display = 'none';
         cardDisplay.style.display = 'block';
-        document.getElementById('cardOwnerName').textContent = currentUser.username;
-        document.getElementById('cardQrData').textContent = currentUser.studentCard;
+
+        let doc = currentUser.studentCard;
+
+        // Автоматичне розпізнавання JSON документа або текстового QR
+        document.getElementById('docFullName').textContent = doc.full_name || currentUser.username;
+        document.getElementById('docUnivName').textContent = doc.university || 'Цифровий Університет';
+        document.getElementById('docFaculty').textContent = doc.faculty || "Факультет Комп'ютерних Наук";
+        document.getElementById('docGroup').textContent = doc.group || "КН-21";
+        document.getElementById('docNumber').textContent = doc.id || ("KB-" + Math.floor(10000000 + Math.random() * 90000000));
+        document.getElementById('docExpiry').textContent = doc.expiry_date || "30.06.2028";
+        document.getElementById('docForm').textContent = doc.form || "Денна";
     } else {
         cardDisplay.style.display = 'none';
         startBox.style.display = 'block';
@@ -596,18 +643,47 @@ function startQrScanner() {
         { facingMode: "environment" }, 
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
-            // Успішно зчитано QR-код
-            currentUser.studentCard = decodedText;
+            // Спроба розпарсити QR-код як JSON документ
+            let parsedDoc = null;
+            try {
+                parsedDoc = JSON.parse(decodedText);
+            } catch(e) {
+                // Якщо звичайний текст - формуємо документ
+                parsedDoc = {
+                    full_name: currentUser.username,
+                    id: decodedText,
+                    university: "Цифровий Університет",
+                    faculty: "Автоматично зчитано з QR",
+                    group: "ID-CARD",
+                    expiry_date: "30.06.2028"
+                };
+            }
+
+            currentUser.studentCard = parsedDoc;
             saveUserData();
             stopQrScanner();
-            alert("QR-код успішно зчитано та збережено в студентський квиток!");
+            alert("Студентський документ успішно зчитано та збережено!");
             renderStudentCardView();
         },
-        (errorMessage) => { /* сканування триває */ }
+        (errorMessage) => { /* процес сканування */ }
     ).catch(err => {
         alert("Не вдалося отримати доступ до камери: " + err);
         stopQrScanner();
     });
+}
+
+function generateDemoDocument() {
+    currentUser.studentCard = {
+        full_name: currentUser.username,
+        university: "Київський Авіаційний Інститут",
+        faculty: "Факультет комп'ютерних наук та технологій",
+        group: "ФКНТ-22",
+        id: "KB-84920482",
+        expiry_date: "30.06.2028",
+        form: "Денна"
+    };
+    saveUserData();
+    renderStudentCardView();
 }
 
 function stopQrScanner() {
@@ -626,7 +702,7 @@ function stopQrScanner() {
 }
 
 function deleteStudentCard() {
-    if (confirm("Ви дійсно бажаєте видалити ваш студентський квиток?")) {
+    if (confirm("Ви дійсно бажаєте видалити збережений студентський документ?")) {
         currentUser.studentCard = null;
         saveUserData();
         renderStudentCardView();
@@ -951,7 +1027,6 @@ function navigateTo(pageId) {
     const target = document.getElementById(pageId);
     if (target) target.classList.add('active');
 
-    // Зупиняємо сканер якщо користувач перейшов на іншу сторінку
     if (pageId !== 'student-card-page') {
         stopQrScanner();
     }
