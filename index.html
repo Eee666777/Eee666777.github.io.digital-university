@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital University Portal - Extended Admin & Telegram Integration</title>
+<title>Digital University Portal - Admin & QR Student ID</title>
+
+<!-- Сканер QR-кодів -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <style>
 :root {
@@ -90,7 +93,7 @@ body.dark {
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-small { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn-danger { background: #ef4444; color: white; border: 0; }
-.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+.btn-danger:hover { background: #dc2626; }
 
 .input-field { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px; font-size: 13px; }
 
@@ -105,8 +108,24 @@ body.dark {
 
 .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-.data-table th, .data-table td { padding: 10px; border-bottom: 1px solid var(--border); }
+.data-table th, .data-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
 .data-table th { background: var(--bg); font-weight: 700; }
+
+.badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+.badge-online { background: #dcfce7; color: #15803d; }
+.badge-offline { background: #f3f4f6; color: #6b7280; }
+
+/* STUDENT CARD */
+.student-card-display {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    color: white; border-radius: 20px; padding: 25px;
+    box-shadow: 0 15px 30px rgba(30,27,75,0.3); max-width: 450px; margin: 0 auto;
+    position: relative; overflow: hidden;
+}
+.student-card-display::after {
+    content: ''; position: absolute; right: -30px; bottom: -30px;
+    width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%;
+}
 
 /* MODALS */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(5px); }
@@ -116,9 +135,9 @@ body.dark {
 .mobile-nav {
     display: none; position: fixed; bottom: 0; left: 0; right: 0;
     height: 65px; background: var(--card); border-top: 1px solid var(--border);
-    z-index: 1000; justify-content: space-around; align-items: center; padding: 0 10px;
+    z-index: 1000; justify-content: space-around; align-items: center; padding: 0 5px;
 }
-.mobile-nav-item { display: flex; flex-direction: column; align-items: center; color: var(--muted); border: 0; background: none; font-size: 11px; font-weight: 600; gap: 3px; cursor: pointer; flex: 1; }
+.mobile-nav-item { display: flex; flex-direction: column; align-items: center; color: var(--muted); border: 0; background: none; font-size: 10px; font-weight: 600; gap: 3px; cursor: pointer; flex: 1; }
 .mobile-nav-item.active { color: var(--primary); }
 
 @media(max-width: 768px) {
@@ -154,7 +173,7 @@ body.dark {
             <input type="text" id="regUser" class="input-field" placeholder="Логін">
             <input type="password" id="regPass" class="input-field" placeholder="Пароль">
             <input type="text" id="regSecret" class="input-field" placeholder="Секретне кодове слово">
-            <button class="btn-primary" style="width: 100%;" onclick="handleRegister()">Зареєструватися</button>
+            <button class="btn-primary" style="width: 100%; margin-top: 5px;" onclick="handleRegister()">Зареєструватися</button>
         </div>
 
         <div id="formForgot" style="display: none;">
@@ -177,6 +196,7 @@ body.dark {
     </div>
     <nav class="nav">
         <button class="nav-item active" data-page="home">🏠 Головна сторінка</button>
+        <button class="nav-item" data-page="student-card-page">🪪 Студ. квиток</button>
         <button class="nav-item" data-page="tasks-page">📝 Завдання</button>
         <button class="nav-item" data-page="schedule">📚 Розклад</button>
         <button class="nav-item" data-page="settings-page">⚙️ Налаштування</button>
@@ -198,17 +218,15 @@ body.dark {
         </div>
     </header>
 
-    <!-- 1. HOME (ГОЛОВНА СИСТЕМА) -->
+    <!-- 1. HOME -->
     <section class="page active" id="home">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-            <!-- Пари на сьогодні -->
             <div class="card">
                 <h3>📚 Пари на сьогодні</h3>
                 <p style="font-size:12px; color:var(--muted); margin-bottom:15px;" id="todayScheduleTitle">Заняття на поточний день:</p>
                 <div id="todayScheduleContainer"></div>
             </div>
 
-            <!-- Актуальні завдання -->
             <div class="card">
                 <h3>📝 Поточні завдання</h3>
                 <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Список активних завдань з термінами виконання:</p>
@@ -217,7 +235,56 @@ body.dark {
         </div>
     </section>
 
-    <!-- 2. TASKS (ЗАВДАННЯ З ДАТАМИ ТА ЧАСОМ) -->
+    <!-- 2. STUDENT CARD (QR SCANNER) -->
+    <section class="page" id="student-card-page">
+        <div class="card" style="text-align:center;">
+            <h2>🪪 Студентський квиток</h2>
+            <p style="font-size:12px; color:var(--muted); margin-bottom:20px;">Цифровий ID для підтвердження особи та пропуску</p>
+
+            <!-- Блок сканування -->
+            <div id="qrScanBox" style="max-width:400px; margin:0 auto; display:none;">
+                <p style="font-size:13px; margin-bottom:10px; color:var(--primary); font-weight:bold;">Наведіть камеру на QR-код вашого квитка:</p>
+                <div id="qr-reader" style="width:100%; border-radius:14px; overflow:hidden;"></div>
+                <button class="btn-primary btn-danger" style="margin-top:15px;" onclick="stopQrScanner()">Скасувати сканування</button>
+            </div>
+
+            <!-- Кнопка роздруку/сканування якщо квиток відсутній -->
+            <div id="qrStartBox" style="display:none;">
+                <p style="font-size:14px; color:var(--muted); margin-bottom:15px;">У вас ще немає прив'язаного студентського квитка.</p>
+                <button class="btn-primary" onclick="startQrScanner()">📷 Відсканувати QR-код</button>
+            </div>
+
+            <!-- Відображення готового квитка -->
+            <div id="studentCardDisplay" style="display:none;">
+                <div class="student-card-display">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+                        <div>
+                            <div style="font-size:10px; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Цифровий Квиток</div>
+                            <div style="font-size:18px; font-weight:800; margin-top:2px;">Студент ДІЇ / DU</div>
+                        </div>
+                        <div style="font-size:24px;">🎓</div>
+                    </div>
+
+                    <div style="text-align:left; margin-bottom:20px;">
+                        <div style="font-size:11px; opacity:0.7;">Власник:</div>
+                        <div style="font-size:20px; font-weight:bold;" id="cardOwnerName"></div>
+                    </div>
+
+                    <div style="text-align:left; background:rgba(255,255,255,0.1); padding:12px; border-radius:10px; font-size:12px; word-break:break-all;">
+                        <div style="font-size:10px; opacity:0.7; margin-bottom:2px;">Дані QR-коду ID:</div>
+                        <span id="cardQrData" style="font-family:monospace; font-weight:bold;"></span>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px;">
+                    <button class="btn-primary btn-danger" onclick="deleteStudentCard()">🗑️ Видалити студентський квиток</button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 3. TASKS -->
     <section class="page" id="tasks-page">
         <div class="card">
             <h2>📝 Мої Завдання</h2>
@@ -244,7 +311,7 @@ body.dark {
         </div>
     </section>
 
-    <!-- 3. SCHEDULE -->
+    <!-- 4. SCHEDULE -->
     <section class="page" id="schedule">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
@@ -258,7 +325,7 @@ body.dark {
         </div>
     </section>
 
-    <!-- 4. SETTINGS -->
+    <!-- 5. SETTINGS -->
     <section class="page" id="settings-page">
         <div class="card">
             <h2>⚙️ Налаштування профілю</h2>
@@ -272,7 +339,7 @@ body.dark {
 
                 <div id="adminAccessCard" style="display:none; background:rgba(77,91,228,0.1); border:1px solid var(--primary); padding:15px; border-radius:12px; margin-bottom:20px;">
                     <h4 style="color:var(--primary);">🛡️ Права адміністратора активні</h4>
-                    <p style="font-size:12px; margin-top:4px;">Вам доступне редагування розкладів усіх студентів.</p>
+                    <p style="font-size:12px; margin-top:4px;">Вам доступне розширене управління користувачами системи.</p>
                     <button class="btn-primary" style="margin-top:10px;" onclick="navigateTo('admin-page')">Перейти до Панелі Адміна</button>
                 </div>
 
@@ -286,13 +353,17 @@ body.dark {
         </div>
     </section>
 
-    <!-- 5. ADMIN PANEL -->
+    <!-- 6. ADMIN PANEL -->
     <section class="page" id="admin-page">
         <div class="card">
             <h2>🛡️ Панель Адміністратора</h2>
-            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Управління користувачами та редагування студентських розкладів</p>
+            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Управління всіма зареєстрованими користувачами системи</p>
 
-            <h4>👥 Список користувачів системи</h4>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h4>👥 Усі користувачі системи (<span id="totalUsersCount">0</span>)</h4>
+                <button class="btn-primary btn-small" onclick="loadAdminTable()">🔄 Оновити список</button>
+            </div>
+
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
@@ -300,8 +371,10 @@ body.dark {
                             <th>Логін</th>
                             <th>Роль</th>
                             <th>Статус</th>
-                            <th>Управління розкладом</th>
-                            <th>Дії</th>
+                            <th>Останній вхід</th>
+                            <th>Студ. квиток</th>
+                            <th>Розклад</th>
+                            <th>Дії з акаунтом</th>
                         </tr>
                     </thead>
                     <tbody id="adminUsersTable"></tbody>
@@ -350,6 +423,7 @@ body.dark {
 <!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-nav">
     <button class="mobile-nav-item active" data-page="home"><span>🏠</span><span>Головна</span></button>
+    <button class="mobile-nav-item" data-page="student-card-page"><span>🪪</span><span>Квиток</span></button>
     <button class="mobile-nav-item" data-page="schedule"><span>📚</span><span>Розклад</span></button>
     <button class="mobile-nav-item" data-page="tasks-page"><span>📝</span><span>Завдання</span></button>
     <button class="mobile-nav-item" onclick="openTelegramApp()"><span>✈️</span><span>Телеграм</span></button>
@@ -365,14 +439,16 @@ const DB = {
     setCurrentUser: (user) => localStorage.setItem('app_current_user', JSON.stringify(user))
 };
 
-// Створення дефолтного адміна
+// Дефолтна ініціалізація адміна
 if (DB.getUsers().length === 0) {
     DB.setUsers([{ 
         username: 'admin', 
         password: '123', 
         secret: 'admin', 
         isAdmin: true, 
-        blocked: false, 
+        blocked: false,
+        lastLogin: new Date().toLocaleString('uk-UA'),
+        studentCard: null,
         tasks: [], 
         schedule: { week1: {}, week2: {} } 
     }]);
@@ -380,6 +456,7 @@ if (DB.getUsers().length === 0) {
 
 let currentUser = DB.getCurrentUser();
 const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
+let html5QrCode = null;
 
 /* AUTH LOGIC */
 function switchAuthTab(type) {
@@ -398,11 +475,23 @@ function handleRegister() {
     if (!username || !password || !secret) return alert("Заповніть усі поля!");
 
     let users = DB.getUsers();
-    if (users.find(u => u.username === username)) return alert("Логін зайнятий!");
+    if (users.find(u => u.username === username)) return alert("Користувач із таким логіном вже існує!");
 
-    users.push({ username, password, secret, isAdmin: false, blocked: false, tasks: [], schedule: { week1: {}, week2: {} } });
+    const newUser = { 
+        username, 
+        password, 
+        secret, 
+        isAdmin: false, 
+        blocked: false, 
+        lastLogin: 'Ще не входив',
+        studentCard: null,
+        tasks: [], 
+        schedule: { week1: {}, week2: {} } 
+    };
+
+    users.push(newUser);
     DB.setUsers(users);
-    alert("Реєстрація успішна!");
+    alert("Реєстрація успішна! Тепер увійдіть у систему.");
     switchAuthTab('login');
 }
 
@@ -414,10 +503,13 @@ function handleLogin() {
     let user = users.find(u => u.username === username && u.password === password);
 
     if (!user) return alert("Невірний логін або пароль!");
-    if (user.blocked) return alert("Акаунт заблоковано!");
+    if (user.blocked) return alert("Ваш акаунт заблоковано адміністратором!");
 
+    user.lastLogin = new Date().toLocaleString('uk-UA');
     DB.setCurrentUser(user);
     currentUser = user;
+    saveUserData();
+
     initApp();
 }
 
@@ -428,15 +520,16 @@ function handleResetPassword() {
 
     let users = DB.getUsers();
     let user = users.find(u => u.username === username && u.secret === secret);
-    if (!user) return alert("Невірні дані!");
+    if (!user) return alert("Перевірте правильності логіна та секретного слова!");
 
     user.password = newPassword;
     DB.setUsers(users);
-    alert("Пароль змінено!");
+    alert("Пароль успішно змінено!");
     switchAuthTab('login');
 }
 
 function handleLogout() {
+    stopQrScanner();
     localStorage.removeItem('app_current_user');
     currentUser = null;
     document.getElementById('authOverlay').style.display = 'flex';
@@ -470,39 +563,101 @@ function initApp() {
     }
 
     renderHomeDashboard();
+    renderStudentCardView();
     renderTasks();
     renderSchedule();
 }
 
-/* DASHBOARD LOGIC (ГОЛОВНА СТОРІНКА) */
+/* STUDENT CARD & QR SCANNER ENGINE */
+function renderStudentCardView() {
+    const startBox = document.getElementById('qrStartBox');
+    const scanBox = document.getElementById('qrScanBox');
+    const cardDisplay = document.getElementById('studentCardDisplay');
+
+    scanBox.style.display = 'none';
+
+    if (currentUser.studentCard) {
+        startBox.style.display = 'none';
+        cardDisplay.style.display = 'block';
+        document.getElementById('cardOwnerName').textContent = currentUser.username;
+        document.getElementById('cardQrData').textContent = currentUser.studentCard;
+    } else {
+        cardDisplay.style.display = 'none';
+        startBox.style.display = 'block';
+    }
+}
+
+function startQrScanner() {
+    document.getElementById('qrStartBox').style.display = 'none';
+    document.getElementById('qrScanBox').style.display = 'block';
+
+    html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+        { facingMode: "environment" }, 
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+            // Успішно зчитано QR-код
+            currentUser.studentCard = decodedText;
+            saveUserData();
+            stopQrScanner();
+            alert("QR-код успішно зчитано та збережено в студентський квиток!");
+            renderStudentCardView();
+        },
+        (errorMessage) => { /* сканування триває */ }
+    ).catch(err => {
+        alert("Не вдалося отримати доступ до камери: " + err);
+        stopQrScanner();
+    });
+}
+
+function stopQrScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            html5QrCode = null;
+            renderStudentCardView();
+        }).catch(() => {
+            html5QrCode = null;
+            renderStudentCardView();
+        });
+    } else {
+        renderStudentCardView();
+    }
+}
+
+function deleteStudentCard() {
+    if (confirm("Ви дійсно бажаєте видалити ваш студентський квиток?")) {
+        currentUser.studentCard = null;
+        saveUserData();
+        renderStudentCardView();
+    }
+}
+
+/* DASHBOARD LOGIC */
 function renderHomeDashboard() {
-    // 1. Завдання на головній
     const homeTasksContainer = document.getElementById('homeTasksContainer');
     const tasks = currentUser.tasks || [];
     if (!tasks.length) {
         homeTasksContainer.innerHTML = '<p style="font-size:12px; color:var(--muted);">Немає активних завдань</p>';
     } else {
-        homeTasksContainer.innerHTML = tasks.map((t, i) => `
+        homeTasksContainer.innerHTML = tasks.map(t => `
             <div class="task-card-item ${t.done ? 'completed':''}">
                 <div style="font-weight:bold;">${t.title}</div>
                 <div class="task-dates">
-                    <span>🟢 Старт: ${t.start ? formatDate(t.start) : 'Не вказано'}</span>
-                    <span>🔴 Фініш: ${t.end ? formatDate(t.end) : 'Не вказано'}</span>
+                    <span>🟢 Старт: ${t.start ? formatDate(t.start) : '—'}</span>
+                    <span>🔴 Фініш: ${t.end ? formatDate(t.end) : '—'}</span>
                 </div>
             </div>
         `).join('');
     }
 
-    // 2. Пари на сьогодні на головній
     const todayContainer = document.getElementById('todayScheduleContainer');
     const now = new Date();
-    let dayIdx = now.getDay() - 1; // 0 - Пн, 4 - Пт
-    if (dayIdx < 0 || dayIdx > 5) dayIdx = 0; // Якщо неділя — показувати понеділок
+    let dayIdx = now.getDay() - 1; 
+    if (dayIdx < 0 || dayIdx > 5) dayIdx = 0; 
 
-    const currentWeekKey = 'week1'; // За замовчуванням I тиждень
     document.getElementById('todayScheduleTitle').textContent = `Заняття на ${days[dayIdx]}:`;
-
-    const weekSchedule = currentUser.schedule ? currentUser.schedule[currentWeekKey] : {};
+    const weekSchedule = currentUser.schedule ? currentUser.schedule['week1'] : {};
     const todayLessons = weekSchedule ? (weekSchedule[dayIdx] || []) : [];
 
     if (!todayLessons.length) {
@@ -638,25 +793,36 @@ function deleteLesson(dayIdx, lessonIdx) {
     renderHomeDashboard();
 }
 
-/* ADMIN PANEL ENGINE & EDITING USER SCHEDULES */
+/* ADMIN PANEL ENGINE */
 let editingUserUsername = null;
 
 function loadAdminTable() {
     const tbody = document.getElementById('adminUsersTable');
     const users = DB.getUsers();
-    tbody.innerHTML = users.map(u => `
+    document.getElementById('totalUsersCount').textContent = users.length;
+
+    tbody.innerHTML = users.map(u => {
+        const isSelf = u.username === currentUser.username;
+        const hasCard = u.studentCard ? '🟢 Додано' : '🔴 Відсутній';
+
+        return `
         <tr>
-            <td><b>${u.username}</b></td>
+            <td><b>${u.username}</b> ${isSelf ? '<small style="color:var(--primary);">(Ви)</small>':''}</td>
             <td>${u.isAdmin ? '<span style="color:var(--primary); font-weight:bold;">Admin</span>' : 'Student'}</td>
-            <td><span style="color:${u.blocked ? 'red':'green'}">${u.blocked ? 'Заблоковано':'Активний'}</span></td>
+            <td><span class="badge ${u.blocked ? 'badge-offline':'badge-online'}">${u.blocked ? 'Заблоковано':'Активний'}</span></td>
+            <td><small>${u.lastLogin || '—'}</small></td>
+            <td><small>${hasCard}</small></td>
             <td>
-                <button class="btn-primary btn-small" onclick="openAdminScheduleModal('${u.username}')">📅 Редагувати розклад</button>
+                <button class="btn-primary btn-small" onclick="openAdminScheduleModal('${u.username}')">📅 Розклад</button>
             </td>
             <td>
-                ${!u.isAdmin ? `<button class="btn-primary btn-small ${u.blocked ? '':'btn-danger'}" onclick="toggleBlock('${u.username}')">${u.blocked ? 'Розблокувати':'Заблокувати'}</button>` : ''}
+                ${!u.isAdmin ? `
+                    <button class="btn-primary btn-small ${u.blocked ? '':'btn-danger'}" onclick="toggleBlock('${u.username}')">${u.blocked ? 'Розблокувати':'Блок'}</button>
+                    <button class="btn-primary btn-small btn-danger" style="margin-left:4px;" onclick="deleteUserByAdmin('${u.username}')">🗑️</button>
+                ` : '<small style="color:var(--muted)">—</small>'}
             </td>
-        </tr>
-    `).join('');
+        </tr>`;
+    }).join('');
 }
 
 function toggleBlock(username) {
@@ -669,9 +835,18 @@ function toggleBlock(username) {
     }
 }
 
+function deleteUserByAdmin(username) {
+    if (confirm(`Ви дійсно бажаєте видалити користувача ${username}?`)) {
+        let users = DB.getUsers();
+        users = users.filter(u => u.username !== username);
+        DB.setUsers(users);
+        loadAdminTable();
+    }
+}
+
 function openAdminScheduleModal(username) {
     editingUserUsername = username;
-    document.getElementById('adminModalTitle').textContent = `Розклад користувача: ${username}`;
+    document.getElementById('adminModalTitle').textContent = `Розклад: ${username}`;
     document.getElementById('adminScheduleModal').style.display = 'flex';
     renderAdminModalSchedule();
 }
@@ -698,9 +873,7 @@ function renderAdminModalSchedule() {
 
     listContainer.innerHTML = lessons.map((l, i) => `
         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:8px; border-radius:6px; margin-bottom:5px; font-size:12px;">
-            <div>
-                <strong>${l.time}</strong> — ${l.name}
-            </div>
+            <div><strong>${l.time}</strong> — ${l.name}</div>
             <button style="border:0; background:none; color:red; cursor:pointer;" onclick="adminDeleteLesson(${i})">🗑️</button>
         </div>
     `).join('');
@@ -724,7 +897,6 @@ function adminSaveLesson() {
     u.schedule[week][day].push({ name, time });
     DB.setUsers(users);
 
-    // Якщо адмін редагує свій розклад — оновлюємо поточну сесію
     if (currentUser.username === u.username) {
         currentUser = u;
         DB.setCurrentUser(u);
@@ -755,12 +927,10 @@ function adminDeleteLesson(index) {
     renderAdminModalSchedule();
 }
 
-/* TELEGRAM & OTHER UTILS */
+/* TELEGRAM & UTILS */
 function openTelegramApp() {
     window.location.href = "tg://resolve";
-    setTimeout(() => {
-        window.open("https://t.me", "_blank");
-    }, 500);
+    setTimeout(() => { window.open("https://t.me", "_blank"); }, 500);
 }
 
 function updateSecretWord() {
@@ -780,6 +950,11 @@ function navigateTo(pageId) {
     });
     const target = document.getElementById(pageId);
     if (target) target.classList.add('active');
+
+    // Зупиняємо сканер якщо користувач перейшов на іншу сторінку
+    if (pageId !== 'student-card-page') {
+        stopQrScanner();
+    }
 }
 
 document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(btn => {
