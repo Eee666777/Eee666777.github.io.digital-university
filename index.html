@@ -3,443 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Інтерактивний каталог та PDF-переглядач зі сканером</title>
-
-  <!-- PDF.js CSS & JS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-  <!-- Html5Qrcode для сканування штрихкодів -->
+  <title>Сканер штрихкодів</title>
+  <!-- Підключення бібліотеки Html5Qrcode -->
   <script src="https://unpkg.com/html5-qrcode"></script>
-
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f4f6f9;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 500px;
+      margin: 0 auto;
     }
-
-    /* Верхня панель інструментів */
-    header {
-      background-color: #1a252f;
-      color: #fff;
-      padding: 12px 20px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 10;
+    .scanner-card {
+      border: 1px solid #ccc;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-
-    .brand {
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-
-    .controls-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    input[type="text"], input[type="file"] {
-      padding: 7px 12px;
-      border: 1px solid #455a64;
-      border-radius: 4px;
-      background-color: #2c3e50;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-
-    input[type="text"]::placeholder {
-      color: #b0bec5;
-    }
-
-    input[type="text"]:focus {
-      border-color: #3498db;
-    }
-
-    button {
-      padding: 7px 15px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.2s;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-    }
-
-    button.secondary {
-      background-color: #2ecc71;
-    }
-
-    button.secondary:hover {
-      background-color: #27ae60;
-    }
-
-    button.danger {
-      background-color: #e74c3c;
-    }
-
-    button.danger:hover {
-      background-color: #c0392b;
-    }
-
-    /* Основний контент */
-    main {
-      display: flex;
-      flex: 1;
-      height: calc(100vh - 60px);
-      overflow: hidden;
-    }
-
-    /* Ліва панель: Пошук та сканування */
-    sidebar {
-      width: 340px;
-      background-color: #fff;
-      border-right: 1px solid #e0e0e0;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      overflow-y: auto;
-    }
-
-    .panel-box {
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 12px;
-      background-color: #f8fafc;
-    }
-
-    .panel-box h3 {
-      font-size: 0.95rem;
-      margin-bottom: 10px;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
     #reader {
       width: 100%;
-      margin-top: 10px;
-      border-radius: 4px;
-      overflow: hidden;
+      margin-top: 15px;
     }
-
-    /* Правий блок: PDF переглядач */
-    #viewer-container {
-      flex: 1;
-      background-color: #525659;
-      overflow: auto;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
+    .input-group {
+      margin-bottom: 15px;
     }
-
-    #pdf-render-wrapper {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      background-color: #fff;
-      position: relative;
-    }
-
-    canvas {
+    label {
       display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
     }
-
-    /* Індикатори та підказки */
-    .status-msg {
-      font-size: 0.85rem;
-      color: #64748b;
-      margin-top: 5px;
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 16px;
     }
-
-    .pagination-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .page-info {
+    button {
+      padding: 10px 15px;
       font-size: 14px;
-      color: #ecf0f1;
+      cursor: pointer;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
+    }
+    button.stop-btn {
+      background-color: #dc3545;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">PDF Viewer & Scanner</div>
+<div class="scanner-card">
+  <h2>Зчитування пластикових карт / штрихкодів</h2>
+  
+  <div class="input-group">
+    <label for="barcode-input">Код картки або штрихкод:</label>
+    <input type="text" id="barcode-input" placeholder="Скануйте або введіть вручну..." autofocus>
+  </div>
+
+  <button id="toggle-scan-btn">Увімкнути камеру для сканування</button>
+
+  <!-- Контейнер для відеопотоку камери -->
+  <div id="reader" style="display: none;"></div>
+</div>
+
+<script>
+  const barcodeInput = document.getElementById('barcode-input');
+  const toggleBtn = document.getElementById('toggle-scan-btn');
+  const readerDiv = document.getElementById('reader');
+  
+  let html5QrcodeScanner = null;
+  let isScanning = false;
+
+  // 1. Обробка фізичного/USB сканера штрихкодів (працює як ввід клавіатури)
+  barcodeInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const code = this.value.trim();
+      if (code) {
+        onCodeScanned(code);
+      }
+    }
+  });
+
+  // 2. Функція після успішного зчитування
+  function onCodeScanned(decodedText) {
+    barcodeInput.value = decodedText;
+    console.log("Зчитано код:", decodedText);
+
+    // Додаткові дії (наприклад, автоматичний пошук у базі даних)
+    // processCardData(decodedText);
+
+    if (isScanning) {
+      stopCameraScanner();
+    }
+  }
+
+  // 3. Управління сканером через камеру
+  toggleBtn.addEventListener('click', () => {
+    if (isScanning) {
+      stopCameraScanner();
+    } else {
+      startCameraScanner();
+    }
+  });
+
+  function startCameraScanner() {
+    readerDiv.style.display = 'block';
+    toggleBtn.textContent = 'Вимкнути камеру';
+    toggleBtn.classList.add('stop-btn');
+    isScanning = true;
+
+    html5QrcodeScanner = new Html5Qrcode("reader");
     
-    <div class="controls-group">
-      <input type="file" id="pdf-file-input" accept="application/pdf">
-      
-      <div class="pagination-controls">
-        <button id="prev-page">◄</button>
-        <span class="page-info">Стор. <span id="page-num">0</span> / <span id="page-count">0</span></span>
-        <button id="next-page">►</button>
-      </div>
+    // Підтримка різних форматів штрихкодів (EAN-13, CODE-128, QR тощо)
+    const config = { 
+      fps: 10, 
+      qrbox: { width: 250, height: 150 },
+      formatsToSupport: [ 
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.QR_CODE
+      ]
+    };
 
-      <button id="zoom-in">+</button>
-      <button id="zoom-out">-</button>
-      <button id="print-btn" class="secondary">Друк PDF</button>
-    </div>
-  </header>
-
-  <main>
-    <!-- Панель керування сканером та пошуком -->
-    <sidebar>
-      <!-- Скaнер штрихкодів -->
-      <div class="panel-box">
-        <h3>Сканер пластикових карт</h3>
-        <input type="text" id="barcode-input" placeholder="Зчитайте або введіть код..." autofocus>
-        <div class="status-msg">Підтримує USB-сканери та зчитування через камеру.</div>
-        <button id="toggle-camera-btn" style="width: 100%; margin-top: 10px;">Увімкнути камеру</button>
-        <div id="reader"></div>
-      </div>
-
-      <!-- Пошук у документах / каталозі -->
-      <div class="panel-box">
-        <h3>Пошук у PDF</h3>
-        <input type="text" id="pdf-search-input" placeholder="Введіть текст для пошуку...">
-        <button id="pdf-search-btn" style="width: 100%; margin-top: 8px;">Шукати</button>
-        <div id="search-results" class="status-msg"></div>
-      </div>
-    </sidebar>
-
-    <!-- Візуалізатор PDF -->
-    <div id="viewer-container">
-      <div id="pdf-render-wrapper">
-        <canvas id="pdf-canvas"></canvas>
-      </div>
-    </div>
-  </main>
-
-  <script>
-    // Встановлення Worker для PDF.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-    // Змінні стану PDF
-    let pdfDoc = null;
-    let pageNum = 1;
-    let pageRendering = false;
-    let pageNumPending = null;
-    let scale = 1.2;
-    const canvas = document.getElementById('pdf-canvas');
-    const ctx = canvas.getContext('2d');
-
-    // 1. Завантаження та відображення PDF
-    function renderPage(num) {
-      pageRendering = true;
-      pdfDoc.getPage(num).then(page => {
-        const viewport = page.getViewport({ scale: scale });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        const renderContext = {
-          canvasContext: ctx,
-          viewport: viewport
-        };
-        const renderTask = page.render(renderContext);
-
-        renderTask.promise.then(() => {
-          pageRendering = false;
-          if (pageNumPending !== null) {
-            renderPage(pageNumPending);
-            pageNumPending = null;
-          }
-        });
-      });
-
-      document.getElementById('page-num').textContent = num;
-    }
-
-    function queueRenderPage(num) {
-      if (pageRendering) {
-        pageNumPending = num;
-      } else {
-        renderPage(num);
+    html5QrcodeScanner.start(
+      { facingMode: "environment" }, // Використовувати задню камеру
+      config,
+      (decodedText) => onCodeScanned(decodedText),
+      (errorMessage) => {
+        // Помилки сканування кадру можна ігнорувати
       }
-    }
-
-    function onPrevPage() {
-      if (pageNum <= 1) return;
-      pageNum--;
-      queueRenderPage(pageNum);
-    }
-
-    function onNextPage() {
-      if (pageNum >= pdfDoc.numPages) return;
-      pageNum++;
-      queueRenderPage(pageNum);
-    }
-
-    document.getElementById('prev-page').addEventListener('click', onPrevPage);
-    document.getElementById('next-page').addEventListener('click', onNextPage);
-
-    document.getElementById('zoom-in').addEventListener('click', () => {
-      scale += 0.2;
-      if (pdfDoc) renderPage(pageNum);
+    ).catch(err => {
+      console.error("Помилка запуску камери:", err);
+      stopCameraScanner();
     });
+  }
 
-    document.getElementById('zoom-out').addEventListener('click', () => {
-      if (scale <= 0.4) return;
-      scale -= 0.2;
-      if (pdfDoc) renderPage(pageNum);
-    });
-
-    // Вибір локального файлу PDF
-    document.getElementById('pdf-file-input').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file && file.type === "application/pdf") {
-        const fileReader = new FileReader();
-        fileReader.onload = function() {
-          const typedarray = new Uint8Array(this.result);
-          pdfjsLib.getDocument(typedarray).promise.then(pdfDoc_ => {
-            pdfDoc = pdfDoc_;
-            document.getElementById('page-count').textContent = pdfDoc.numPages;
-            pageNum = 1;
-            renderPage(pageNum);
-          });
-        };
-        fileReader.readAsArrayBuffer(file);
-      }
-    });
-
-    // Друк PDF
-    document.getElementById('print-btn').addEventListener('click', () => {
-      window.print();
-    });
-
-    // 2. Пошук по тексту PDF
-    document.getElementById('pdf-search-btn').addEventListener('click', async () => {
-      const query = document.getElementById('pdf-search-input').value.trim().toLowerCase();
-      const resultsDiv = document.getElementById('search-results');
-      
-      if (!pdfDoc || !query) return;
-
-      resultsDiv.textContent = "Пошук...";
-      let foundPages = [];
-
-      for (let i = 1; i <= pdfDoc.numPages; i++) {
-        const page = await pdfDoc.getPage(i);
-        const textContent = await page.getTextContent();
-        const text = textContent.items.map(item => item.str).join(' ').toLowerCase();
-
-        if (text.includes(query)) {
-          foundPages.push(i);
-        }
-      }
-
-      if (foundPages.length > 0) {
-        resultsDiv.textContent = `Знайдено на сторінках: ${foundPages.join(', ')}`;
-        pageNum = foundPages[0];
-        renderPage(pageNum);
-      } else {
-        resultsDiv.textContent = "Збігів не знайдено.";
-      }
-    });
-
-    // 3. Інтеграція сканера штрихкодів
-    const barcodeInput = document.getElementById('barcode-input');
-    const toggleCameraBtn = document.getElementById('toggle-camera-btn');
-    const readerDiv = document.getElementById('reader');
-    let html5QrcodeScanner = null;
-    let isCameraActive = false;
-
-    // Зчитування з USB-сканера (Enter в кінці зчитування)
-    barcodeInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const code = this.value.trim();
-        if (code) {
-          handleScannedCode(code);
-        }
-      }
-    });
-
-    function handleScannedCode(code) {
-      barcodeInput.value = code;
-      
-      // Автоматичне підставлення штрихкоду в пошук та запуск пошуку в PDF
-      document.getElementById('pdf-search-input').value = code;
-      document.getElementById('pdf-search-btn').click();
-
-      if (isCameraActive) {
-        stopCamera();
-      }
+  function stopCameraScanner() {
+    if (html5QrcodeScanner) {
+      html5QrcodeScanner.stop().then(() => {
+        html5QrcodeScanner.clear();
+        readerDiv.style.display = 'none';
+        toggleBtn.textContent = 'Увімкнути камеру для сканування';
+        toggleBtn.classList.remove('stop-btn');
+        isScanning = false;
+      }).catch(err => console.error(err));
     }
+  }
+</script>
 
-    // Управління вебкамерою
-    toggleCameraBtn.addEventListener('click', () => {
-      if (isCameraActive) {
-        stopCamera();
-      } else {
-        startCamera();
-      }
-    });
-
-    function startCamera() {
-      readerDiv.style.display = 'block';
-      toggleCameraBtn.textContent = 'Зупинити камеру';
-      toggleCameraBtn.classList.add('danger');
-      isCameraActive = true;
-
-      html5QrcodeScanner = new Html5Qrcode("reader");
-      
-      const config = { 
-        fps: 10, 
-        qrbox: { width: 220, height: 140 },
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.QR_CODE
-        ]
-      };
-
-      html5QrcodeScanner.start(
-        { facingMode: "environment" },
-        config,
-        (decodedText) => handleScannedCode(decodedText),
-        () => {} // Ігнорувати проміжні помилки сканування кадрів
-      ).catch(err => {
-        console.error("Помилка камери:", err);
-        stopCamera();
-      });
-    }
-
-    function stopCamera() {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().then(() => {
-          html5QrcodeScanner.clear();
-          readerDiv.style.display = 'none';
-          toggleCameraBtn.textContent = 'Увімкнути камеру';
-          toggleCameraBtn.classList.remove('danger');
-          isCameraActive = false;
-        }).catch(err => console.error(err));
-      }
-    }
-  </script>
 </body>
 </html>
