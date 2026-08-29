@@ -1,62 +1,53 @@
-function handleLogin() {
-    const usernameInput = document.getElementById('loginUser');
-    const passwordInput = document.getElementById('loginPass');
+const express = require('express');
+const path = require('path');
 
-    if (!usernameInput || !passwordInput) return;
+const app = express();
 
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
+// Динамічний порт для хостингу (Render, Railway тощо)
+const PORT = process.env.PORT || 3000;
 
-    if (!username || !password) {
-        alert("Будь ласка, введіть логін та пароль!");
-        return;
-    }
+// Middleware для обробки JSON та URL-encoded даних
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-    let users = DB.getUsers();
-    let user = users.find(u => u.username === username && u.password === password);
+// Обслуговування статичних файлів із папки public (якщо є)
+app.use(express.static(path.join(__dirname, 'public')));
 
-    if (!user) {
-        alert("Невірний логін або пароль! Перевірте дані або зареєструйтесь.");
-        return;
-    }
-
-    if (user.blocked) {
-        alert("Ваш акаунт заблоковано!");
-        return;
-    }
-
-    user.lastLogin = new Date().toLocaleString('uk-UA');
-    currentUser = user;
-    saveUserData();
-
-    initApp();
-}
-
-function initApp() {
-    const overlay = document.getElementById('authOverlay');
-    if (!currentUser) {
-        if (overlay) overlay.style.display = 'flex';
-        return;
-    }
+// Головний маршрут: віддає index.html
+app.get('/', (req, res) => {
+    const indexPath = path.join(__dirname, 'public', 'index.html');
     
-    if (overlay) overlay.style.display = 'none';
+    // Якщо файл index.html існує у папці public, відправляємо його
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            // Якщо index.html відсутній у папці public, шукаємо у корінні
+            res.sendFile(path.join(__dirname, 'index.html'), (err2) => {
+                if (err2) {
+                    // Якщо HTML-файлу немає, віддаємо текстове вітання
+                    res.status(200).send('<h1>Server is running!</h1><p>Додайте index.html у проєкт.</p>');
+                }
+            });
+        }
+    });
+});
 
-    const userLabel = document.getElementById('currentUserLabel');
-    if (userLabel) {
-        userLabel.textContent = currentUser.username + (currentUser.isAdmin ? ' (Admin)' : '');
-    }
+// Ендпоінт перевірки стану сервера (Health Check)
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date() });
+});
 
-    if (currentUser.isAdmin) {
-        document.getElementById('adminSidebarBtn').style.display = 'flex';
-        document.getElementById('adminAccessCard').style.display = 'block';
-        loadAdminTable();
-    } else {
-        document.getElementById('adminSidebarBtn').style.display = 'none';
-        document.getElementById('adminAccessCard').style.display = 'none';
-    }
+// Обробка неіснуючих маршрутів (404)
+app.use((req, res) => {
+    res.status(404).send('<h1>404: Сторінку не знайдено</h1>');
+});
 
-    renderHomeDashboard();
-    renderStudentCardView();
-    renderTasks();
-    renderSchedule();
-}
+// Глобальна обробка помилок (запобігає падінню сервера)
+app.use((err, req, res, next) => {
+    console.error('Помилка сервера:', err.stack);
+    res.status(500).send('<h1>500: Внутрішня помилка сервера</h1>');
+});
+
+// Запуск сервера на 0.0.0.0 для коректної роботи у контейнерах Docker / Cloud
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[OK] Сервер успішно запущено на порту ${PORT}`);
+});
