@@ -198,10 +198,10 @@ body.dark {
         </div>
     </header>
 
-    <!-- 1. HOME (ГОЛОВНА СИСТЕМА) -->
+    <!-- 1. HOME -->
     <section class="page active" id="home">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-            <!-- Пари на сьогодні -->
+            <!-- Пари на сьогодні/завтра -->
             <div class="card">
                 <h3>📚 Пари на сьогодні</h3>
                 <p style="font-size:12px; color:var(--muted); margin-bottom:15px;" id="todayScheduleTitle">Заняття на поточний день:</p>
@@ -217,7 +217,7 @@ body.dark {
         </div>
     </section>
 
-    <!-- 2. TASKS (ЗАВДАННЯ З ДАТАМИ ТА ЧАСОМ) -->
+    <!-- 2. TASKS -->
     <section class="page" id="tasks-page">
         <div class="card">
             <h2>📝 Мої Завдання</h2>
@@ -338,7 +338,7 @@ body.dark {
 
         <h4>Додати нову пару:</h4>
         <input type="text" id="adminNewLessonName" class="input-field" placeholder="Назва предмета" style="margin-top:5px;">
-        <input type="text" id="adminNewLessonTime" class="input-field" placeholder="Час (напр. 08:30 - 09:50)" value="08:30 - 09:50">
+        <input type="text" id="adminNewLessonTime" class="input-field" placeholder="Час (напр. 15:20 - 16:55)" value="15:20 - 16:55">
         
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn-primary" style="flex:1;" onclick="adminSaveLesson()">Додати пару</button>
@@ -365,6 +365,50 @@ const DB = {
     setCurrentUser: (user) => localStorage.setItem('app_current_user', JSON.stringify(user))
 };
 
+// Дефолтний 2-тижневий розклад
+const defaultSchedule = {
+    week1: {
+        0: [
+            { name: "Фахова англійська мова (Практ.)", time: "15:20 - 16:55" },
+            { name: "Фахова англійська мова (Практ.)", time: "17:10 - 18:45" }
+        ],
+        1: [
+            { name: "Системне програмування (Лекц.)", time: "15:20 - 16:55" }
+        ],
+        2: [
+            { name: "Основи комп'ютерних мереж (Лаб.)", time: "15:20 - 16:55" }
+        ],
+        3: [
+            { name: "Системне програмування (Лаб.)", time: "15:20 - 16:55" }
+        ],
+        4: [
+            { name: "Комп'ютерна схемотехніка (Лаб.)", time: "15:20 - 16:55" }
+        ],
+        5: []
+    },
+    week2: {
+        0: [
+            { name: "Комп'ютерна схемотехніка (Лекц.)", time: "15:20 - 16:55" }
+        ],
+        1: [
+            { name: "Архітектура комп'ютерів (Лекц.)", time: "15:20 - 16:55" },
+            { name: "Фахова англійська мова (Практ.)", time: "17:10 - 18:45" }
+        ],
+        2: [
+            { name: "Основи комп'ютерних мереж (Лекц.)", time: "15:20 - 16:55" }
+        ],
+        3: [
+            { name: "Архітектура комп'ютерів (Лаб.)", time: "15:20 - 16:55" },
+            { name: "Архітектура комп'ютерів (Лаб.)", time: "17:10 - 18:45" }
+        ],
+        4: [
+            { name: "Комп'ютерна схемотехніка (Лаб.)", time: "15:20 - 16:55" },
+            { name: "Фахова англійська мова (Практ.)", time: "17:10 - 18:45" }
+        ],
+        5: []
+    }
+};
+
 // Створення дефолтного адміна
 if (DB.getUsers().length === 0) {
     DB.setUsers([{ 
@@ -374,12 +418,24 @@ if (DB.getUsers().length === 0) {
         isAdmin: true, 
         blocked: false, 
         tasks: [], 
-        schedule: { week1: {}, week2: {} } 
+        schedule: defaultSchedule
     }]);
 }
 
 let currentUser = DB.getCurrentUser();
 const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
+
+/* АВТОМАТИЧНЕ ВИЗНАЧЕННЯ НАВЧАЛЬНОГО ТИЖНЯ */
+function getCurrentAcademicWeek(date = new Date()) {
+    const startDate = new Date(2026, 7, 31); // 31 серпня 2026 року
+    const diffTime = date - startDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return 'week1';
+    
+    const weekNum = Math.floor(diffDays / 7) + 1;
+    return (weekNum % 2 === 1) ? 'week1' : 'week2';
+}
 
 /* AUTH LOGIC */
 function switchAuthTab(type) {
@@ -400,7 +456,15 @@ function handleRegister() {
     let users = DB.getUsers();
     if (users.find(u => u.username === username)) return alert("Логін зайнятий!");
 
-    users.push({ username, password, secret, isAdmin: false, blocked: false, tasks: [], schedule: { week1: {}, week2: {} } });
+    users.push({ 
+        username, 
+        password, 
+        secret, 
+        isAdmin: false, 
+        blocked: false, 
+        tasks: [], 
+        schedule: JSON.parse(JSON.stringify(defaultSchedule)) 
+    });
     DB.setUsers(users);
     alert("Реєстрація успішна!");
     switchAuthTab('login');
@@ -474,7 +538,7 @@ function initApp() {
     renderSchedule();
 }
 
-/* DASHBOARD LOGIC (ГОЛОВНА СТОРІНКА) */
+/* DASHBOARD LOGIC */
 function renderHomeDashboard() {
     // 1. Завдання на головній
     const homeTasksContainer = document.getElementById('homeTasksContainer');
@@ -482,7 +546,7 @@ function renderHomeDashboard() {
     if (!tasks.length) {
         homeTasksContainer.innerHTML = '<p style="font-size:12px; color:var(--muted);">Немає активних завдань</p>';
     } else {
-        homeTasksContainer.innerHTML = tasks.map((t, i) => `
+        homeTasksContainer.innerHTML = tasks.map(t => `
             <div class="task-card-item ${t.done ? 'completed':''}">
                 <div style="font-weight:bold;">${t.title}</div>
                 <div class="task-dates">
@@ -493,22 +557,36 @@ function renderHomeDashboard() {
         `).join('');
     }
 
-    // 2. Пари на сьогодні на головній
+    // 2. Розклад із логікою для суботи та часу 12:00
     const todayContainer = document.getElementById('todayScheduleContainer');
     const now = new Date();
-    let dayIdx = now.getDay() - 1; // 0 - Пн, 4 - Пт
-    if (dayIdx < 0 || dayIdx > 5) dayIdx = 0; // Якщо неділя — показувати понеділок
+    const currentDay = now.getDay(); 
+    const currentHour = now.getHours();
 
-    const currentWeekKey = 'week1'; // За замовчуванням I тиждень
-    document.getElementById('todayScheduleTitle').textContent = `Заняття на ${days[dayIdx]}:`;
+    let targetDayIdx = currentDay - 1; 
+    let displayTitle = "";
+    let weekKey = getCurrentAcademicWeek(now);
 
-    const weekSchedule = currentUser.schedule ? currentUser.schedule[currentWeekKey] : {};
-    const todayLessons = weekSchedule ? (weekSchedule[dayIdx] || []) : [];
-
-    if (!todayLessons.length) {
-        todayContainer.innerHTML = '<p style="font-size:12px; color:var(--muted);">Сьогодні пар немає 🎉</p>';
+    if (currentDay === 5 && currentHour >= 12) {
+        targetDayIdx = 5; // Субота
+        displayTitle = "Заняття на завтра (Субота):";
+    } else if (currentDay === 6 && currentHour < 12) {
+        targetDayIdx = 5; // Субота
+        displayTitle = "Заняття на сьогодні (Субота):";
     } else {
-        todayContainer.innerHTML = todayLessons.map(l => `
+        if (targetDayIdx < 0 || targetDayIdx > 5) targetDayIdx = 0; 
+        displayTitle = `Заняття на ${days[targetDayIdx]}:`;
+    }
+
+    document.getElementById('todayScheduleTitle').textContent = displayTitle;
+
+    const weekSchedule = currentUser.schedule ? currentUser.schedule[weekKey] : {};
+    const dayLessons = weekSchedule ? (weekSchedule[targetDayIdx] || []) : [];
+
+    if (!dayLessons.length) {
+        todayContainer.innerHTML = '<p style="font-size:12px; color:var(--muted);">Пар немає 🎉</p>';
+    } else {
+        todayContainer.innerHTML = dayLessons.map(l => `
             <div class="lesson-card">
                 <div style="font-size:10px; color:var(--primary); font-weight:700;">⏰ ${l.time}</div>
                 <div style="font-weight:700; font-size:13px; margin-top:2px;">${l.name}</div>
@@ -584,7 +662,7 @@ function deleteTask(i) {
 }
 
 /* SCHEDULE ENGINE */
-let currentWeek = 'week1';
+let currentWeek = getCurrentAcademicWeek();
 
 function switchWeek(w) {
     currentWeek = w;
@@ -595,7 +673,7 @@ function switchWeek(w) {
 
 function renderSchedule() {
     const container = document.getElementById('scheduleColumnsContainer');
-    if (!currentUser.schedule) currentUser.schedule = { week1: {}, week2: {} };
+    if (!currentUser.schedule) currentUser.schedule = defaultSchedule;
     const weekData = currentUser.schedule[currentWeek] || {};
 
     container.innerHTML = days.map((d, i) => {
@@ -620,7 +698,7 @@ function renderSchedule() {
 function addLesson(dayIdx) {
     const name = prompt("Назва предмета:");
     if (!name) return;
-    const time = prompt("Час занять:", "08:30 - 09:50") || "08:30 - 09:50";
+    const time = prompt("Час занять:", "15:20 - 16:55") || "15:20 - 16:55";
 
     if (!currentUser.schedule[currentWeek]) currentUser.schedule[currentWeek] = {};
     if (!currentUser.schedule[currentWeek][dayIdx]) currentUser.schedule[currentWeek][dayIdx] = [];
@@ -638,7 +716,7 @@ function deleteLesson(dayIdx, lessonIdx) {
     renderHomeDashboard();
 }
 
-/* ADMIN PANEL ENGINE & EDITING USER SCHEDULES */
+/* ADMIN PANEL ENGINE */
 let editingUserUsername = null;
 
 function loadAdminTable() {
@@ -701,7 +779,7 @@ function renderAdminModalSchedule() {
             <div>
                 <strong>${l.time}</strong> — ${l.name}
             </div>
-            <button style="border:0; background:none; color:red; cursor:pointer;" onclick="adminDeleteLesson(${i})">🗑️</button>
+            <button style="border:0; background:none; color:red; cursor:pointer;" onclick="adminDeleteLesson(${i})">✕</button>
         </div>
     `).join('');
 }
@@ -709,10 +787,12 @@ function renderAdminModalSchedule() {
 function adminSaveLesson() {
     const name = document.getElementById('adminNewLessonName').value.trim();
     const time = document.getElementById('adminNewLessonTime').value.trim();
+
     if (!name || !time) return alert("Введіть назву та час!");
 
     let users = DB.getUsers();
     let u = users.find(x => x.username === editingUserUsername);
+    if (!u) return;
 
     const week = document.getElementById('adminModalWeek').value;
     const day = document.getElementById('adminModalDay').value;
@@ -724,8 +804,7 @@ function adminSaveLesson() {
     u.schedule[week][day].push({ name, time });
     DB.setUsers(users);
 
-    // Якщо адмін редагує свій розклад — оновлюємо поточну сесію
-    if (currentUser.username === u.username) {
+    if (currentUser && currentUser.username === u.username) {
         currentUser = u;
         DB.setCurrentUser(u);
         renderSchedule();
@@ -739,13 +818,15 @@ function adminSaveLesson() {
 function adminDeleteLesson(index) {
     let users = DB.getUsers();
     let u = users.find(x => x.username === editingUserUsername);
+    if (!u) return;
+
     const week = document.getElementById('adminModalWeek').value;
     const day = document.getElementById('adminModalDay').value;
 
     u.schedule[week][day].splice(index, 1);
     DB.setUsers(users);
 
-    if (currentUser.username === u.username) {
+    if (currentUser && currentUser.username === u.username) {
         currentUser = u;
         DB.setCurrentUser(u);
         renderSchedule();
@@ -755,40 +836,43 @@ function adminDeleteLesson(index) {
     renderAdminModalSchedule();
 }
 
-/* TELEGRAM & OTHER UTILS */
+/* NAVIGATION & UI */
+function navigateTo(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => b.classList.remove('active'));
+
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) targetPage.classList.add('active');
+
+    document.querySelectorAll(`[data-page="${pageId}"]`).forEach(b => b.classList.add('active'));
+}
+
+document.querySelectorAll('[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => navigateTo(btn.getAttribute('data-page')));
+});
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+}
+
 function openTelegramApp() {
-    window.location.href = "tg://resolve";
-    setTimeout(() => {
-        window.open("https://t.me", "_blank");
-    }, 500);
+    window.open('https://t.me', '_blank');
 }
 
 function updateSecretWord() {
-    const sec = document.getElementById('updateSecretInput').value.trim();
-    if (!sec) return;
-    currentUser.secret = sec;
+    const val = document.getElementById('updateSecretInput').value.trim();
+    if (!val) return alert("Введіть нове секретне слово");
+    currentUser.secret = val;
     saveUserData();
     alert("Секретне слово оновлено!");
+    document.getElementById('updateSecretInput').value = '';
 }
 
-function toggleDarkMode() { document.body.classList.toggle('dark'); }
-
-function navigateTo(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(n => {
-        n.classList.toggle('active', n.dataset.page === pageId);
-    });
-    const target = document.getElementById(pageId);
-    if (target) target.classList.add('active');
-}
-
-document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(btn => {
-    btn.addEventListener('click', () => { if (btn.dataset.page) navigateTo(btn.dataset.page); });
+window.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    document.getElementById('currentDateStr').textContent = now.toLocaleDateString('uk-UA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    initApp();
 });
-
-document.getElementById('currentDateStr').textContent = new Date().toLocaleDateString('uk-UA', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-
-initApp();
 </script>
 </body>
 </html>
