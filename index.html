@@ -125,7 +125,7 @@ body.dark {
 .mobile-nav {
     display: none; position: fixed; bottom: 0; left: 0; right: 0;
     height: 65px; background: var(--card); border-top: 1px solid var(--border);
-    z-index: 1000; justify-content: space-around; align-items: center; padding: 0 10px;
+    z-index: 1000; justify-around: space-around; align-items: center; padding: 0 10px;
 }
 .mobile-nav-item { display: flex; flex-direction: column; align-items: center; color: var(--muted); border: 0; background: none; font-size: 11px; font-weight: 600; gap: 3px; cursor: pointer; flex: 1; }
 .mobile-nav-item.active { color: var(--primary); }
@@ -272,8 +272,8 @@ body.dark {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
                 <h2>📚 Персональний розклад</h2>
                 <div class="week-toggle">
-                    <button class="toggle-btn active" id="btnW1" onclick="switchWeek('week1')">I Тиждень</button>
-                    <button class="toggle-btn" id="btnW2" onclick="switchWeek('week2')">II Тиждень</button>
+                    <button class="toggle-btn active" id="btnW1" onclick="switchWeek('week1')">1 Тиждень</button>
+                    <button class="toggle-btn" id="btnW2" onclick="switchWeek('week2')">2 Тиждень</button>
                 </div>
             </div>
             <div class="columns-grid" id="scheduleColumnsContainer"></div>
@@ -337,8 +337,8 @@ body.dark {
         <h3 id="adminModalTitle">Редагування розкладу</h3>
         <div style="display:flex; gap:10px; margin-top:10px; margin-bottom:10px;">
             <select id="adminModalWeek" class="input-field" onchange="renderAdminModalSchedule()">
-                <option value="week1">I Тиждень</option>
-                <option value="week2">II Тиждень</option>
+                <option value="week1">1 Тиждень</option>
+                <option value="week2">2 Тиждень</option>
             </select>
             <select id="adminModalDay" class="input-field" onchange="renderAdminModalSchedule()">
                 <option value="0">Понеділок</option>
@@ -354,7 +354,7 @@ body.dark {
 
         <h4>Додати нову пару:</h4>
         <input type="text" id="adminNewLessonName" class="input-field" placeholder="Назва предмета" style="margin-top:5px;">
-        <input type="text" id="adminNewLessonTime" class="input-field" placeholder="Час (напр. 08:30 - 09:50)" value="08:30 - 09:50">
+        <input type="text" id="adminNewLessonTime" class="input-field" placeholder="Час (напр. 15:20–16:55)" value="15:20–16:55">
         
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn-primary" style="flex:1;" onclick="adminSaveLesson()">Додати пару</button>
@@ -380,23 +380,62 @@ const DB = {
     setCurrentUser: (user) => localStorage.setItem('app_current_user', JSON.stringify(user))
 };
 
+// Оновлений розклад відповідно до запиту
 const defaultSchedule = {
     week1: {
-        0: [{ name: "Системне програмування", time: "08:30 - 09:50" }],
-        1: [{ name: "Комп'ютерні мережі", time: "10:05 - 11:25" }],
-        2: [{ name: "Архітектура комп'ютерів", time: "11:40 - 13:00" }],
-        3: [{ name: "Комп'ютерна схемотехніка", time: "13:15 - 14:35" }],
-        4: [{ name: "Фахова англійська мова", time: "14:50 - 16:10" }],
-        5: [{ name: "Лабораторний практикум", time: "10:00 - 11:20" }]
+        0: [{ name: "Фахова англійська мова", time: "15:20–16:55" }],
+        1: [
+            { name: "Системне програмування", time: "15:20–16:55" },
+            { name: "Фахова англійська мова", time: "17:10–18:45" }
+        ],
+        2: [{ name: "Основи комп'ютерних мереж", time: "15:20–16:55" }],
+        3: [{ name: "Системне програмування", time: "15:20–16:55" }],
+        4: [{ name: "Комп'ютерна схемотехніка", time: "15:20–16:55" }],
+        5: []
     },
     week2: {
-        0: [{ name: "Комп'ютерна схемотехніка (Лаб.)", time: "08:30 - 09:50" }],
-        1: [{ name: "Системне програмування (Лаб.)", time: "10:05 - 11:25" }],
-        2: [{ name: "Основи комп'ютерних мереж", time: "11:40 - 13:00" }],
-        3: [{ name: "Архітектура комп'ютерів (Лаб.)", time: "13:15 - 14:35" }],
-        4: [{ name: "Фахова англійська мова", time: "14:50 - 16:10" }],
-        5: [{ name: "Консультації", time: "12:00 - 13:20" }]
+        0: [{ name: "Комп'ютерна схемотехніка", time: "15:20–16:55" }],
+        1: [
+            { name: "Архітектура комп'ютера", time: "15:20–16:55" },
+            { name: "Фахова англійська мова", time: "17:10–18:45" }
+        ],
+        2: [{ name: "Основи комп'ютерних мереж", time: "15:20–16:55" }],
+        3: [
+            { name: "Архітектура комп'ютера", time: "15:20–16:55" },
+            { name: "Архітектура комп'ютера", time: "17:10–18:45" }
+        ],
+        4: [
+            { name: "Комп'ютерна схемотехніка", time: "15:20–16:55" },
+            { name: "Фахова англійська мова", time: "17:10–18:45" }
+        ],
+        5: []
     }
+};
+
+// Конкретний розклад для субот
+const saturdaySchedule = {
+    "2026-09-12": [{ name: "Комп'ютерна схемотехніка (Пн 2 тижд.)", time: "15:20–16:55" }],
+    "2026-09-19": [
+        { name: "Архітектура комп'ютера (Вт 2 тижд.)", time: "15:20–16:55" },
+        { name: "Фахова англійська мова (Вт 2 тижд.)", time: "17:10–18:45" }
+    ],
+    "2026-09-26": [{ name: "Основи комп'ютерних мереж (Ср 2 тижд.)", time: "15:20–16:55" }],
+    "2026-10-03": [
+        { name: "Архітектура комп'ютера (Чт 2 тижд.)", time: "15:20–16:55" },
+        { name: "Архітектура комп'ютера (Чт 2 тижд.)", time: "17:10–18:45" }
+    ],
+    "2026-10-10": [
+        { name: "Комп'ютерна схемотехніка (Пт 2 тижд.)", time: "15:20–16:55" },
+        { name: "Фахова англійська мова (Пт 2 тижд.)", time: "17:10–18:45" }
+    ],
+    "2026-10-17": [{ name: "Фахова англійська мова (Пн 1 тижд.)", time: "15:20–16:55" }],
+    "2026-10-24": [
+        { name: "Системне програмування (Вт 1 тижд.)", time: "15:20–16:55" },
+        { name: "Фахова англійська мова (Вт 1 тижд.)", time: "17:10–18:45" }
+    ],
+    "2026-10-31": [{ name: "Основи комп'ютерних мереж (Ср 1 тижд.)", time: "15:20–16:55" }],
+    "2026-11-07": [{ name: "Системне програмування (Чт 1 тижд.)", time: "15:20–16:55" }],
+    "2026-11-10": [{ name: "Комп'ютерна схемотехніка (Пт 1 тижд.)", time: "15:20–16:55" }]
 };
 
 if (DB.getUsers().length === 0) {
@@ -406,7 +445,9 @@ if (DB.getUsers().length === 0) {
         secret: 'admin', 
         isAdmin: true, 
         blocked: false, 
-        tasks: [], 
+        tasks: [
+            { title: "🔴 Сесія", start: "2026-11-30T00:00", end: "2026-12-11T23:59", done: false }
+        ], 
         schedule: defaultSchedule 
     }]);
 }
@@ -433,7 +474,17 @@ function handleRegister() {
     let users = DB.getUsers();
     if (users.find(u => u.username === username)) return alert("Логін зайнятий!");
 
-    users.push({ username, password, secret, isAdmin: false, blocked: false, tasks: [], schedule: defaultSchedule });
+    users.push({
+        username, 
+        password, 
+        secret, 
+        isAdmin: false, 
+        blocked: false, 
+        tasks: [
+            { title: "🔴 Сесія", start: "2026-11-30T00:00", end: "2026-12-11T23:59", done: false }
+        ], 
+        schedule: defaultSchedule 
+    });
     DB.setUsers(users);
     alert("Реєстрація успішна!");
     switchAuthTab('login');
@@ -521,7 +572,7 @@ function initApp() {
     renderCalendar();
 }
 
-/* DASHBOARD LOGIC (ГОЛОВНА СТОРІНКА З ЛОГІКОЮ ДЛЯ СУБОТИ ТА 12:00) */
+/* DASHBOARD LOGIC */
 function renderHomeDashboard() {
     const homeTasksContainer = document.getElementById('homeTasksContainer');
     const tasks = currentUser.tasks || [];
@@ -544,25 +595,37 @@ function renderHomeDashboard() {
     const dayOfWeek = now.getDay(); 
     const currentHour = now.getHours();
 
-    let targetDayIdx = dayOfWeek === 0 ? 0 : dayOfWeek - 1; 
+    let targetDate = new Date(now);
     let displayTitle = "";
 
-    // Спеціальна логіка: п'ятниця після 12:00 та субота до 12:00
+    // П'ятниця після 12:00 -> показуємо суботу
     if (dayOfWeek === 5 && currentHour >= 12) {
-        targetDayIdx = 5; // Показываем Субботу
+        targetDate.setDate(now.getDate() + 1);
         displayTitle = "Заняття на завтра (Субота):";
     } else if (dayOfWeek === 6 && currentHour < 12) {
-        targetDayIdx = 5; // Показываем Субботу
         displayTitle = "Заняття на сьогодні (Субота):";
+    } else if (dayOfWeek === 0) {
+        targetDate.setDate(now.getDate() + 1);
+        displayTitle = "Заняття на завтра (Понеділок):";
     } else {
-        displayTitle = `Заняття на ${days[targetDayIdx]}:`;
+        displayTitle = `Заняття на ${days[dayOfWeek === 0 ? 0 : dayOfWeek - 1]}:`;
     }
 
     document.getElementById('todayScheduleTitle').textContent = displayTitle;
 
-    const currentWeekKey = 'week1'; 
-    const weekSchedule = currentUser.schedule ? currentUser.schedule[currentWeekKey] : {};
-    const todayLessons = weekSchedule ? (weekSchedule[targetDayIdx] || []) : [];
+    const targetDayIdx = targetDate.getDay() === 0 ? 0 : targetDate.getDay() - 1;
+    const dateKey = targetDate.toISOString().split('T')[0];
+
+    let todayLessons = [];
+
+    // Перевірка, чи є спеціальний розклад для конкретної дати (для Суботи)
+    if (saturdaySchedule[dateKey]) {
+        todayLessons = saturdaySchedule[dateKey];
+    } else {
+        const currentWeekKey = 'week1'; 
+        const weekSchedule = currentUser.schedule ? currentUser.schedule[currentWeekKey] : {};
+        todayLessons = weekSchedule ? (weekSchedule[targetDayIdx] || []) : [];
+    }
 
     if (!todayLessons.length) {
         todayContainer.innerHTML = '<p style="font-size:12px; color:var(--muted);">Пар немає 🎉</p>';
@@ -719,7 +782,7 @@ function renderSchedule() {
 function addLesson(dayIdx) {
     const name = prompt("Назва предмета:");
     if (!name) return;
-    const time = prompt("Час занять:", "08:30 - 09:50") || "08:30 - 09:50";
+    const time = prompt("Час занять:", "15:20–16:55") || "15:20–16:55";
 
     if (!currentUser.schedule[currentWeek]) currentUser.schedule[currentWeek] = {};
     if (!currentUser.schedule[currentWeek][dayIdx]) currentUser.schedule[currentWeek][dayIdx] = [];
