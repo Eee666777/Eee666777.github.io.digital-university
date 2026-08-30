@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital University Portal - Extended Admin & Telegram Integration</title>
+<title>Digital University Portal</title>
 
 <style>
 :root {
@@ -427,7 +427,7 @@ const days = ["Понеділок", "Вівторок", "Середа", "Чет�
 
 /* АВТОМАТИЧНЕ ВИЗНАЧЕННЯ НАВЧАЛЬНОГО ТИЖНЯ */
 function getCurrentAcademicWeek(date = new Date()) {
-    const startDate = new Date(2026, 7, 31); // 31 серпня 2026 року
+    const startDate = new Date(2026, 7, 31);
     const diffTime = date - startDate;
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
@@ -540,7 +540,6 @@ function initApp() {
 
 /* DASHBOARD LOGIC */
 function renderHomeDashboard() {
-    // 1. Завдання на головній
     const homeTasksContainer = document.getElementById('homeTasksContainer');
     const tasks = currentUser.tasks || [];
     if (!tasks.length) {
@@ -557,7 +556,6 @@ function renderHomeDashboard() {
         `).join('');
     }
 
-    // 2. Розклад із логікою для суботи та часу 12:00
     const todayContainer = document.getElementById('todayScheduleContainer');
     const now = new Date();
     const currentDay = now.getDay(); 
@@ -568,10 +566,10 @@ function renderHomeDashboard() {
     let weekKey = getCurrentAcademicWeek(now);
 
     if (currentDay === 5 && currentHour >= 12) {
-        targetDayIdx = 5; // Субота
+        targetDayIdx = 5; 
         displayTitle = "Заняття на завтра (Субота):";
     } else if (currentDay === 6 && currentHour < 12) {
-        targetDayIdx = 5; // Субота
+        targetDayIdx = 5; 
         displayTitle = "Заняття на сьогодні (Субота):";
     } else {
         if (targetDayIdx < 0 || targetDayIdx > 5) targetDayIdx = 0; 
