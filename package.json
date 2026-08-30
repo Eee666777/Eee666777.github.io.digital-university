@@ -1,7 +1,7 @@
 {
-  "name": "digital-university-app",
+  "name": "digital-university-portal",
   "version": "1.0.0",
-  "description": "Node.js Express Server for Web Application",
+  "description": "Digital University Web Application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
