@@ -90,7 +90,6 @@ body.dark {
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-small { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn-danger { background: #ef4444; color: white; border: 0; }
-.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
 
 .input-field { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; margin-bottom: 10px; font-size: 13px; }
 
@@ -103,10 +102,15 @@ body.dark {
 .toggle-btn { padding: 8px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); font-weight: 700; cursor: pointer; color: var(--text); }
 .toggle-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-.table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
-.data-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-.data-table th, .data-table td { padding: 10px; border-bottom: 1px solid var(--border); }
-.data-table th { background: var(--bg); font-weight: 700; }
+/* CALENDAR STYLES */
+.calendar-container { margin-top: 10px; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: bold; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; font-size: 12px; }
+.calendar-day-name { font-weight: bold; color: var(--muted); padding-bottom: 4px; }
+.calendar-day { padding: 8px 0; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+.calendar-day:hover { background: var(--border); }
+.calendar-day.today { background: var(--primary); color: white; font-weight: bold; }
+.calendar-day.empty { background: transparent; border: none; cursor: default; }
 
 /* MODALS */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(5px); }
@@ -132,7 +136,6 @@ body.dark {
 </head>
 <body>
 
-<!-- AUTH OVERLAY -->
 <div class="auth-overlay" id="authOverlay">
     <div class="auth-card">
         <div class="logo" style="margin: 0 auto 10px auto; background: var(--primary); color: white;">DU</div>
@@ -147,7 +150,6 @@ body.dark {
             <input type="text" id="loginUser" class="input-field" placeholder="Логін">
             <input type="password" id="loginPass" class="input-field" placeholder="Пароль">
             <button class="btn-primary" style="width: 100%; margin-top: 5px;" onclick="handleLogin()">Увійти</button>
-            <button style="border:0; background:none; color:var(--primary); font-size:12px; margin-top:12px; cursor:pointer;" onclick="switchAuthTab('forgot')">Забули пароль?</button>
         </div>
 
         <div id="formRegister" style="display: none;">
@@ -156,20 +158,11 @@ body.dark {
             <input type="text" id="regSecret" class="input-field" placeholder="Секретне кодове слово">
             <button class="btn-primary" style="width: 100%;" onclick="handleRegister()">Зареєструватися</button>
         </div>
-
-        <div id="formForgot" style="display: none;">
-            <input type="text" id="forgotUser" class="input-field" placeholder="Логін">
-            <input type="text" id="forgotSecret" class="input-field" placeholder="Секретне слово">
-            <input type="password" id="forgotNewPass" class="input-field" placeholder="Новий пароль">
-            <button class="btn-primary" style="width: 100%;" onclick="handleResetPassword()">Змінити пароль</button>
-            <button style="border:0; background:none; color:var(--muted); font-size:12px; margin-top:10px; cursor:pointer;" onclick="switchAuthTab('login')">Повернутися</button>
-        </div>
     </div>
 </div>
 
 <div class="app">
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="brand">
         <div class="logo">DU</div>
@@ -181,7 +174,6 @@ body.dark {
         <button class="nav-item" data-page="schedule">📚 Розклад</button>
         <button class="nav-item" data-page="settings-page">⚙️ Налаштування</button>
         <button class="nav-item admin-only" id="adminSidebarBtn" data-page="admin-page">🛡️ Панель Адміна</button>
-        <button class="nav-item" onclick="openTelegramApp()">✈️ Телеграм</button>
     </nav>
 </aside>
 
@@ -198,53 +190,52 @@ body.dark {
         </div>
     </header>
 
-    <!-- 1. HOME -->
+    <!-- HOME PAGE -->
     <section class="page active" id="home">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-            <!-- Пари на сьогодні/завтра -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            
+            <!-- РОЗКЛАД НА СЬОГОДНІ / СУБОТУ -->
             <div class="card">
-                <h3>📚 Пари на сьогодні</h3>
-                <p style="font-size:12px; color:var(--muted); margin-bottom:15px;" id="todayScheduleTitle">Заняття на поточний день:</p>
+                <h3>📚 Розклад заняття</h3>
+                <p style="font-size:12px; color:var(--muted); margin-bottom:15px;" id="todayScheduleTitle">Заняття:</p>
                 <div id="todayScheduleContainer"></div>
             </div>
 
-            <!-- Актуальні завдання -->
+            <!-- КАЛЕНДАР -->
+            <div class="card">
+                <h3>📅 Календар</h3>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="btn-primary btn-small" onclick="changeMonth(-1)">◄</button>
+                        <span id="calendarMonthLabel"></span>
+                        <button class="btn-primary btn-small" onclick="changeMonth(1)">►</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarDaysGrid"></div>
+                </div>
+            </div>
+
+            <!-- ЗАВДАННЯ -->
             <div class="card">
                 <h3>📝 Поточні завдання</h3>
-                <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Список активних завдань з термінами виконання:</p>
-                <div id="homeTasksContainer"></div>
+                <div id="homeTasksContainer" style="margin-top: 10px;"></div>
             </div>
+
         </div>
     </section>
 
-    <!-- 2. TASKS -->
+    <!-- TASKS PAGE -->
     <section class="page" id="tasks-page">
         <div class="card">
             <h2>📝 Мої Завдання</h2>
-            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Додавайте завдання з вказуванням часу початку та завершення</p>
-            
-            <div style="background:var(--bg); border:1px solid var(--border); padding:15px; border-radius:14px; margin-bottom:20px;">
-                <h4 style="margin-bottom:10px;">Створити нове завдання</h4>
+            <div style="background:var(--bg); border:1px solid var(--border); padding:15px; border-radius:14px; margin: 15px 0;">
                 <input type="text" id="newTaskTitle" class="input-field" placeholder="Назва завдання...">
-                
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div>
-                        <label style="font-size:11px; font-weight:bold; color:var(--muted);">Дата та час початку:</label>
-                        <input type="datetime-local" id="newTaskStart" class="input-field">
-                    </div>
-                    <div>
-                        <label style="font-size:11px; font-weight:bold; color:var(--muted);">Дата та час закінчення:</label>
-                        <input type="datetime-local" id="newTaskEnd" class="input-field">
-                    </div>
-                </div>
-                <button class="btn-primary" style="width:100%; margin-top:5px;" onclick="addNewTask()">Додати завдання</button>
+                <button class="btn-primary" style="width:100%;" onclick="addNewTask()">Додати завдання</button>
             </div>
-
             <div id="tasksContainer"></div>
         </div>
     </section>
 
-    <!-- 3. SCHEDULE -->
+    <!-- SCHEDULE PAGE -->
     <section class="page" id="schedule">
         <div class="card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
@@ -258,106 +249,26 @@ body.dark {
         </div>
     </section>
 
-    <!-- 4. SETTINGS -->
+    <!-- SETTINGS PAGE -->
     <section class="page" id="settings-page">
         <div class="card">
-            <h2>⚙️ Налаштування профілю</h2>
-            <br>
-            <div style="max-width: 500px;">
-                <label style="font-size:12px; font-weight:bold;">Змінити секретне слово:</label>
-                <input type="text" id="updateSecretInput" class="input-field" placeholder="Нове секретне слово" style="margin-top:5px;">
-                <button class="btn-primary" onclick="updateSecretWord()" style="margin-bottom:20px;">Оновити</button>
-
-                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
-
-                <div id="adminAccessCard" style="display:none; background:rgba(77,91,228,0.1); border:1px solid var(--primary); padding:15px; border-radius:12px; margin-bottom:20px;">
-                    <h4 style="color:var(--primary);">🛡️ Права адміністратора активні</h4>
-                    <p style="font-size:12px; margin-top:4px;">Вам доступне редагування розкладів усіх студентів.</p>
-                    <button class="btn-primary" style="margin-top:10px;" onclick="navigateTo('admin-page')">Перейти до Панелі Адміна</button>
-                </div>
-
-                <h3>📱 Опції додатку</h3>
-                <br>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:14px;">Темна тема:</span>
-                    <button class="btn-primary btn-small" onclick="toggleDarkMode()">Переключити</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 5. ADMIN PANEL -->
-    <section class="page" id="admin-page">
-        <div class="card">
-            <h2>🛡️ Панель Адміністратора</h2>
-            <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Управління користувачами та редагування студентських розкладів</p>
-
-            <h4>👥 Список користувачів системи</h4>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Логін</th>
-                            <th>Роль</th>
-                            <th>Статус</th>
-                            <th>Управління розкладом</th>
-                            <th>Дії</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminUsersTable"></tbody>
-                </table>
-            </div>
+            <h2>⚙️ Налаштування</h2>
+            <p style="margin-top:10px;">Управління стилем та параметрами профілю.</p>
+            <button class="btn-primary" style="margin-top:15px;" onclick="toggleDarkMode()">Переключити тему</button>
         </div>
     </section>
 
 </main>
 </div>
 
-<!-- MODAL FOR ADMIN SCHEDULE EDITING -->
-<div class="modal-overlay" id="adminScheduleModal">
-    <div class="modal-box">
-        <h3 id="adminModalTitle">Редагування розкладу студента</h3>
-        <p style="font-size:12px; color:var(--muted); margin-bottom:15px;">Виберіть тиждень та день для додавання/видалення предмета</p>
-        
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <select id="adminModalWeek" class="input-field" onchange="renderAdminModalSchedule()">
-                <option value="week1">I Тиждень</option>
-                <option value="week2">II Тиждень</option>
-            </select>
-            <select id="adminModalDay" class="input-field" onchange="renderAdminModalSchedule()">
-                <option value="0">Понеділок</option>
-                <option value="1">Вівторок</option>
-                <option value="2">Середа</option>
-                <option value="3">Четвер</option>
-                <option value="4">П'ятниця</option>
-                <option value="5">Субота</option>
-            </select>
-        </div>
-
-        <div style="border:1px solid var(--border); padding:10px; border-radius:10px; max-height:200px; overflow-y:auto; margin-bottom:15px;" id="adminModalLessonsList"></div>
-
-        <h4>Додати нову пару:</h4>
-        <input type="text" id="adminNewLessonName" class="input-field" placeholder="Назва предмета" style="margin-top:5px;">
-        <input type="text" id="adminNewLessonTime" class="input-field" placeholder="Час (напр. 15:20 - 16:55)" value="15:20 - 16:55">
-        
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="btn-primary" style="flex:1;" onclick="adminSaveLesson()">Додати пару</button>
-            <button class="btn-primary btn-danger" onclick="closeAdminModal()">Закрити</button>
-        </div>
-    </div>
-</div>
-
-<!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-nav">
     <button class="mobile-nav-item active" data-page="home"><span>🏠</span><span>Головна</span></button>
     <button class="mobile-nav-item" data-page="schedule"><span>📚</span><span>Розклад</span></button>
     <button class="mobile-nav-item" data-page="tasks-page"><span>📝</span><span>Завдання</span></button>
-    <button class="mobile-nav-item" onclick="openTelegramApp()"><span>✈️</span><span>Телеграм</span></button>
     <button class="mobile-nav-item" data-page="settings-page"><span>⚙️</span><span>Опції</span></button>
 </nav>
 
 <script>
-/* LOCAL STORAGE ENGINE */
 const DB = {
     getUsers: () => JSON.parse(localStorage.getItem('app_users')) || [],
     setUsers: (users) => localStorage.setItem('app_users', JSON.stringify(users)),
@@ -365,156 +276,32 @@ const DB = {
     setCurrentUser: (user) => localStorage.setItem('app_current_user', JSON.stringify(user))
 };
 
-// Дефолтний 2-тижневий розклад
 const defaultSchedule = {
     week1: {
-        0: [
-            { name: "Фахова англійська мова (Практ.)", time: "15:20 - 16:55" },
-            { name: "Фахова англійська мова (Практ.)", time: "17:10 - 18:45" }
-        ],
-        1: [
-            { name: "Системне програмування (Лекц.)", time: "15:20 - 16:55" }
-        ],
-        2: [
-            { name: "Основи комп'ютерних мереж (Лаб.)", time: "15:20 - 16:55" }
-        ],
-        3: [
-            { name: "Системне програмування (Лаб.)", time: "15:20 - 16:55" }
-        ],
-        4: [
-            { name: "Комп'ютерна схемотехніка (Лаб.)", time: "15:20 - 16:55" }
-        ],
-        5: []
+        0: [{ name: "Фахова англійська мова", time: "15:20 - 16:55" }],
+        1: [{ name: "Системне програмування", time: "15:20 - 16:55" }],
+        2: [{ name: "Основи комп'ютерних мереж", time: "15:20 - 16:55" }],
+        3: [{ name: "Системне програмування (Лаб.)", time: "15:20 - 16:55" }],
+        4: [{ name: "Комп'ютерна схемотехніка", time: "15:20 - 16:55" }],
+        5: [{ name: "Консультації / Практикум", time: "10:00 - 11:35" }]
     },
     week2: {
-        0: [
-            { name: "Комп'ютерна схемотехніка (Лекц.)", time: "15:20 - 16:55" }
-        ],
-        1: [
-            { name: "Архітектура комп'ютерів (Лекц.)", time: "15:20 - 16:55" },
-            { name: "Фахова англійська мова (Практ.)", time: "17:10 - 18:45" }
-        ],
-        2: [
-            { name: "Основи комп'ютерних мереж (Лекц.)", time: "15:20 - 16:55" }
-        ],
-        3: [
-            { name: "Архітектура комп'ютерів (Лаб.)", time: "15:20 - 16:55" },
-            { name: "Архітектура комп'ютерів (Лаб.)", time: "17:10 - 18:45" }
-        ],
-        4: [
-            { name: "Комп'ютерна схемотехніка (Лаб.)", time: "15:20 - 16:55" },
-            { name: "Фахова англійська мова (Практ.)", time: "17:10 - 18:45" }
-        ],
-        5: []
+        0: [{ name: "Комп'ютерна схемотехніка", time: "15:20 - 16:55" }],
+        1: [{ name: "Архітектура комп'ютерів", time: "15:20 - 16:55" }],
+        2: [{ name: "Основи комп'ютерних мереж", time: "15:20 - 16:55" }],
+        3: [{ name: "Архітектура комп'ютерів (Лаб.)", time: "15:20 - 16:55" }],
+        4: [{ name: "Фахова англійська мова", time: "17:10 - 18:45" }],
+        5: [{ name: "Лабораторний практикум", time: "12:00 - 13:35" }]
     }
 };
 
-// Створення дефолтного адміна
 if (DB.getUsers().length === 0) {
-    DB.setUsers([{ 
-        username: 'admin', 
-        password: '123', 
-        secret: 'admin', 
-        isAdmin: true, 
-        blocked: false, 
-        tasks: [], 
-        schedule: defaultSchedule
-    }]);
+    DB.setUsers([{ username: 'admin', password: '123', secret: 'admin', isAdmin: true, tasks: [], schedule: defaultSchedule }]);
 }
 
 let currentUser = DB.getCurrentUser();
 const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"];
-
-/* АВТОМАТИЧНЕ ВИЗНАЧЕННЯ НАВЧАЛЬНОГО ТИЖНЯ */
-function getCurrentAcademicWeek(date = new Date()) {
-    const startDate = new Date(2026, 7, 31);
-    const diffTime = date - startDate;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return 'week1';
-    
-    const weekNum = Math.floor(diffDays / 7) + 1;
-    return (weekNum % 2 === 1) ? 'week1' : 'week2';
-}
-
-/* AUTH LOGIC */
-function switchAuthTab(type) {
-    document.getElementById('formLogin').style.display = type === 'login' ? 'block' : 'none';
-    document.getElementById('formRegister').style.display = type === 'register' ? 'block' : 'none';
-    document.getElementById('formForgot').style.display = type === 'forgot' ? 'block' : 'none';
-    document.getElementById('tabLogin').classList.toggle('active', type === 'login');
-    document.getElementById('tabRegister').classList.toggle('active', type === 'register');
-}
-
-function handleRegister() {
-    const username = document.getElementById('regUser').value.trim();
-    const password = document.getElementById('regPass').value;
-    const secret = document.getElementById('regSecret').value.trim();
-
-    if (!username || !password || !secret) return alert("Заповніть усі поля!");
-
-    let users = DB.getUsers();
-    if (users.find(u => u.username === username)) return alert("Логін зайнятий!");
-
-    users.push({ 
-        username, 
-        password, 
-        secret, 
-        isAdmin: false, 
-        blocked: false, 
-        tasks: [], 
-        schedule: JSON.parse(JSON.stringify(defaultSchedule)) 
-    });
-    DB.setUsers(users);
-    alert("Реєстрація успішна!");
-    switchAuthTab('login');
-}
-
-function handleLogin() {
-    const username = document.getElementById('loginUser').value.trim();
-    const password = document.getElementById('loginPass').value;
-
-    let users = DB.getUsers();
-    let user = users.find(u => u.username === username && u.password === password);
-
-    if (!user) return alert("Невірний логін або пароль!");
-    if (user.blocked) return alert("Акаунт заблоковано!");
-
-    DB.setCurrentUser(user);
-    currentUser = user;
-    initApp();
-}
-
-function handleResetPassword() {
-    const username = document.getElementById('forgotUser').value.trim();
-    const secret = document.getElementById('forgotSecret').value.trim();
-    const newPassword = document.getElementById('forgotNewPass').value;
-
-    let users = DB.getUsers();
-    let user = users.find(u => u.username === username && u.secret === secret);
-    if (!user) return alert("Невірні дані!");
-
-    user.password = newPassword;
-    DB.setUsers(users);
-    alert("Пароль змінено!");
-    switchAuthTab('login');
-}
-
-function handleLogout() {
-    localStorage.removeItem('app_current_user');
-    currentUser = null;
-    document.getElementById('authOverlay').style.display = 'flex';
-}
-
-function saveUserData() {
-    let users = DB.getUsers();
-    let idx = users.findIndex(u => u.username === currentUser.username);
-    if (idx !== -1) {
-        users[idx] = currentUser;
-        DB.setUsers(users);
-        DB.setCurrentUser(currentUser);
-    }
-}
+let calendarDate = new Date();
 
 function initApp() {
     if (!currentUser) {
@@ -522,57 +309,33 @@ function initApp() {
         return;
     }
     document.getElementById('authOverlay').style.display = 'none';
-    document.getElementById('currentUserLabel').textContent = currentUser.username + (currentUser.isAdmin ? ' (Admin)' : '');
-
-    if (currentUser.isAdmin) {
-        document.getElementById('adminSidebarBtn').style.display = 'flex';
-        document.getElementById('adminAccessCard').style.display = 'block';
-        loadAdminTable();
-    } else {
-        document.getElementById('adminSidebarBtn').style.display = 'none';
-        document.getElementById('adminAccessCard').style.display = 'none';
-    }
+    document.getElementById('currentUserLabel').textContent = currentUser.username;
 
     renderHomeDashboard();
     renderTasks();
     renderSchedule();
+    renderCalendar();
 }
 
-/* DASHBOARD LOGIC */
+/* РАХУНОК ТИЖНЯ ТА СУБОТНЬОЇ ЛОГІКИ */
 function renderHomeDashboard() {
-    const homeTasksContainer = document.getElementById('homeTasksContainer');
-    const tasks = currentUser.tasks || [];
-    if (!tasks.length) {
-        homeTasksContainer.innerHTML = '<p style="font-size:12px; color:var(--muted);">Немає активних завдань</p>';
-    } else {
-        homeTasksContainer.innerHTML = tasks.map(t => `
-            <div class="task-card-item ${t.done ? 'completed':''}">
-                <div style="font-weight:bold;">${t.title}</div>
-                <div class="task-dates">
-                    <span>🟢 Старт: ${t.start ? formatDate(t.start) : 'Не вказано'}</span>
-                    <span>🔴 Фініш: ${t.end ? formatDate(t.end) : 'Не вказано'}</span>
-                </div>
-            </div>
-        `).join('');
-    }
-
     const todayContainer = document.getElementById('todayScheduleContainer');
     const now = new Date();
     const currentDay = now.getDay(); 
     const currentHour = now.getHours();
 
-    let targetDayIdx = currentDay - 1; 
+    let targetDayIdx = currentDay === 0 ? 0 : currentDay - 1; 
     let displayTitle = "";
-    let weekKey = getCurrentAcademicWeek(now);
+    let weekKey = 'week1'; 
 
+    // Логіка для П'ятниці та Суботи стосовно 12:00
     if (currentDay === 5 && currentHour >= 12) {
-        targetDayIdx = 5; 
+        targetDayIdx = 5; // Показываем Субботу
         displayTitle = "Заняття на завтра (Субота):";
     } else if (currentDay === 6 && currentHour < 12) {
-        targetDayIdx = 5; 
+        targetDayIdx = 5; // Показываем Субботу
         displayTitle = "Заняття на сьогодні (Субота):";
     } else {
-        if (targetDayIdx < 0 || targetDayIdx > 5) targetDayIdx = 0; 
         displayTitle = `Заняття на ${days[targetDayIdx]}:`;
     }
 
@@ -593,75 +356,94 @@ function renderHomeDashboard() {
     }
 }
 
-function formatDate(dtStr) {
-    if(!dtStr) return '';
-    const d = new Date(dtStr);
-    return d.toLocaleString('uk-UA', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
-}
-
-/* TASKS ENGINE */
-function addNewTask() {
-    const title = document.getElementById('newTaskTitle').value.trim();
-    const start = document.getElementById('newTaskStart').value;
-    const end = document.getElementById('newTaskEnd').value;
-
-    if (!title) return alert("Введіть назву завдання!");
-
-    if (!currentUser.tasks) currentUser.tasks = [];
-    currentUser.tasks.push({ title, start, end, done: false });
+/* КАЛЕНДАР */
+function renderCalendar() {
+    const label = document.getElementById('calendarMonthLabel');
+    const grid = document.getElementById('calendarDaysGrid');
     
-    saveUserData();
-    document.getElementById('newTaskTitle').value = '';
-    document.getElementById('newTaskStart').value = '';
-    document.getElementById('newTaskEnd').value = '';
-    
-    renderTasks();
-    renderHomeDashboard();
-}
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
 
-function renderTasks() {
-    const container = document.getElementById('tasksContainer');
-    const tasks = currentUser.tasks || [];
+    const monthNames = ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"];
+    label.textContent = `${monthNames[month]} ${year}`;
 
-    if (!tasks.length) {
-        container.innerHTML = '<p style="font-size:12px; color:var(--muted); text-align:center;">Список завдань порожній</p>';
-        return;
+    grid.innerHTML = '';
+
+    const weekDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
+    weekDays.forEach(d => {
+        grid.innerHTML += `<div class="calendar-day-name">${d}</div>`;
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+    for (let i = 0; i < startOffset; i++) {
+        grid.innerHTML += `<div class="calendar-day empty"></div>`;
     }
 
-    container.innerHTML = tasks.map((t, i) => `
-        <div class="task-card-item ${t.done ? 'completed':''}">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <input type="checkbox" ${t.done ? 'checked':''} onchange="toggleTask(${i})">
-                    <span style="font-weight:700; font-size:14px;">${t.title}</span>
-                </div>
-                <button style="border:0; background:none; color:#ef4444; cursor:pointer;" onclick="deleteTask(${i})">Видалити</button>
-            </div>
-            <div class="task-dates">
-                <span>🟢 Початок: ${t.start ? formatDate(t.start) : '—'}</span>
-                <span>🔴 Кінець: ${t.end ? formatDate(t.end) : '—'}</span>
-            </div>
-        </div>
-    `).join('');
+    const today = new Date();
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+        grid.innerHTML += `<div class="calendar-day ${isToday ? 'today' : ''}">${d}</div>`;
+    }
 }
 
-function toggleTask(i) {
-    currentUser.tasks[i].done = !currentUser.tasks[i].done;
-    saveUserData();
-    renderTasks();
-    renderHomeDashboard();
+function changeMonth(delta) {
+    calendarDate.setMonth(calendarDate.getMonth() + delta);
+    renderCalendar();
 }
 
-function deleteTask(i) {
-    currentUser.tasks.splice(i, 1);
-    saveUserData();
-    renderTasks();
-    renderHomeDashboard();
+/* АВТОРИЗАЦІЯ ТА НАВІГАЦІЯ */
+function switchAuthTab(type) {
+    document.getElementById('formLogin').style.display = type === 'login' ? 'block' : 'none';
+    document.getElementById('formRegister').style.display = type === 'register' ? 'block' : 'none';
+    document.getElementById('tabLogin').classList.toggle('active', type === 'login');
+    document.getElementById('tabRegister').classList.toggle('active', type === 'register');
 }
 
-/* SCHEDULE ENGINE */
-let currentWeek = getCurrentAcademicWeek();
+function handleLogin() {
+    const user = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    let users = DB.getUsers();
+    let found = users.find(u => u.username === user && u.password === pass);
 
+    if (found) {
+        currentUser = found;
+        DB.setCurrentUser(found);
+        initApp();
+    } else {
+        alert("Невірний логін або пароль");
+    }
+}
+
+function handleRegister() {
+    const username = document.getElementById('regUser').value.trim();
+    const password = document.getElementById('regPass').value;
+    const secret = document.getElementById('regSecret').value.trim();
+
+    if (!username || !password) return alert("Заповніть всі поля");
+
+    let users = DB.getUsers();
+    users.push({ username, password, secret, isAdmin: false, tasks: [], schedule: defaultSchedule });
+    DB.setUsers(users);
+    alert("Реєстрація успішна!");
+    switchAuthTab('login');
+}
+
+function handleLogout() {
+    localStorage.removeItem('app_current_user');
+    currentUser = null;
+    document.getElementById('authOverlay').style.display = 'flex';
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+}
+
+let currentWeek = 'week1';
 function switchWeek(w) {
     currentWeek = w;
     document.getElementById('btnW1').classList.toggle('active', w === 'week1');
@@ -678,193 +460,43 @@ function renderSchedule() {
         const list = weekData[i] || [];
         return `
             <div class="column-day">
-                <div class="column-header">
-                    <span>${d}</span>
-                    <button class="btn-primary btn-small" onclick="addLesson(${i})">+</button>
-                </div>
-                <div>${list.map((l, li) => `
+                <div class="column-header">${d}</div>
+                <div>${list.map(l => `
                     <div class="lesson-card">
                         <div style="font-size:10px; color:var(--muted); font-weight:700;">⏰ ${l.time}</div>
                         <div style="font-weight:700;">${l.name}</div>
-                        <button style="border:0; background:none; color:red; font-size:10px; cursor:pointer; margin-top:4px;" onclick="deleteLesson(${i}, ${li})">Видалити</button>
                     </div>
                 `).join('') || '<p style="font-size:11px; color:var(--muted); text-align:center;">Немає пар</p>'}</div>
             </div>`;
     }).join('');
 }
 
-function addLesson(dayIdx) {
-    const name = prompt("Назва предмета:");
-    if (!name) return;
-    const time = prompt("Час занять:", "15:20 - 16:55") || "15:20 - 16:55";
-
-    if (!currentUser.schedule[currentWeek]) currentUser.schedule[currentWeek] = {};
-    if (!currentUser.schedule[currentWeek][dayIdx]) currentUser.schedule[currentWeek][dayIdx] = [];
-
-    currentUser.schedule[currentWeek][dayIdx].push({ name, time });
-    saveUserData();
-    renderSchedule();
-    renderHomeDashboard();
+function renderTasks() {
+    const container = document.getElementById('tasksContainer');
+    const tasks = currentUser.tasks || [];
+    container.innerHTML = tasks.map((t, i) => `<div class="task-card-item">${t.title}</div>`).join('') || '<p style="font-size:12px; color:var(--muted);">Немає завдань</p>';
 }
 
-function deleteLesson(dayIdx, lessonIdx) {
-    currentUser.schedule[currentWeek][dayIdx].splice(lessonIdx, 1);
-    saveUserData();
-    renderSchedule();
-    renderHomeDashboard();
+function addNewTask() {
+    const title = document.getElementById('newTaskTitle').value.trim();
+    if (!title) return;
+    if (!currentUser.tasks) currentUser.tasks = [];
+    currentUser.tasks.push({ title });
+    DB.setCurrentUser(currentUser);
+    document.getElementById('newTaskTitle').value = '';
+    renderTasks();
 }
 
-/* ADMIN PANEL ENGINE */
-let editingUserUsername = null;
-
-function loadAdminTable() {
-    const tbody = document.getElementById('adminUsersTable');
-    const users = DB.getUsers();
-    tbody.innerHTML = users.map(u => `
-        <tr>
-            <td><b>${u.username}</b></td>
-            <td>${u.isAdmin ? '<span style="color:var(--primary); font-weight:bold;">Admin</span>' : 'Student'}</td>
-            <td><span style="color:${u.blocked ? 'red':'green'}">${u.blocked ? 'Заблоковано':'Активний'}</span></td>
-            <td>
-                <button class="btn-primary btn-small" onclick="openAdminScheduleModal('${u.username}')">📅 Редагувати розклад</button>
-            </td>
-            <td>
-                ${!u.isAdmin ? `<button class="btn-primary btn-small ${u.blocked ? '':'btn-danger'}" onclick="toggleBlock('${u.username}')">${u.blocked ? 'Розблокувати':'Заблокувати'}</button>` : ''}
-            </td>
-        </tr>
-    `).join('');
-}
-
-function toggleBlock(username) {
-    let users = DB.getUsers();
-    let u = users.find(x => x.username === username);
-    if (u) {
-        u.blocked = !u.blocked;
-        DB.setUsers(users);
-        loadAdminTable();
-    }
-}
-
-function openAdminScheduleModal(username) {
-    editingUserUsername = username;
-    document.getElementById('adminModalTitle').textContent = `Розклад користувача: ${username}`;
-    document.getElementById('adminScheduleModal').style.display = 'flex';
-    renderAdminModalSchedule();
-}
-
-function closeAdminModal() {
-    document.getElementById('adminScheduleModal').style.display = 'none';
-}
-
-function renderAdminModalSchedule() {
-    const users = DB.getUsers();
-    const u = users.find(x => x.username === editingUserUsername);
-    if (!u) return;
-
-    const week = document.getElementById('adminModalWeek').value;
-    const day = document.getElementById('adminModalDay').value;
-
-    const listContainer = document.getElementById('adminModalLessonsList');
-    const lessons = (u.schedule && u.schedule[week] && u.schedule[week][day]) ? u.schedule[week][day] : [];
-
-    if (!lessons.length) {
-        listContainer.innerHTML = '<p style="font-size:12px; color:var(--muted); text-align:center;">Немає пар на цей день</p>';
-        return;
-    }
-
-    listContainer.innerHTML = lessons.map((l, i) => `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:8px; border-radius:6px; margin-bottom:5px; font-size:12px;">
-            <div>
-                <strong>${l.time}</strong> — ${l.name}
-            </div>
-            <button style="border:0; background:none; color:red; cursor:pointer;" onclick="adminDeleteLesson(${i})">✕</button>
-        </div>
-    `).join('');
-}
-
-function adminSaveLesson() {
-    const name = document.getElementById('adminNewLessonName').value.trim();
-    const time = document.getElementById('adminNewLessonTime').value.trim();
-
-    if (!name || !time) return alert("Введіть назву та час!");
-
-    let users = DB.getUsers();
-    let u = users.find(x => x.username === editingUserUsername);
-    if (!u) return;
-
-    const week = document.getElementById('adminModalWeek').value;
-    const day = document.getElementById('adminModalDay').value;
-
-    if (!u.schedule) u.schedule = { week1: {}, week2: {} };
-    if (!u.schedule[week]) u.schedule[week] = {};
-    if (!u.schedule[week][day]) u.schedule[week][day] = [];
-
-    u.schedule[week][day].push({ name, time });
-    DB.setUsers(users);
-
-    if (currentUser && currentUser.username === u.username) {
-        currentUser = u;
-        DB.setCurrentUser(u);
-        renderSchedule();
-        renderHomeDashboard();
-    }
-
-    document.getElementById('adminNewLessonName').value = '';
-    renderAdminModalSchedule();
-}
-
-function adminDeleteLesson(index) {
-    let users = DB.getUsers();
-    let u = users.find(x => x.username === editingUserUsername);
-    if (!u) return;
-
-    const week = document.getElementById('adminModalWeek').value;
-    const day = document.getElementById('adminModalDay').value;
-
-    u.schedule[week][day].splice(index, 1);
-    DB.setUsers(users);
-
-    if (currentUser && currentUser.username === u.username) {
-        currentUser = u;
-        DB.setCurrentUser(u);
-        renderSchedule();
-        renderHomeDashboard();
-    }
-
-    renderAdminModalSchedule();
-}
-
-/* NAVIGATION & UI */
 function navigateTo(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => b.classList.remove('active'));
-
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) targetPage.classList.add('active');
-
+    document.getElementById(pageId).classList.add('active');
     document.querySelectorAll(`[data-page="${pageId}"]`).forEach(b => b.classList.add('active'));
 }
 
 document.querySelectorAll('[data-page]').forEach(btn => {
     btn.addEventListener('click', () => navigateTo(btn.getAttribute('data-page')));
 });
-
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-}
-
-function openTelegramApp() {
-    window.open('https://t.me', '_blank');
-}
-
-function updateSecretWord() {
-    const val = document.getElementById('updateSecretInput').value.trim();
-    if (!val) return alert("Введіть нове секретне слово");
-    currentUser.secret = val;
-    saveUserData();
-    alert("Секретне слово оновлено!");
-    document.getElementById('updateSecretInput').value = '';
-}
 
 window.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
