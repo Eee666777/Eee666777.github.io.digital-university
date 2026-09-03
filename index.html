@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DU - Цифровий університет</title>
+    <title>DU - Цифровий университет</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,10 +69,18 @@
         .widget-card.blue-variant { background: var(--card-blue); }
         .widget-card.mint-variant { background: var(--card-mint); }
 
-        .profile-row { display: flex; align-items: center; gap: 18px; }
+        .profile-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+        .profile-info { display: flex; align-items: center; gap: 18px; }
         .avatar-frame { width: 72px; height: 72px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--accent-blue); flex-shrink: 0; }
         .profile-meta h2 { font-size: 18px; font-weight: 700; }
-        .badge-group { display: inline-block; background: #ffffff; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); border: 1px solid #e2e8f0; }
+        .badge-group { display: inline-block; background: #ffffff; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); border: 1px solid #e2e8f0; margin-top: 4px; }
+
+        .logout-btn-card {
+            background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 12px;
+            font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            transition: background 0.2s;
+        }
+        .logout-btn-card:hover { background: #dc2626; }
 
         .widget-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         
@@ -174,7 +182,7 @@
             <div>
                 <div class="brand-header">
                     <div class="brand-logo">DU</div>
-                    <div class="brand-sub">Цифровий університет</div>
+                    <div class="brand-sub">Цифровий университет</div>
                 </div>
                 <ul class="desktop-nav">
                     <li class="active"><a href="#"><i class="fa-solid fa-house"></i> Головна</a></li>
@@ -187,17 +195,23 @@
         <main class="content-area">
             <div class="brand-header">
                 <div class="brand-logo">DU</div>
-                <div class="brand-sub">Цифровий університет</div>
+                <div class="brand-sub">Цифровий университет</div>
             </div>
 
             <!-- Шапка профілю -->
             <section class="widget-card">
                 <div class="profile-row">
-                    <div class="avatar-frame"><i class="fa-solid fa-user"></i></div>
-                    <div class="profile-meta">
-                        <h2 id="userFullName">Студент</h2>
-                        <span class="badge-group" id="userGroup">Група</span>
+                    <div class="profile-info">
+                        <div class="avatar-frame"><i class="fa-solid fa-user"></i></div>
+                        <div class="profile-meta">
+                            <h2 id="userFullName">Студент</h2>
+                            <span class="badge-group" id="userGroup">Група</span>
+                        </div>
                     </div>
+                    <!-- Кнопка виходу з акаунту прямо на мобільному/картці -->
+                    <button id="logoutBtnCard" class="logout-btn-card">
+                        <i class="fa-solid fa-right-from-bracket"></i> Вийти
+                    </button>
                 </div>
             </section>
 
