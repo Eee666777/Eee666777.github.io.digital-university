@@ -1,0 +1,29 @@
+{
+  "university": {
+    "title": "DU",
+    "subTitle": "Цифровий університет"
+  },
+  "student": {
+    "fullName": "Ігнатенко Євген Олександрович",
+    "group": "Б-Ф7-25-1-КС",
+    "course": 1
+  },
+  "links": {
+    "telegram": "https://t.me",
+    "classroom": "https://classroom.google.com"
+  },
+  "schedule": {
+    "week1": [
+      { "day": "Понеділок", "subject": "Вища математика", "time": "08:30" },
+      { "day": "Вівторок", "subject": "Програмування", "time": "10:20" }
+    ],
+    "week2": [
+      { "day": "Понеділок", "subject": "Алгоритми", "time": "08:30" },
+      { "day": "Субота", "subject": "Фізика (за датою)", "time": "12:10" }
+    ]
+  },
+  "system": {
+    "totalUsers": 15,
+    "hasAdmin": true
+  }
+}
