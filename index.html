@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DU - Цифровий Університет</title>
+    <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -49,4 +51,236 @@
         .schedule-info h5 { font-size: 13px; font-weight: 700; }
         .schedule-info p { font-size: 11px; color: var(--text-muted); }
 
-        .ticket-
+        .ticket-upload { background: var(--card-bg); border: 2px dashed #cbd5e1; border-radius: var(--radius-lg); padding: 16px; text-align: center; margin-bottom: 20px; }
+        .ticket-preview { display: flex; gap: 10px; margin-top: 10px; }
+        .ticket-slot { flex: 1; height: 85px; background: #f1f5f9; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); cursor: pointer; border: 1px solid #e2e8f0; position: relative; }
+        .ticket-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 65px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); max-width: 430px; margin: 0 auto; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 10px; font-weight: 600; gap: 4px; border: none; background: none; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 18px; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
+        .modal.open { display: flex !important; }
+        .modal-content { background: white; border-radius: var(--radius-lg); padding: 20px; width: 100%; max-width: 380px; max-height: 85vh; overflow-y: auto; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; }
+        .btn-primary { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .btn-secondary { background: #64748b; margin-top: 6px; }
+
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+        .user-code-tag { background: var(--primary-light); color: var(--primary); font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+        .block-btn { color: #ef4444; border: none; background: none; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <input type="file" id="ticketFileInput" accept="image/*" style="display: none;">
+
+    <div class="app-container">
+
+        <!-- Хедер -->
+        <div class="header">
+            <div class="user-greeting">
+                <h3 id="displayUserName">Вітаємо, Студент! 👋</h3>
+                <p id="displayUserGroup">Група: Б-Ф7-25-1-КС</p>
+            </div>
+            <div class="avatar-box">
+                <div class="avatar" id="userAvatar">DU</div>
+                <i class="fa-solid fa-right-from-bracket" id="logoutBtn" style="color: #ef4444; cursor: pointer;" title="Вийти"></i>
+            </div>
+        </div>
+
+        <!-- Таб 1: Головна -->
+        <div id="tab-home" class="tab-content active">
+            <div class="promo-card">
+                <h4>Ваш університет у цифровому форматі</h4>
+                <p>Усі матеріали, розклад та завдання в одному місці.</p>
+                <div class="code-badge" id="myUniqueCode">Код: DU-XXXX</div>
+            </div>
+
+            <div class="section-title">Швидкий доступ</div>
+            <div class="quick-grid">
+                <button class="quick-item" onclick="switchTab('tab-schedule')">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Розклад</span>
+                </button>
+                <button class="quick-item" onclick="switchTab('tab-tasks')">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Завдання</span>
+                </button>
+                <button class="quick-item" onclick="switchTab('tab-library')">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Книги</span>
+                </button>
+                <button class="quick-item" id="btnAdminPanel" style="display: none;">
+                    <i class="fa-solid fa-user-gear" style="color: #ea580c;"></i>
+                    <span>Адмін</span>
+                </button>
+            </div>
+
+            <div class="section-title">Студентський квиток</div>
+            <div class="ticket-upload">
+                <p style="font-size: 11px; color: var(--text-muted);">Завантажте фото з обох сторін</p>
+                <div class="ticket-preview">
+                    <div class="ticket-slot" id="slotFront" onclick="triggerCardUpload('front')">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>Лицьова сторона</span>
+                    </div>
+                    <div class="ticket-slot" id="slotBack" onclick="triggerCardUpload('back')">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>Зворотна сторона</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <span>Розклад на сьогодні</span>
+                <span class="view-all" onclick="switchTab('tab-schedule')">Всі</span>
+            </div>
+            <div id="todayScheduleContainer"></div>
+        </div>
+
+        <!-- Таб 2: Розклад -->
+        <div id="tab-schedule" class="tab-content">
+            <div class="section-title">Заняття</div>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button class="btn-primary" id="btnWeek1" style="flex:1; margin:0;" onclick="selectWeek('week1')">1-й Тиждень</button>
+                <button class="btn-primary btn-secondary" id="btnWeek2" style="flex:1; margin:0;" onclick="selectWeek('week2')">2-й Тиждень</button>
+            </div>
+            <div id="fullScheduleContainer"></div>
+        </div>
+
+        <!-- Таб 3: Завдання -->
+        <div id="tab-tasks" class="tab-content">
+            <div class="section-title">
+                Мої Завдання
+                <button class="view-all" onclick="openModal('taskModal')" style="border:none; background:none; color:var(--primary); font-weight:700;">+ Додати</button>
+            </div>
+            <div id="tasksContainer"></div>
+        </div>
+
+        <!-- Таб 4: Книги -->
+        <div id="tab-library" class="tab-content">
+            <div class="section-title">Навчальна Література</div>
+            <div id="libraryContainer"></div>
+        </div>
+
+        <!-- Таб 5: Профіль -->
+        <div id="tab-profile" class="tab-content">
+            <div class="section-title">Особистий кабінет</div>
+            <div class="schedule-card">
+                <div>
+                    <h5 id="profName">-</h5>
+                    <p id="profGroup">-</p>
+                    <p id="profCode" style="color: var(--primary); font-weight:700; margin-top:4px;">-</p>
+                </div>
+            </div>
+            <div class="section-title" style="margin-top: 15px;">Посилання</div>
+            <button class="btn-primary" onclick="window.open('https://t.me', '_blank')"><i class="fa-brands fa-telegram"></i> Telegram чат</button>
+            <button class="btn-primary btn-secondary" onclick="window.open('https://classroom.google.com', '_blank')"><i class="fa-solid fa-graduation-cap"></i> Google Classroom</button>
+        </div>
+
+    </div>
+
+    <!-- Навігація -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('tab-home', this)">
+            <i class="fa-solid fa-house"></i>
+            <span>Головна</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-schedule', this)">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Розклад</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-tasks', this)">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Завдання</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-library', this)">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Книги</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-profile', this)">
+            <i class="fa-solid fa-user"></i>
+            <span>Профіль</span>
+        </button>
+    </nav>
+
+    <!-- Вікно Авторизації -->
+    <div id="authModal" class="modal open">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 12px; text-align: center;">Вхід у DU</h3>
+            <form id="authForm">
+                <div class="form-group">
+                    <label>Оберіть користувача</label>
+                    <select id="userSelect" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Пароль (для Адміна: admin)</label>
+                    <input type="password" id="authPass" class="form-control" placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary">Увійти</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модалка Адміна -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <h3>⚙️ Панель Адміністратора</h3>
+            
+            <div class="section-title" style="margin-top:15px;">Студенти</div>
+            <div id="adminUsersList" style="max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 12px;"></div>
+
+            <div class="section-title">Додати розклад</div>
+            <form id="addScheduleForm">
+                <div class="form-group">
+                    <select id="schWeek" class="form-control"><option value="week1">Тиждень 1</option><option value="week2">Тиждень 2</option></select>
+                </div>
+                <div class="form-group">
+                    <select id="schDay" class="form-control">
+                        <option value="Понеділок">Понеділок</option><option value="Вівторок">Вівторок</option>
+                        <option value="Середа">Середа</option><option value="Четвер">Четвер</option>
+                        <option value="П'ятниця">П'ятниця</option>
+                    </select>
+                </div>
+                <div class="form-group"><input type="text" id="schSubject" class="form-control" placeholder="Назва предмета" required></div>
+                <div style="display:flex; gap: 6px;">
+                    <input type="time" id="schStart" class="form-control" required>
+                    <input type="time" id="schEnd" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-primary" style="background:#ea580c;">Зберегти пару</button>
+            </form>
+
+            <button class="btn-primary btn-secondary" onclick="closeModal('adminModal')">Закрити</button>
+        </div>
+    </div>
+
+    <!-- Модалка Завдань -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <h3>Нове завдання</h3>
+            <form id="addTaskForm">
+                <div class="form-group">
+                    <label>Опис завдання</label>
+                    <input type="text" id="taskText" class="form-control" placeholder="Лабораторна №3..." required>
+                </div>
+                <div class="form-group">
+                    <label>Дедлайн</label>
+                    <input type="date" id="taskDate" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-primary">Зберегти</button>
+                <button type="button" class="btn-primary btn-secondary" onclick="closeModal('taskModal')">Скасувати</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
