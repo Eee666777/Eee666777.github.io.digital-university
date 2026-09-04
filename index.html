@@ -7,173 +7,228 @@
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4f46e5;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
             --primary-light: #e0e7ff;
+            --accent: #f59e0b;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
+            --border: #e2e8f0;
             --radius-lg: 20px;
             --radius-md: 14px;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; padding-bottom: 90px; }
 
-        .app-container { max-width: 430px; margin: 0 auto; padding: 16px; }
+        .app-container { max-width: 440px; margin: 0 auto; padding: 18px; }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .user-greeting h3 { font-size: 18px; font-weight: 700; }
-        .user-greeting p { font-size: 12px; color: var(--text-muted); }
-        .avatar-box { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary); }
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+        .user-greeting h3 { font-size: 19px; font-weight: 800; color: var(--text-main); }
+        .user-greeting p { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .avatar-box { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-light), #c7d2fe); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary-dark); font-size: 15px; box-shadow: var(--shadow); }
         
-        .promo-card { background: linear-gradient(135deg, #312e81 0%, #4f46e5 100%); border-radius: var(--radius-lg); padding: 20px; color: white; margin-bottom: 20px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
-        .promo-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-        .promo-card p { font-size: 12px; opacity: 0.8; margin-bottom: 12px; }
-        .code-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+        /* Banner Card */
+        .promo-card { background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); border-radius: var(--radius-lg); padding: 22px; color: white; margin-bottom: 22px; box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4); position: relative; overflow: hidden; }
+        .promo-card h4 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+        .promo-card p { font-size: 12px; opacity: 0.9; margin-bottom: 14px; font-weight: 400; }
+        .code-badge { display: inline-block; background: rgba(255,255,255,0.22); backdrop-filter: blur(8px); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
 
-        .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-        .quick-item { background: var(--card-bg); border-radius: var(--radius-md); padding: 12px 8px; text-align: center; box-shadow: var(--shadow); cursor: pointer; border: none; }
-        .quick-item i { font-size: 18px; color: var(--primary); margin-bottom: 6px; display: block; }
-        .quick-item span { font-size: 11px; font-weight: 600; color: var(--text-main); }
+        /* Quick Access */
+        .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+        .quick-item { background: var(--card-bg); border-radius: var(--radius-md); padding: 14px 8px; text-align: center; box-shadow: var(--shadow); cursor: pointer; border: 1px solid var(--border); transition: transform 0.2s; }
+        .quick-item:active { transform: scale(0.96); }
+        .quick-item i { font-size: 20px; color: var(--primary); margin-bottom: 6px; display: block; }
+        .quick-item span { font-size: 11px; font-weight: 700; color: var(--text-main); }
 
-        .section-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .view-all { font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600; cursor: pointer; }
+        /* Sections */
+        .section-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); }
+        .view-all { font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 700; cursor: pointer; }
 
-        .schedule-card { background: var(--card-bg); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; }
-        .schedule-time { font-size: 12px; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 6px 10px; border-radius: 8px; text-align: center; }
-        .schedule-info { flex: 1; margin-left: 12px; }
-        .schedule-info h5 { font-size: 13px; font-weight: 700; }
-        .schedule-info p { font-size: 11px; color: var(--text-muted); }
+        /* Schedule Cards */
+        .schedule-card { background: var(--card-bg); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); }
+        .schedule-time { font-size: 11px; font-weight: 800; color: var(--primary-dark); background: var(--primary-light); padding: 8px 12px; border-radius: 10px; text-align: center; line-height: 1.3; }
+        .schedule-info { flex: 1; margin-left: 14px; }
+        .schedule-info h5 { font-size: 14px; font-weight: 700; color: var(--text-main); }
+        .schedule-info p { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
 
-        .ticket-upload { background: var(--card-bg); border: 2px dashed #cbd5e1; border-radius: var(--radius-lg); padding: 16px; text-align: center; margin-bottom: 20px; }
-        .ticket-preview { display: flex; gap: 10px; margin-top: 10px; }
-        .ticket-slot { flex: 1; height: 85px; background: #f1f5f9; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); cursor: pointer; border: 1px solid #e2e8f0; position: relative; }
-        .ticket-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; }
+        /* File Upload & Generator UI */
+        .card-box { background: var(--card-bg); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 22px; box-shadow: var(--shadow); border: 1px solid var(--border); }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 65px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #f1f5f9; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); max-width: 430px; margin: 0 auto; z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 10px; font-weight: 600; gap: 4px; border: none; background: none; cursor: pointer; flex: 1; }
+        /* Student Card Visual Generator */
+        .student-id-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border-radius: 16px; padding: 18px; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin-top: 10px; }
+        .student-id-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 8px; margin-bottom: 12px; }
+        .student-id-header span { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #a5b4fc; }
+        .student-id-body { display: flex; gap: 14px; align-items: center; }
+        .student-id-photo { width: 75px; height: 95px; background: #334155; border-radius: 8px; border: 2px solid var(--primary); object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #94a3b8; overflow: hidden; }
+        .student-id-photo img { width: 100%; height: 100%; object-fit: cover; }
+        .student-id-details h4 { font-size: 14px; font-weight: 800; line-height: 1.2; margin-bottom: 4px; }
+        .student-id-details p { font-size: 10px; color: #cbd5e1; margin-bottom: 2px; }
+
+        /* Navigation */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 68px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); box-shadow: 0 -4px 20px rgba(0,0,0,0.04); max-width: 440px; margin: 0 auto; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 10px; font-weight: 700; gap: 4px; border: none; background: none; cursor: pointer; flex: 1; transition: color 0.2s; }
         .nav-item.active { color: var(--primary); }
-        .nav-item i { font-size: 18px; }
+        .nav-item i { font-size: 19px; }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
+        /* Modals */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
         .modal.open { display: flex !important; }
-        .modal-content { background: white; border-radius: var(--radius-lg); padding: 20px; width: 100%; max-width: 380px; max-height: 85vh; overflow-y: auto; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; }
-        .btn-primary { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .modal-content { background: white; border-radius: var(--radius-lg); padding: 22px; width: 100%; max-width: 390px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow); }
+        
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; outline: none; font-weight: 500; transition: border 0.2s; }
+        .form-control:focus { border-color: var(--primary); }
+
+        .btn-primary { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
+        .btn-primary:active { background: var(--primary-dark); }
         .btn-secondary { background: #64748b; margin-top: 6px; }
 
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
-        .user-code-tag { background: var(--primary-light); color: var(--primary); font-weight: 700; padding: 2px 6px; border-radius: 4px; }
-        .block-btn { color: #ef4444; border: none; background: none; cursor: pointer; font-weight: 600; }
+        .file-card { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f1f5f9; border-radius: 10px; margin-bottom: 8px; }
+        .file-info { display: flex; align-items: center; gap: 10px; }
+        .file-info i { font-size: 20px; color: var(--primary); }
+        .file-info div h6 { font-size: 12px; font-weight: 700; }
+        .file-info div p { font-size: 10px; color: var(--text-muted); }
+
+        /* Admin user list */
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+        .block-btn { color: #ef4444; border: none; background: none; cursor: pointer; font-weight: 700; }
     </style>
 </head>
 <body>
-
-    <input type="file" id="ticketFileInput" accept="image/*" style="display: none;">
 
     <div class="app-container">
 
         <!-- Хедер -->
         <div class="header">
             <div class="user-greeting">
-                <h3 id="displayUserName">Вітаємо, Студент! 👋</h3>
-                <p id="displayUserGroup">Група: Б-Ф7-25-1-КС</p>
+                <h3 id="displayUserName">Вітаємо! 👋</h3>
+                <p id="displayUserGroup">Група: -</p>
             </div>
             <div class="avatar-box">
                 <div class="avatar" id="userAvatar">DU</div>
-                <i class="fa-solid fa-right-from-bracket" id="logoutBtn" style="color: #ef4444; cursor: pointer;" title="Вийти"></i>
+                <i class="fa-solid fa-right-from-bracket" id="logoutBtn" style="color: #ef4444; cursor: pointer; font-size: 18px;" title="Вийти"></i>
             </div>
         </div>
 
         <!-- Таб 1: Головна -->
         <div id="tab-home" class="tab-content active">
             <div class="promo-card">
-                <h4>Ваш університет у цифровому форматі</h4>
-                <p>Усі матеріали, розклад та завдання в одному місці.</p>
+                <h4>Цифровий Університет</h4>
+                <p>Ваші матеріали, розклад за датами та студентські документи у зручному форматі.</p>
                 <div class="code-badge" id="myUniqueCode">Код: DU-XXXX</div>
             </div>
 
             <div class="section-title">Швидкий доступ</div>
             <div class="quick-grid">
                 <button class="quick-item" onclick="switchTab('tab-schedule')">
-                    <i class="fa-solid fa-calendar-days"></i>
+                    <i class="fa-solid fa-calendar-day"></i>
                     <span>Розклад</span>
                 </button>
-                <button class="quick-item" onclick="switchTab('tab-tasks')">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>Завдання</span>
+
+                <button class="quick-item" onclick="switchTab('tab-ticket')">
+                    <i class="fa-solid fa-id-card"></i>
+                    <span>Квиток</span>
                 </button>
-                <button class="quick-item" onclick="switchTab('tab-library')">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>Книги</span>
+
+                <button class="quick-item" onclick="switchTab('tab-files')">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>Файли</span>
                 </button>
+
                 <button class="quick-item" id="btnAdminPanel" style="display: none;">
-                    <i class="fa-solid fa-user-gear" style="color: #ea580c;"></i>
+                    <i class="fa-solid fa-user-gear" style="color: var(--accent);"></i>
                     <span>Адмін</span>
                 </button>
             </div>
 
-            <div class="section-title">Студентський квиток</div>
-            <div class="ticket-upload">
-                <p style="font-size: 11px; color: var(--text-muted);">Завантажте фото з обох сторін</p>
-                <div class="ticket-preview">
-                    <div class="ticket-slot" id="slotFront" onclick="triggerCardUpload('front')">
-                        <i class="fa-solid fa-camera"></i>
-                        <span>Лицьова сторона</span>
-                    </div>
-                    <div class="ticket-slot" id="slotBack" onclick="triggerCardUpload('back')">
-                        <i class="fa-solid fa-camera"></i>
-                        <span>Зворотна сторона</span>
-                    </div>
-                </div>
-            </div>
-
             <div class="section-title">
                 <span>Розклад на сьогодні</span>
-                <span class="view-all" onclick="switchTab('tab-schedule')">Всі</span>
+                <span class="view-all" onclick="switchTab('tab-schedule')">Всі дати</span>
             </div>
             <div id="todayScheduleContainer"></div>
         </div>
 
-        <!-- Таб 2: Розклад -->
+        <!-- Таб 2: Розклад за датами -->
         <div id="tab-schedule" class="tab-content">
-            <div class="section-title">Заняття</div>
-            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                <button class="btn-primary" id="btnWeek1" style="flex:1; margin:0;" onclick="selectWeek('week1')">1-й Тиждень</button>
-                <button class="btn-primary btn-secondary" id="btnWeek2" style="flex:1; margin:0;" onclick="selectWeek('week2')">2-й Тиждень</button>
+            <div class="section-title">Розклад за Датами</div>
+            <div class="form-group">
+                <label>Оберіть дату заняття:</label>
+                <input type="date" id="scheduleDatePicker" class="form-control" onchange="filterScheduleByDate()">
             </div>
-            <div id="fullScheduleContainer"></div>
+            <div id="dateScheduleContainer"></div>
         </div>
 
-        <!-- Таб 3: Завдання -->
-        <div id="tab-tasks" class="tab-content">
-            <div class="section-title">
-                Мої Завдання
-                <button class="view-all" onclick="openModal('taskModal')" style="border:none; background:none; color:var(--primary); font-weight:700;">+ Додати</button>
+        <!-- Таб 3: Студентський Квиток (Генератор) -->
+        <div id="tab-ticket" class="tab-content">
+            <div class="section-title">Студентський Квиток</div>
+            
+            <div class="card-box">
+                <form id="studentTicketForm">
+                    <div class="form-group">
+                        <label>ПІБ Студента</label>
+                        <input type="text" id="tkName" class="form-control" placeholder="Зайчук Назарій Вікторович" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Факультет / Група</label>
+                        <input type="text" id="tkGroup" class="form-control" placeholder="ФКНТ / Б-Ф7-25-1-КС" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Номер Квитка</label>
+                        <input type="text" id="tkNumber" class="form-control" placeholder="KB №12345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Фото Студента</label>
+                        <input type="file" id="tkPhotoInput" accept="image/*" class="form-control">
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Згенерувати Квиток</button>
+                </form>
             </div>
-            <div id="tasksContainer"></div>
+
+            <!-- Згенерований квиток -->
+            <div id="generatedTicketBox" style="display: none;">
+                <div class="section-title">Ваш Цифровий Квиток</div>
+                <div class="student-id-card">
+                    <div class="student-id-header">
+                        <span>СТУДЕНТСЬКИЙ КВИТОК</span>
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div class="student-id-body">
+                        <div class="student-id-photo" id="idPhotoPreview">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="student-id-details">
+                            <h4 id="idNameDisplay">ПІБ Студента</h4>
+                            <p id="idGroupDisplay">Група: -</p>
+                            <p id="idNumDisplay">№: -</p>
+                            <p style="color: #a5b4fc; font-weight:700; margin-top:4px;">Дійсний до: 30.06.2028</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Таб 4: Книги -->
-        <div id="tab-library" class="tab-content">
-            <div class="section-title">Навчальна Література</div>
-            <div id="libraryContainer"></div>
+        <!-- Таб 4: Завантажені Файли -->
+        <div id="tab-files" class="tab-content">
+            <div class="section-title">Матеріали та Файли</div>
+            <div id="filesContainer"></div>
         </div>
 
         <!-- Таб 5: Профіль -->
         <div id="tab-profile" class="tab-content">
-            <div class="section-title">Особистий кабінет</div>
+            <div class="section-title">Особистий Кабінет</div>
             <div class="schedule-card">
                 <div>
                     <h5 id="profName">-</h5>
@@ -181,9 +236,6 @@
                     <p id="profCode" style="color: var(--primary); font-weight:700; margin-top:4px;">-</p>
                 </div>
             </div>
-            <div class="section-title" style="margin-top: 15px;">Посилання</div>
-            <button class="btn-primary" onclick="window.open('https://t.me', '_blank')"><i class="fa-brands fa-telegram"></i> Telegram чат</button>
-            <button class="btn-primary btn-secondary" onclick="window.open('https://classroom.google.com', '_blank')"><i class="fa-solid fa-graduation-cap"></i> Google Classroom</button>
         </div>
 
     </div>
@@ -198,13 +250,13 @@
             <i class="fa-solid fa-calendar-days"></i>
             <span>Розклад</span>
         </button>
-        <button class="nav-item" onclick="switchTab('tab-tasks', this)">
-            <i class="fa-solid fa-list-check"></i>
-            <span>Завдання</span>
+        <button class="nav-item" onclick="switchTab('tab-ticket', this)">
+            <i class="fa-solid fa-id-card"></i>
+            <span>Квиток</span>
         </button>
-        <button class="nav-item" onclick="switchTab('tab-library', this)">
-            <i class="fa-solid fa-book-open"></i>
-            <span>Книги</span>
+        <button class="nav-item" onclick="switchTab('tab-files', this)">
+            <i class="fa-solid fa-folder"></i>
+            <span>Файли</span>
         </button>
         <button class="nav-item" onclick="switchTab('tab-profile', this)">
             <i class="fa-solid fa-user"></i>
@@ -212,72 +264,68 @@
         </button>
     </nav>
 
-    <!-- Вікно Авторизації -->
+    <!-- Авторизація -->
     <div id="authModal" class="modal open">
         <div class="modal-content">
-            <h3 style="margin-bottom: 12px; text-align: center;">Вхід у DU</h3>
+            <h3 style="margin-bottom: 16px; text-align: center; font-weight:800;">Вхід у DU</h3>
             <form id="authForm">
                 <div class="form-group">
                     <label>Оберіть користувача</label>
                     <select id="userSelect" class="form-control" required></select>
                 </div>
                 <div class="form-group">
-                    <label>Пароль (для Адміна: admin)</label>
-                    <input type="password" id="authPass" class="form-control" placeholder="••••••••">
+                    <label>Пароль</label>
+                    <input type="password" id="authPass" class="form-control" placeholder="••••••••" required>
                 </div>
                 <button type="submit" class="btn-primary">Увійти</button>
             </form>
         </div>
     </div>
 
-    <!-- Модалка Адміна -->
+    <!-- Адмін Панель -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
-            <h3>⚙️ Панель Адміністратора</h3>
+            <h3 style="font-weight: 800;">⚙️ Панель Адміністратора</h3>
             
-            <div class="section-title" style="margin-top:15px;">Студенти</div>
-            <div id="adminUsersList" style="max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; margin-bottom: 12px;"></div>
-
-            <div class="section-title">Додати розклад</div>
+            <div class="section-title" style="margin-top:16px;">Додати Розклад (включаючи суботи)</div>
             <form id="addScheduleForm">
                 <div class="form-group">
-                    <select id="schWeek" class="form-control"><option value="week1">Тиждень 1</option><option value="week2">Тиждень 2</option></select>
+                    <label>Дата Заняття</label>
+                    <input type="date" id="schDate" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <select id="schDay" class="form-control">
-                        <option value="Понеділок">Понеділок</option><option value="Вівторок">Вівторок</option>
-                        <option value="Середа">Середа</option><option value="Четвер">Четвер</option>
-                        <option value="П'ятниця">П'ятниця</option>
-                    </select>
+                    <label>Предмет</label>
+                    <input type="text" id="schSubject" class="form-control" placeholder="Вища математика / Лекція" required>
                 </div>
-                <div class="form-group"><input type="text" id="schSubject" class="form-control" placeholder="Назва предмета" required></div>
-                <div style="display:flex; gap: 6px;">
-                    <input type="time" id="schStart" class="form-control" required>
-                    <input type="time" id="schEnd" class="form-control" required>
+                <div style="display:flex; gap: 8px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Початок</label>
+                        <input type="time" id="schStart" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Кінець</label>
+                        <input type="time" id="schEnd" class="form-control" required>
+                    </div>
                 </div>
-                <button type="submit" class="btn-primary" style="background:#ea580c;">Зберегти пару</button>
+                <button type="submit" class="btn-primary" style="background:var(--accent);">Додати пару у розклад</button>
+            </form>
+
+            <hr style="margin: 18px 0; border: none; border-top: 1px solid var(--border);">
+
+            <div class="section-title">Завантажити Файл для Студентів</div>
+            <form id="uploadAdminFileForm">
+                <div class="form-group">
+                    <label>Назва Файлу / Опис</label>
+                    <input type="text" id="adminFileName" class="form-control" placeholder="Методичка №1" required>
+                </div>
+                <div class="form-group">
+                    <label>Файл з комп'ютера</label>
+                    <input type="file" id="adminFileInput" class="form-control" required>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-upload"></i> Опублікувати файл</button>
             </form>
 
             <button class="btn-primary btn-secondary" onclick="closeModal('adminModal')">Закрити</button>
-        </div>
-    </div>
-
-    <!-- Модалка Завдань -->
-    <div id="taskModal" class="modal">
-        <div class="modal-content">
-            <h3>Нове завдання</h3>
-            <form id="addTaskForm">
-                <div class="form-group">
-                    <label>Опис завдання</label>
-                    <input type="text" id="taskText" class="form-control" placeholder="Лабораторна №3..." required>
-                </div>
-                <div class="form-group">
-                    <label>Дедлайн</label>
-                    <input type="date" id="taskDate" class="form-control" required>
-                </div>
-                <button type="submit" class="btn-primary">Зберегти</button>
-                <button type="button" class="btn-primary btn-secondary" onclick="closeModal('taskModal')">Скасувати</button>
-            </form>
         </div>
     </div>
 
