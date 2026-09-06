@@ -2,35 +2,30 @@ let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let isSignUpMode = false;
 let selectedWeekView = 2;
 
-// Назви відеофайлів у кореневій папці проєкту
+// Назви відеофайлів
 const SEASON_VIDEOS = {
-  autumn: '26523-358778918_medium.mp4',       // Осінній парк
-  winter: '120843-724673590_medium.mp4',      // Засніжений ліс
-  springSummer: '2.mp4'                      // Зелені дерева / Літо
+  autumn: 'osen.mp4',
+  winter: 'zima.mp4',
+  springSummer: 'leto.mp4'
 };
 
-// Оновлення відео та анімації персонажа залежно від поточного місяця
+// Оновлення відео залежно від сезону (зараз вересень — осінь)
 function updateSeasonAnimation() {
-  const month = new Date().getMonth() + 1; // 1-12
+  const month = new Date().getMonth() + 1; // Вересень = 9
   const video = document.getElementById('season-video');
-  const char = document.getElementById('season-character');
 
-  if (!video || !char) return;
+  if (!video) return;
 
   let videoSrc = '';
 
-  if (month >= 9 && month <= 11) { // Осінь (Вересень - Листопад)
+  if (month >= 9 && month <= 11) { // Осінь (Вересень - Листопад) -> osen.mp4
     videoSrc = SEASON_VIDEOS.autumn;
-    char.innerHTML = '🚴';
-  } else if (month === 12 || month === 1 || month === 2) { // Зима (Грудень - Лютий)
+  } else if (month === 12 || month === 1 || month === 2) { // Зима -> zima.mp4
     videoSrc = SEASON_VIDEOS.winter;
-    char.innerHTML = '🛷';
-  } else { // Весна / Літо (Березень - Серпень)
+  } else { // Весна / Літо -> leto.mp4
     videoSrc = SEASON_VIDEOS.springSummer;
-    char.innerHTML = '🏃';
   }
 
-  // Завантажуємо відео, якщо джерело змінилося або відео ще не встановлено
   if (!video.src.includes(encodeURIComponent(videoSrc)) && !video.src.endsWith(videoSrc)) {
     video.src = videoSrc;
     video.load();
@@ -52,14 +47,14 @@ if (toggleAuthBtn) {
   });
 }
 
-// Авторизація та реєстрація через сервер Express
+// Авторизація та реєстрація
 const authForm = document.getElementById('auth-form');
 if (authForm) {
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
-    const fio = document.getElementById('auth-fio').value;
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value.trim();
+    const fio = document.getElementById('auth-fio').value.trim();
 
     const endpoint = isSignUpMode ? '/api/register' : '/api/login';
     const body = isSignUpMode ? { fio, email, password } : { email, password };
@@ -85,7 +80,7 @@ if (authForm) {
       
       checkAuthState();
     } catch (err) {
-      alert("Помилка з'єднання з сервером");
+      alert("Сервер відновлює роботу після сну. Зачекайте 10-15 секунд та спробуйте ще раз.");
     }
   });
 }
@@ -100,7 +95,6 @@ if (logoutBtn) {
   });
 }
 
-// Перевірка стану авторизації користувача
 function checkAuthState() {
   const authContainer = document.getElementById('auth-container');
   const appContainer = document.getElementById('app-container');
@@ -139,7 +133,6 @@ document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   });
 });
 
-// Перемикач теми (світла / темна)
 const themeBtn = document.getElementById('theme-toggle-btn');
 if (themeBtn) {
   themeBtn.addEventListener('click', () => {
@@ -147,7 +140,6 @@ if (themeBtn) {
   });
 }
 
-// Обчислення парності тижня (7 вересня 2026 року = Початок Тижня 2)
 function getCurrentWeekType() {
   const startDate = new Date(2026, 8, 7);
   const now = new Date();
@@ -179,14 +171,12 @@ function getDatesForWeek(weekType) {
   return days;
 }
 
-// Ініціалізація даних робочого столу
 function initDashboard() {
   renderSchedule();
   loadTasks();
   checkTodaySchedule();
 }
 
-// Відображення сітки розкладу
 async function renderSchedule() {
   const grid = document.getElementById('schedule-grid');
   if (!grid) return;
@@ -236,7 +226,6 @@ async function renderSchedule() {
   }
 }
 
-// Перемикання відображення тижня 1 / 2
 window.switchWeekView = function(week) {
   selectedWeekView = week;
   const btn1 = document.getElementById('btn-week-1');
@@ -246,7 +235,6 @@ window.switchWeekView = function(week) {
   renderSchedule();
 };
 
-// Додавання власного вибіркового предмета
 const addSubjectForm = document.getElementById('add-subject-form');
 if (addSubjectForm) {
   addSubjectForm.addEventListener('submit', async (e) => {
@@ -272,7 +260,6 @@ if (addSubjectForm) {
   });
 }
 
-// Перевірка розкладу на сьогодні
 async function checkTodaySchedule() {
   const currentWeek = getCurrentWeekType();
   const today = new Date();
@@ -309,14 +296,13 @@ async function checkTodaySchedule() {
     }
 
     if (scheduleAlert) {
-      scheduleAlert.innerText = `Сьогодні пар за розкладом: ${todayClasses.length}. Після закінчення останньої пари з'явиться нагадування про наступний день.`;
+      scheduleAlert.innerText = `Сьогодні пар за розкладом: ${todayClasses.length}.`;
     }
   } catch (e) {
     console.error("Помилка перевірки розкладу на сьогодні:", e);
   }
 }
 
-// Створення завдання
 const createTaskForm = document.getElementById('create-task-form');
 if (createTaskForm) {
   createTaskForm.addEventListener('submit', async (e) => {
@@ -335,7 +321,6 @@ if (createTaskForm) {
   });
 }
 
-// Завантаження завдань
 async function loadTasks() {
   try {
     const res = await fetch(`/api/tasks/${currentUser.id}`);
@@ -367,13 +352,11 @@ async function loadTasks() {
   }
 }
 
-// Зміна статусу виконання завдання
 window.toggleTask = async function(taskId) {
   await fetch(`/api/tasks/${currentUser.id}/toggle/${taskId}`, { method: 'POST' });
   loadTasks();
 };
 
-// Збереження налаштувань профілю
 const settingsForm = document.getElementById('settings-form');
 if (settingsForm) {
   settingsForm.addEventListener('submit', async (e) => {
@@ -403,7 +386,6 @@ if (settingsForm) {
   });
 }
 
-// Завантаження списку користувачів в адмін-панель
 async function loadAdminUsers() {
   try {
     const res = await fetch('/api/users');
@@ -427,7 +409,6 @@ async function loadAdminUsers() {
   }
 }
 
-// Додавання предмета адміністратором у загальний розклад
 const adminScheduleForm = document.getElementById('admin-schedule-form');
 if (adminScheduleForm) {
   adminScheduleForm.addEventListener('submit', async (e) => {
@@ -453,7 +434,6 @@ if (adminScheduleForm) {
   });
 }
 
-// Точка входу при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', () => {
   checkAuthState();
   updateSeasonAnimation();
