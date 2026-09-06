@@ -2,14 +2,14 @@ let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let isSignUpMode = false;
 let selectedWeekView = 2;
 
-// Назви відеофайлів у папці public/
+// Назви відеофайлів у кореневій папці проєкту
 const SEASON_VIDEOS = {
   autumn: '26523-358778918_medium.mp4',       // Осінній парк
   winter: '120843-724673590_medium.mp4',      // Засніжений ліс
   springSummer: '2.mp4'                      // Зелені дерева / Літо
 };
 
-// Оновлення відео та анімації залежно від місяця
+// Оновлення відео та анімації персонажа залежно від поточного місяця
 function updateSeasonAnimation() {
   const month = new Date().getMonth() + 1; // 1-12
   const video = document.getElementById('season-video');
@@ -19,82 +19,98 @@ function updateSeasonAnimation() {
 
   let videoSrc = '';
 
-  if (month >= 9 && month <= 11) { // Осінь -> 26523-358778918_medium.mp4
+  if (month >= 9 && month <= 11) { // Осінь (Вересень - Листопад)
     videoSrc = SEASON_VIDEOS.autumn;
     char.innerHTML = '🚴';
-  } else if (month === 12 || month === 1 || month === 2) { // Зима -> 120843-724673590_medium.mp4
+  } else if (month === 12 || month === 1 || month === 2) { // Зима (Грудень - Лютий)
     videoSrc = SEASON_VIDEOS.winter;
     char.innerHTML = '🛷';
-  } else { // Весна / Літо -> 2.mp4
+  } else { // Весна / Літо (Березень - Серпень)
     videoSrc = SEASON_VIDEOS.springSummer;
     char.innerHTML = '🏃';
   }
 
-  if (!video.src.includes(videoSrc)) {
+  // Завантажуємо відео, якщо джерело змінилося або відео ще не встановлено
+  if (!video.src.includes(encodeURIComponent(videoSrc)) && !video.src.endsWith(videoSrc)) {
     video.src = videoSrc;
     video.load();
-    video.play().catch(e => console.log("Автозапуск відео обмежено:", e));
+    video.play().catch(e => console.log("Автозапуск відео обмежено браузером:", e));
   }
 }
 
-// Перемикач вход / реєстрація
-document.getElementById('toggle-auth-btn').addEventListener('click', (e) => {
-  e.preventDefault();
-  isSignUpMode = !isSignUpMode;
-  document.getElementById('auth-title').innerText = isSignUpMode ? 'Registration' : 'Sign In';
-  document.getElementById('fio-group').style.display = isSignUpMode ? 'block' : 'none';
-  document.getElementById('auth-submit-btn').innerText = isSignUpMode ? 'Зареєструватися' : 'Увійти';
-  document.getElementById('toggle-text').innerText = isSignUpMode ? 'Вже є акаунт?' : 'Немає акаунту?';
-  document.getElementById('toggle-auth-btn').innerText = isSignUpMode ? 'Увійти' : 'Зареєструватися';
-});
+// Перемикач режимів: Вхід / Реєстрація
+const toggleAuthBtn = document.getElementById('toggle-auth-btn');
+if (toggleAuthBtn) {
+  toggleAuthBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    isSignUpMode = !isSignUpMode;
+    document.getElementById('auth-title').innerText = isSignUpMode ? 'Registration' : 'Sign In';
+    document.getElementById('fio-group').style.display = isSignUpMode ? 'block' : 'none';
+    document.getElementById('auth-submit-btn').innerText = isSignUpMode ? 'Зареєструватися' : 'Увійти';
+    document.getElementById('toggle-text').innerText = isSignUpMode ? 'Вже є акаунт?' : 'Немає акаунту?';
+    document.getElementById('toggle-auth-btn').innerText = isSignUpMode ? 'Увійти' : 'Зареєструватися';
+  });
+}
 
-// Авторизація через сервер Express
-document.getElementById('auth-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('auth-email').value;
-  const password = document.getElementById('auth-password').value;
-  const fio = document.getElementById('auth-fio').value;
+// Авторизація та реєстрація через сервер Express
+const authForm = document.getElementById('auth-form');
+if (authForm) {
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    const fio = document.getElementById('auth-fio').value;
 
-  const endpoint = isSignUpMode ? '/api/register' : '/api/login';
-  const body = isSignUpMode ? { fio, email, password } : { email, password };
+    const endpoint = isSignUpMode ? '/api/register' : '/api/login';
+    const body = isSignUpMode ? { fio, email, password } : { email, password };
 
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      alert(data.error || 'Помилка авторизації');
-      return;
+      if (!res.ok) {
+        alert(data.error || 'Помилка авторизації');
+        return;
+      }
+
+      currentUser = data.user;
+      if (document.getElementById('auth-remember').checked) {
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      }
+      
+      checkAuthState();
+    } catch (err) {
+      alert("Помилка з'єднання з сервером");
     }
+  });
+}
 
-    currentUser = data.user;
-    if (document.getElementById('auth-remember').checked) {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    }
-    
+// Вихід з акаунту
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
     checkAuthState();
-  } catch (err) {
-    alert("Помилка з'єднання з сервером");
-  }
-});
+  });
+}
 
-// Вихід
-document.getElementById('logout-btn').addEventListener('click', () => {
-  currentUser = null;
-  localStorage.removeItem('currentUser');
-  checkAuthState();
-});
-
+// Перевірка стану авторизації користувача
 function checkAuthState() {
+  const authContainer = document.getElementById('auth-container');
+  const appContainer = document.getElementById('app-container');
+
   if (currentUser) {
-    document.getElementById('auth-container').style.display = 'none';
-    document.getElementById('app-container').style.display = 'flex';
-    document.getElementById('display-user-name').innerText = currentUser.fio || currentUser.email;
+    if (authContainer) authContainer.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'flex';
+    
+    const nameDisplay = document.getElementById('display-user-name');
+    if (nameDisplay) nameDisplay.innerText = currentUser.fio || currentUser.email;
 
     if (currentUser.role === 'admin') {
       document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
@@ -105,28 +121,33 @@ function checkAuthState() {
 
     initDashboard();
   } else {
-    document.getElementById('auth-container').style.display = 'flex';
-    document.getElementById('app-container').style.display = 'none';
+    if (authContainer) authContainer.style.display = 'flex';
+    if (appContainer) appContainer.style.display = 'none';
     updateSeasonAnimation();
   }
 }
 
-// Навігація
+// Навігація по вкладках
 document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
 
     btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
+    const targetTab = document.getElementById(btn.dataset.tab);
+    if (targetTab) targetTab.classList.add('active');
   });
 });
 
-document.getElementById('theme-toggle-btn').addEventListener('click', () => {
-  document.body.classList.toggle('dark-theme');
-});
+// Перемикач теми (світла / темна)
+const themeBtn = document.getElementById('theme-toggle-btn');
+if (themeBtn) {
+  themeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+  });
+}
 
-// Обчислення тижня (7 вересня 2026 року = Початок Тижня 2)
+// Обчислення парності тижня (7 вересня 2026 року = Початок Тижня 2)
 function getCurrentWeekType() {
   const startDate = new Date(2026, 8, 7);
   const now = new Date();
@@ -158,229 +179,281 @@ function getDatesForWeek(weekType) {
   return days;
 }
 
+// Ініціалізація даних робочого столу
 function initDashboard() {
   renderSchedule();
   loadTasks();
   checkTodaySchedule();
 }
 
+// Відображення сітки розкладу
 async function renderSchedule() {
   const grid = document.getElementById('schedule-grid');
-  grid.innerHTML = '';
+  if (!grid) return;
   
+  grid.innerHTML = '';
   const dates = getDatesForWeek(selectedWeekView);
   const dayNames = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота'];
 
-  const globalRes = await fetch('/api/schedule/global');
-  const globalClasses = await globalRes.json();
+  try {
+    const globalRes = await fetch('/api/schedule/global');
+    const globalClasses = await globalRes.json();
 
-  const customRes = await fetch(`/api/schedule/custom/${currentUser.id}`);
-  const customClasses = await customRes.json();
+    const customRes = await fetch(`/api/schedule/custom/${currentUser.id}`);
+    const customClasses = await customRes.json();
 
-  const adminClasses = globalClasses.filter(c => Number(c.week) === selectedWeekView);
-  const userClasses = customClasses.filter(c => Number(c.week) === selectedWeekView);
+    const adminClasses = globalClasses.filter(c => Number(c.week) === selectedWeekView);
+    const userClasses = customClasses.filter(c => Number(c.week) === selectedWeekView);
 
-  dayNames.forEach((dayName, idx) => {
-    const dayDate = dates[idx];
-    const dateStr = dayDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' });
+    dayNames.forEach((dayName, idx) => {
+      const dayDate = dates[idx];
+      const dateStr = dayDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' });
 
-    const dayCard = document.createElement('div');
-    dayCard.className = 'day-card';
-    dayCard.innerHTML = `<h4>${dayName} (${dateStr})</h4><div id="day-classes-${idx+1}"></div>`;
-    grid.appendChild(dayCard);
+      const dayCard = document.createElement('div');
+      dayCard.className = 'day-card';
+      dayCard.innerHTML = `<h4>${dayName} (${dateStr})</h4><div id="day-classes-${idx+1}"></div>`;
+      grid.appendChild(dayCard);
 
-    const container = dayCard.querySelector(`#day-classes-${idx+1}`);
-    const allClasses = [...adminClasses, ...userClasses].filter(c => Number(c.day) === (idx + 1));
+      const container = dayCard.querySelector(`#day-classes-${idx+1}`);
+      const allClasses = [...adminClasses, ...userClasses].filter(c => Number(c.day) === (idx + 1));
 
-    if (allClasses.length === 0) {
-      container.innerHTML = '<small>Пар немає</small>';
-    } else {
-      allClasses.forEach(c => {
-        container.innerHTML += `
-          <div class="class-item">
-            <strong>${c.title}</strong><br>
-            ⏰ ${c.time} \vert{} 🚪 ${c.room}<br>
-            👨‍🏫 ${c.teacher}
-          </div>
-        `;
-      });
-    }
-  });
+      if (allClasses.length === 0) {
+        container.innerHTML = '<small>Пар немає</small>';
+      } else {
+        allClasses.forEach(c => {
+          container.innerHTML += `
+            <div class="class-item">
+              <strong>${c.title}</strong><br>
+              ⏰ ${c.time} | 🚪 ${c.room}<br>
+              👨‍🏫 ${c.teacher}
+            </div>
+          `;
+        });
+      }
+    });
+  } catch (e) {
+    console.error("Помилка завантаження розкладу:", e);
+  }
 }
 
-function switchWeekView(week) {
+// Перемикання відображення тижня 1 / 2
+window.switchWeekView = function(week) {
   selectedWeekView = week;
-  document.getElementById('btn-week-1').classList.toggle('active', week === 1);
-  document.getElementById('btn-week-2').classList.toggle('active', week === 2);
+  const btn1 = document.getElementById('btn-week-1');
+  const btn2 = document.getElementById('btn-week-2');
+  if (btn1) btn1.classList.toggle('active', week === 1);
+  if (btn2) btn2.classList.toggle('active', week === 2);
   renderSchedule();
+};
+
+// Додавання власного вибіркового предмета
+const addSubjectForm = document.getElementById('add-subject-form');
+if (addSubjectForm) {
+  addSubjectForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const classObj = {
+      week: Number(document.getElementById('custom-week').value),
+      day: Number(document.getElementById('custom-day').value),
+      title: document.getElementById('custom-title').value + " (Вибіркова)",
+      time: document.getElementById('custom-time').value,
+      room: document.getElementById('custom-room').value,
+      teacher: document.getElementById('custom-teacher').value
+    };
+
+    await fetch(`/api/schedule/custom/${currentUser.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(classObj)
+    });
+
+    alert('Предмет додано!');
+    e.target.reset();
+    renderSchedule();
+  });
 }
 
-document.getElementById('add-subject-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const classObj = {
-    week: Number(document.getElementById('custom-week').value),
-    day: Number(document.getElementById('custom-day').value),
-    title: document.getElementById('custom-title').value + " (Вибіркова)",
-    time: document.getElementById('custom-time').value,
-    room: document.getElementById('custom-room').value,
-    teacher: document.getElementById('custom-teacher').value
-  };
-
-  await fetch(`/api/schedule/custom/${currentUser.id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(classObj)
-  });
-
-  alert('Предмет додано!');
-  e.target.reset();
-  renderSchedule();
-});
-
+// Перевірка розкладу на сьогодні
 async function checkTodaySchedule() {
   const currentWeek = getCurrentWeekType();
   const today = new Date();
   const dayOfWeek = today.getDay();
   
-  document.getElementById('current-week-indicator').innerText = `Тиждень ${currentWeek}`;
+  const weekIndicator = document.getElementById('current-week-indicator');
+  if (weekIndicator) weekIndicator.innerText = `Тиждень ${currentWeek}`;
 
+  const scheduleAlert = document.getElementById('schedule-alert');
   if (dayOfWeek === 0) {
-    document.getElementById('schedule-alert').innerText = 'Сьогодні неділя. Пар немає!';
+    if (scheduleAlert) scheduleAlert.innerText = 'Сьогодні неділя. Пар немає!';
     return;
   }
 
-  const globalRes = await fetch('/api/schedule/global');
-  const globalClasses = await globalRes.json();
+  try {
+    const globalRes = await fetch('/api/schedule/global');
+    const globalClasses = await globalRes.json();
 
-  const customRes = await fetch(`/api/schedule/custom/${currentUser.id}`);
-  const customClasses = await customRes.json();
+    const customRes = await fetch(`/api/schedule/custom/${currentUser.id}`);
+    const customClasses = await customRes.json();
 
-  const todayClasses = [...globalClasses, ...customClasses].filter(c => Number(c.week) === currentWeek && Number(c.day) === dayOfWeek);
-  const listContainer = document.getElementById('today-classes-list');
-  listContainer.innerHTML = '';
-
-  if (todayClasses.length === 0) {
-    listContainer.innerHTML = '<p>Сьогодні пар немає.</p>';
-  } else {
-    todayClasses.forEach(c => {
-      listContainer.innerHTML += `<div class="class-item"><strong>${c.title}</strong> — ${c.time} (${c.room})</div>`;
-    });
-  }
-
-  document.getElementById('schedule-alert').innerText = `Сьогодні пар за розкладом: ${todayClasses.length}. Після закінчення останньої пари з'явиться нагадування про наступний день.`;
-}
-
-document.getElementById('create-task-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const title = document.getElementById('task-title').value;
-  const deadline = document.getElementById('task-deadline').value;
-
-  await fetch(`/api/tasks/${currentUser.id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, deadline })
-  });
-
-  e.target.reset();
-  loadTasks();
-});
-
-async function loadTasks() {
-  const res = await fetch(`/api/tasks/${currentUser.id}`);
-  const tasks = await res.json();
-
-  const tasksList = document.getElementById('all-tasks-list');
-  const homeTasksList = document.getElementById('home-tasks-list');
-
-  tasksList.innerHTML = '';
-  homeTasksList.innerHTML = '';
-
-  tasks.forEach(task => {
-    if (!task.completed) {
-      homeTasksList.innerHTML += `<div class="class-item">📌 <strong>${task.title}</strong> (Термін: ${new Date(task.deadline).toLocaleString()})</div>`;
+    const todayClasses = [...globalClasses, ...customClasses].filter(c => Number(c.week) === currentWeek && Number(c.day) === dayOfWeek);
+    const listContainer = document.getElementById('today-classes-list');
+    
+    if (listContainer) {
+      listContainer.innerHTML = '';
+      if (todayClasses.length === 0) {
+        listContainer.innerHTML = '<p>Сьогодні пар немає.</p>';
+      } else {
+        todayClasses.forEach(c => {
+          listContainer.innerHTML += `<div class="class-item"><strong>${c.title}</strong> — ${c.time} (${c.room})</div>`;
+        });
+      }
     }
 
-    const li = document.createElement('li');
-    li.className = `task-item ${task.completed ? 'completed' : ''}`;
-    li.innerHTML = `
-      <span>${task.title} — <small>${new Date(task.deadline).toLocaleString()}</small></span>
-      <button onclick="toggleTask('${task.id}')">${task.completed ? 'Викреслено' : 'Завершити'}</button>
-    `;
-    tasksList.appendChild(li);
+    if (scheduleAlert) {
+      scheduleAlert.innerText = `Сьогодні пар за розкладом: ${todayClasses.length}. Після закінчення останньої пари з'явиться нагадування про наступний день.`;
+    }
+  } catch (e) {
+    console.error("Помилка перевірки розкладу на сьогодні:", e);
+  }
+}
+
+// Створення завдання
+const createTaskForm = document.getElementById('create-task-form');
+if (createTaskForm) {
+  createTaskForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('task-title').value;
+    const deadline = document.getElementById('task-deadline').value;
+
+    await fetch(`/api/tasks/${currentUser.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, deadline })
+    });
+
+    e.target.reset();
+    loadTasks();
   });
 }
 
-async function toggleTask(taskId) {
+// Завантаження завдань
+async function loadTasks() {
+  try {
+    const res = await fetch(`/api/tasks/${currentUser.id}`);
+    const tasks = await res.json();
+
+    const tasksList = document.getElementById('all-tasks-list');
+    const homeTasksList = document.getElementById('home-tasks-list');
+
+    if (tasksList) tasksList.innerHTML = '';
+    if (homeTasksList) homeTasksList.innerHTML = '';
+
+    tasks.forEach(task => {
+      if (!task.completed && homeTasksList) {
+        homeTasksList.innerHTML += `<div class="class-item">📌 <strong>${task.title}</strong> (Термін: ${new Date(task.deadline).toLocaleString()})</div>`;
+      }
+
+      if (tasksList) {
+        const li = document.createElement('li');
+        li.className = `task-item ${task.completed ? 'completed' : ''}`;
+        li.innerHTML = `
+          <span>${task.title} — <small>${new Date(task.deadline).toLocaleString()}</small></span>
+          <button onclick="toggleTask('${task.id}')">${task.completed ? 'Викреслено' : 'Завершити'}</button>
+        `;
+        tasksList.appendChild(li);
+      }
+    });
+  } catch (e) {
+    console.error("Помилка завантаження завдань:", e);
+  }
+}
+
+// Зміна статусу виконання завдання
+window.toggleTask = async function(taskId) {
   await fetch(`/api/tasks/${currentUser.id}/toggle/${taskId}`, { method: 'POST' });
   loadTasks();
+};
+
+// Збереження налаштувань профілю
+const settingsForm = document.getElementById('settings-form');
+if (settingsForm) {
+  settingsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const group = document.getElementById('setting-group').value;
+    const dob = document.getElementById('setting-dob').value;
+    const newPass = document.getElementById('setting-password').value;
+
+    const updateData = {};
+    if (group) updateData.group = group;
+    if (dob) updateData.dob = dob;
+    if (newPass) updateData.password = newPass;
+
+    const res = await fetch(`/api/users/update/${currentUser.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateData)
+    });
+
+    const data = await res.json();
+    currentUser = data.user;
+    if (localStorage.getItem('currentUser')) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
+
+    alert('Налаштування збережено!');
+  });
 }
 
-document.getElementById('settings-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const group = document.getElementById('setting-group').value;
-  const dob = document.getElementById('setting-dob').value;
-  const newPass = document.getElementById('setting-password').value;
-
-  const updateData = {};
-  if (group) updateData.group = group;
-  if (dob) updateData.dob = dob;
-  if (newPass) updateData.password = newPass;
-
-  const res = await fetch(`/api/users/update/${currentUser.id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updateData)
-  });
-
-  const data = await res.json();
-  currentUser = data.user;
-  if (localStorage.getItem('currentUser')) {
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  }
-
-  alert('Налаштування збережено!');
-});
-
+// Завантаження списку користувачів в адмін-панель
 async function loadAdminUsers() {
-  const res = await fetch('/api/users');
-  const users = await res.json();
-  const tbody = document.getElementById('admin-users-table');
-  tbody.innerHTML = '';
+  try {
+    const res = await fetch('/api/users');
+    const users = await res.json();
+    const tbody = document.getElementById('admin-users-table');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    users.forEach(u => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${u.fio || 'Не вказано'}</td>
+          <td>${u.email}</td>
+          <td><code>${u.password || '******'}</code></td>
+          <td>${u.role}</td>
+        </tr>
+      `;
+    });
+  } catch (e) {
+    console.error("Помилка завантаження адмін-даних:", e);
+  }
+}
 
-  users.forEach(u => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${u.fio || 'Не вказано'}</td>
-        <td>${u.email}</td>
-        <td><code>${u.password || '******'}</code></td>
-        <td>${u.role}</td>
-      </tr>
-    `;
+// Додавання предмета адміністратором у загальний розклад
+const adminScheduleForm = document.getElementById('admin-schedule-form');
+if (adminScheduleForm) {
+  adminScheduleForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const classObj = {
+      week: Number(document.getElementById('admin-week').value),
+      day: Number(document.getElementById('admin-day').value),
+      title: document.getElementById('admin-title').value,
+      time: document.getElementById('admin-time').value,
+      room: document.getElementById('admin-room').value,
+      teacher: document.getElementById('admin-teacher').value
+    };
+
+    await fetch('/api/schedule/global', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(classObj)
+    });
+
+    alert('Додано у загальний розклад!');
+    e.target.reset();
+    renderSchedule();
   });
 }
 
-document.getElementById('admin-schedule-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const classObj = {
-    week: Number(document.getElementById('admin-week').value),
-    day: Number(document.getElementById('admin-day').value),
-    title: document.getElementById('admin-title').value,
-    time: document.getElementById('admin-time').value,
-    room: document.getElementById('admin-room').value,
-    teacher: document.getElementById('admin-teacher').value
-  };
-
-  await fetch('/api/schedule/global', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(classObj)
-  });
-
-  alert('Додано у загальний розклад!');
-  e.target.reset();
-  renderSchedule();
-});
-
+// Точка входу при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', () => {
   checkAuthState();
   updateSeasonAnimation();
