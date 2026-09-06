@@ -1,30 +1,15 @@
-// Вставте ваші ключі з Firebase Console
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-let currentUser = null;
-let userData = null;
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let isSignUpMode = false;
-let selectedWeekView = 2; // За замовчуванням Тиждень 2
+let selectedWeekView = 2;
 
-// Посилання на ваші відеофайли
+// Назви відеофайлів у папці public/
 const SEASON_VIDEOS = {
   autumn: '26523-358778918_medium.mp4',       // Осінній парк
   winter: '120843-724673590_medium.mp4',      // Засніжений ліс
-  springSummer: '2.mp4'                      // Лісова стежка / Літо
+  springSummer: '2.mp4'                      // Зелені дерева / Літо
 };
 
-// Оновлення анімацій і відео за порами року
+// Оновлення відео та анімації залежно від місяця
 function updateSeasonAnimation() {
   const month = new Date().getMonth() + 1; // 1-12
   const video = document.getElementById('season-video');
@@ -34,13 +19,13 @@ function updateSeasonAnimation() {
 
   let videoSrc = '';
 
-  if (month >= 9 && month <= 11) { // Осінь (Вересень - Листопад)
+  if (month >= 9 && month <= 11) { // Осінь -> 26523-358778918_medium.mp4
     videoSrc = SEASON_VIDEOS.autumn;
     char.innerHTML = '🚴';
-  } else if (month === 12 || month === 1 || month === 2) { // Зима
+  } else if (month === 12 || month === 1 || month === 2) { // Зима -> 120843-724673590_medium.mp4
     videoSrc = SEASON_VIDEOS.winter;
     char.innerHTML = '🛷';
-  } else { // Весна / Літо
+  } else { // Весна / Літо -> 2.mp4
     videoSrc = SEASON_VIDEOS.springSummer;
     char.innerHTML = '🏃';
   }
@@ -52,7 +37,7 @@ function updateSeasonAnimation() {
   }
 }
 
-// Перемикання вхід / реєстрація
+// Перемикач вход / реєстрація
 document.getElementById('toggle-auth-btn').addEventListener('click', (e) => {
   e.preventDefault();
   isSignUpMode = !isSignUpMode;
@@ -63,55 +48,55 @@ document.getElementById('toggle-auth-btn').addEventListener('click', (e) => {
   document.getElementById('toggle-auth-btn').innerText = isSignUpMode ? 'Увійти' : 'Зареєструватися';
 });
 
-// Авторизація
+// Авторизація через сервер Express
 document.getElementById('auth-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('auth-email').value;
   const password = document.getElementById('auth-password').value;
   const fio = document.getElementById('auth-fio').value;
-  const remember = document.getElementById('auth-remember').checked;
 
-  const persistence = remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+  const endpoint = isSignUpMode ? '/api/register' : '/api/login';
+  const body = isSignUpMode ? { fio, email, password } : { email, password };
 
   try {
-    await auth.setPersistence(persistence);
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
 
-    if (isSignUpMode) {
-      const res = await auth.createUserWithEmailAndPassword(email, password);
-      const role = password === 'Admin-pass444' ? 'admin' : 'student';
+    const data = await res.json();
 
-      await db.collection('users').doc(res.user.uid).set({
-        fio: fio,
-        email: email,
-        password: password,
-        role: role,
-        group: '',
-        dob: ''
-      });
-      alert('Реєстрація успішна!');
-    } else {
-      await auth.signInWithEmailAndPassword(email, password);
+    if (!res.ok) {
+      alert(data.error || 'Помилка авторизації');
+      return;
     }
+
+    currentUser = data.user;
+    if (document.getElementById('auth-remember').checked) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    }
+    
+    checkAuthState();
   } catch (err) {
-    alert("Помилка: " + err.message);
+    alert("Помилка з'єднання з сервером");
   }
 });
 
 // Вихід
-document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+document.getElementById('logout-btn').addEventListener('click', () => {
+  currentUser = null;
+  localStorage.removeItem('currentUser');
+  checkAuthState();
+});
 
-// Стан сесії
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    currentUser = user;
-    const doc = await db.collection('users').doc(user.uid).get();
-    userData = doc.data();
-
+function checkAuthState() {
+  if (currentUser) {
     document.getElementById('auth-container').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
-    document.getElementById('display-user-name').innerText = userData ? userData.fio : user.email;
+    document.getElementById('display-user-name').innerText = currentUser.fio || currentUser.email;
 
-    if (userData && userData.role === 'admin') {
+    if (currentUser.role === 'admin') {
       document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
       loadAdminUsers();
     } else {
@@ -124,7 +109,7 @@ auth.onAuthStateChanged(async (user) => {
     document.getElementById('app-container').style.display = 'none';
     updateSeasonAnimation();
   }
-});
+}
 
 // Навігація
 document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
@@ -137,14 +122,13 @@ document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   });
 });
 
-// Перемикач тем
 document.getElementById('theme-toggle-btn').addEventListener('click', () => {
   document.body.classList.toggle('dark-theme');
 });
 
-// Обчислення 2-тижневого розкладу (7 вересня 2026 = Початок Тижня 2)
+// Обчислення тижня (7 вересня 2026 року = Початок Тижня 2)
 function getCurrentWeekType() {
-  const startDate = new Date(2026, 8, 7); // 7 Вересня 2026
+  const startDate = new Date(2026, 8, 7);
   const now = new Date();
   const diffDays = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
   if (diffDays < 0) return 2;
@@ -180,7 +164,6 @@ function initDashboard() {
   checkTodaySchedule();
 }
 
-// Відображення розкладу
 async function renderSchedule() {
   const grid = document.getElementById('schedule-grid');
   grid.innerHTML = '';
@@ -188,11 +171,14 @@ async function renderSchedule() {
   const dates = getDatesForWeek(selectedWeekView);
   const dayNames = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота'];
 
-  const adminSnap = await db.collection('global_schedule').where('week', '==', selectedWeekView).get();
-  const adminClasses = adminSnap.docs.map(doc => doc.data());
+  const globalRes = await fetch('/api/schedule/global');
+  const globalClasses = await globalRes.json();
 
-  const userSnap = await db.collection('users').doc(currentUser.uid).collection('custom_classes').where('week', '==', selectedWeekView).get();
-  const userClasses = userSnap.docs.map(doc => doc.data());
+  const customRes = await fetch(`/api/schedule/custom/${currentUser.id}`);
+  const customClasses = await customRes.json();
+
+  const adminClasses = globalClasses.filter(c => Number(c.week) === selectedWeekView);
+  const userClasses = customClasses.filter(c => Number(c.week) === selectedWeekView);
 
   dayNames.forEach((dayName, idx) => {
     const dayDate = dates[idx];
@@ -213,7 +199,7 @@ async function renderSchedule() {
         container.innerHTML += `
           <div class="class-item">
             <strong>${c.title}</strong><br>
-            ⏰ ${c.time} | 🚪 ${c.room}<br>
+            ⏰ ${c.time} \vert{} 🚪 ${c.room}<br>
             👨‍🏫 ${c.teacher}
           </div>
         `;
@@ -229,7 +215,6 @@ function switchWeekView(week) {
   renderSchedule();
 }
 
-// Вибіркова дисципліна
 document.getElementById('add-subject-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const classObj = {
@@ -241,13 +226,17 @@ document.getElementById('add-subject-form').addEventListener('submit', async (e)
     teacher: document.getElementById('custom-teacher').value
   };
 
-  await db.collection('users').doc(currentUser.uid).collection('custom_classes').add(classObj);
+  await fetch(`/api/schedule/custom/${currentUser.id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(classObj)
+  });
+
   alert('Предмет додано!');
   e.target.reset();
   renderSchedule();
 });
 
-// Статус занять на сьогодні
 async function checkTodaySchedule() {
   const currentWeek = getCurrentWeekType();
   const today = new Date();
@@ -260,10 +249,13 @@ async function checkTodaySchedule() {
     return;
   }
 
-  const adminSnap = await db.collection('global_schedule').where('week', '==', currentWeek).where('day', '==', dayOfWeek).get();
-  const userSnap = await db.collection('users').doc(currentUser.uid).collection('custom_classes').where('week', '==', currentWeek).where('day', '==', dayOfWeek).get();
+  const globalRes = await fetch('/api/schedule/global');
+  const globalClasses = await globalRes.json();
 
-  const todayClasses = [...adminSnap.docs.map(d=>d.data()), ...userSnap.docs.map(d=>d.data())];
+  const customRes = await fetch(`/api/schedule/custom/${currentUser.id}`);
+  const customClasses = await customRes.json();
+
+  const todayClasses = [...globalClasses, ...customClasses].filter(c => Number(c.week) === currentWeek && Number(c.day) === dayOfWeek);
   const listContainer = document.getElementById('today-classes-list');
   listContainer.innerHTML = '';
 
@@ -278,16 +270,15 @@ async function checkTodaySchedule() {
   document.getElementById('schedule-alert').innerText = `Сьогодні пар за розкладом: ${todayClasses.length}. Після закінчення останньої пари з'явиться нагадування про наступний день.`;
 }
 
-// Завдання
 document.getElementById('create-task-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const title = document.getElementById('task-title').value;
   const deadline = document.getElementById('task-deadline').value;
 
-  await db.collection('users').doc(currentUser.uid).collection('tasks').add({
-    title,
-    deadline,
-    completed: false
+  await fetch(`/api/tasks/${currentUser.id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, deadline })
   });
 
   e.target.reset();
@@ -295,17 +286,16 @@ document.getElementById('create-task-form').addEventListener('submit', async (e)
 });
 
 async function loadTasks() {
-  const snap = await db.collection('users').doc(currentUser.uid).collection('tasks').get();
+  const res = await fetch(`/api/tasks/${currentUser.id}`);
+  const tasks = await res.json();
+
   const tasksList = document.getElementById('all-tasks-list');
   const homeTasksList = document.getElementById('home-tasks-list');
 
   tasksList.innerHTML = '';
   homeTasksList.innerHTML = '';
 
-  snap.docs.forEach(doc => {
-    const task = doc.data();
-    const id = doc.id;
-
+  tasks.forEach(task => {
     if (!task.completed) {
       homeTasksList.innerHTML += `<div class="class-item">📌 <strong>${task.title}</strong> (Термін: ${new Date(task.deadline).toLocaleString()})</div>`;
     }
@@ -314,18 +304,17 @@ async function loadTasks() {
     li.className = `task-item ${task.completed ? 'completed' : ''}`;
     li.innerHTML = `
       <span>${task.title} — <small>${new Date(task.deadline).toLocaleString()}</small></span>
-      <button onclick="toggleTask('${id}', ${!task.completed})">${task.completed ? 'Викреслено' : 'Завершити'}</button>
+      <button onclick="toggleTask('${task.id}')">${task.completed ? 'Викреслено' : 'Завершити'}</button>
     `;
     tasksList.appendChild(li);
   });
 }
 
-async function toggleTask(id, status) {
-  await db.collection('users').doc(currentUser.uid).collection('tasks').doc(id).update({ completed: status });
+async function toggleTask(taskId) {
+  await fetch(`/api/tasks/${currentUser.id}/toggle/${taskId}`, { method: 'POST' });
   loadTasks();
 }
 
-// Налаштування
 document.getElementById('settings-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const group = document.getElementById('setting-group').value;
@@ -335,23 +324,30 @@ document.getElementById('settings-form').addEventListener('submit', async (e) =>
   const updateData = {};
   if (group) updateData.group = group;
   if (dob) updateData.dob = dob;
-  if (newPass) {
-    updateData.password = newPass;
-    await currentUser.updatePassword(newPass);
+  if (newPass) updateData.password = newPass;
+
+  const res = await fetch(`/api/users/update/${currentUser.id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updateData)
+  });
+
+  const data = await res.json();
+  currentUser = data.user;
+  if (localStorage.getItem('currentUser')) {
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
   }
 
-  await db.collection('users').doc(currentUser.uid).update(updateData);
   alert('Налаштування збережено!');
 });
 
-// Адмін функції
 async function loadAdminUsers() {
-  const snap = await db.collection('users').get();
+  const res = await fetch('/api/users');
+  const users = await res.json();
   const tbody = document.getElementById('admin-users-table');
   tbody.innerHTML = '';
 
-  snap.docs.forEach(doc => {
-    const u = doc.data();
+  users.forEach(u => {
     tbody.innerHTML += `
       <tr>
         <td>${u.fio || 'Не вказано'}</td>
@@ -374,10 +370,18 @@ document.getElementById('admin-schedule-form').addEventListener('submit', async 
     teacher: document.getElementById('admin-teacher').value
   };
 
-  await db.collection('global_schedule').add(classObj);
+  await fetch('/api/schedule/global', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(classObj)
+  });
+
   alert('Додано у загальний розклад!');
   e.target.reset();
   renderSchedule();
 });
 
-document.addEventListener('DOMContentLoaded', updateSeasonAnimation);
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuthState();
+  updateSeasonAnimation();
+});
