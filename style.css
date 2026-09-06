@@ -1,0 +1,324 @@
+:root {
+  --bg-color: #e3f2fd;
+  --sidebar-bg: #00a8ff;
+  --card-bg: #ffffff;
+  --text-color: #333333;
+  --btn-bg: #4c8bf5;
+  --btn-text: #ffffff;
+  --border-color: #cccccc;
+}
+
+body.dark-theme {
+  --bg-color: #121212;
+  --sidebar-bg: #1f1f1f;
+  --card-bg: #2d2d2d;
+  --text-color: #ffffff;
+  --btn-bg: #3700b3;
+  --btn-text: #ffffff;
+  --border-color: #444444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+/* Авторизація та анімації за порами року */
+.auth-box {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.season-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+  transition: background 1s ease;
+}
+
+/* Пори року для фону */
+.season-autumn { background: linear-gradient(to bottom, #f39c12, #d35400); }
+.season-winter { background: linear-gradient(to bottom, #74b9ff, #0984e3); }
+.season-spring { background: linear-gradient(to bottom, #55efc4, #00b894); }
+.season-summer { background: linear-gradient(to bottom, #ffeaa7, #fdcb6e); }
+
+/* Персонаж реального часу */
+.season-character {
+  position: absolute;
+  bottom: 20%;
+  left: -100px;
+  width: 80px;
+  height: 80px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 2;
+  animation: moveCharacter 12s infinite linear;
+}
+
+.char-autumn { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23e74c3c"/><text x="25" y="60" font-size="30">🚴</text></svg>'); }
+.char-winter { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%230984e3"/><text x="25" y="60" font-size="30">🛷</text></svg>'); }
+.char-spring-summer { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%232ecc71"/><text x="25" y="60" font-size="30">🏃</text></svg>'); }
+
+@keyframes moveCharacter {
+  0% { left: -10%; }
+  100% { left: 110%; }
+}
+
+/* Glassmorphism Картка */
+.glass-card {
+  position: relative;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 40px;
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card h2 { margin-bottom: 20px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+.glass-card input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.glass-card button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 8px;
+  background: #a83232;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.remember-me { margin: 10px 0; text-align: left; color: #fff; font-size: 14px; }
+.auth-toggle { margin-top: 15px; color: #fff; font-size: 14px; }
+.auth-toggle a { color: #fff; font-weight: bold; }
+.forgot-pass { margin-top: 10px; color: #eee; font-size: 12px; }
+
+/* Основний макет додатка */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 280px;
+  background-color: var(--sidebar-bg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 0 30px 30px 0;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.du-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.user-profile-card {
+  background: rgba(255, 255, 255, 0.4);
+  width: 100%;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.avatar-circle {
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  position: relative;
+}
+
+.logout-icon {
+  position: absolute;
+  right: -5px;
+  bottom: 0;
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+.user-name { font-weight: bold; color: #fff; font-size: 18px; }
+
+.sidebar-nav {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  color: #333;
+  text-decoration: none;
+  font-size: 15px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.nav-btn.active, .nav-btn:hover {
+  background: white;
+  font-weight: bold;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.card {
+  background-color: var(--card-bg);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.alert-box {
+  background-color: #ffeaa7;
+  color: #d35400;
+  font-weight: bold;
+}
+
+.week-selector { margin: 15px 0; display: flex; gap: 10px; }
+.week-selector button {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.week-selector button.active {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.day-card {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 15px;
+  background: var(--card-bg);
+}
+
+.day-card h4 {
+  border-bottom: 2px solid var(--btn-bg);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+.class-item {
+  background: rgba(0,0,0,0.03);
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.task-list { list-style: none; }
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+.task-item.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.admin-table th, .admin-table td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  text-align: left;
+}
+
+form input, form select, form button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+form button {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  cursor: pointer;
+}
