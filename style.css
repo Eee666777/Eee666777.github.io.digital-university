@@ -1,21 +1,26 @@
+/* ==========================================
+   1. ЗМІННІ ТА БАЗОВІ СТИЛІ
+   ========================================== */
 :root {
   --bg-color: #e3f2fd;
   --sidebar-bg: #00a8ff;
   --card-bg: #ffffff;
-  --text-color: #333333;
+  --text-color: #2c3e50;
   --btn-bg: #4c8bf5;
   --btn-text: #ffffff;
-  --border-color: #cccccc;
+  --border-color: #e0e0e0;
+  --shadow-color: rgba(0, 0, 0, 0.08);
 }
 
 body.dark-theme {
   --bg-color: #121212;
   --sidebar-bg: #1f1f1f;
   --card-bg: #2d2d2d;
-  --text-color: #ffffff;
+  --text-color: #f5f5f5;
   --btn-bg: #3700b3;
   --btn-text: #ffffff;
   --border-color: #444444;
+  --shadow-color: rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -28,10 +33,13 @@ body.dark-theme {
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
 }
 
-/* Авторизація та анімації за порами року */
+/* ==========================================
+   2. АВТОРИЗАЦІЯ ТА АНІМАЦІЇ ЗА ПОРАМИ РОКУ
+   ========================================== */
 .auth-box {
   position: relative;
   width: 100vw;
@@ -42,155 +50,250 @@ body {
   overflow: hidden;
 }
 
+/* Фони за порами року */
 .season-bg {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-size: cover;
-  background-position: center;
   z-index: 1;
   transition: background 1s ease;
 }
 
-/* Пори року для фону */
-.season-autumn { background: linear-gradient(to bottom, #f39c12, #d35400); }
-.season-winter { background: linear-gradient(to bottom, #74b9ff, #0984e3); }
-.season-spring { background: linear-gradient(to bottom, #55efc4, #00b894); }
-.season-summer { background: linear-gradient(to bottom, #ffeaa7, #fdcb6e); }
+.season-autumn {
+  background: linear-gradient(180deg, #f39c12 0%, #e67e22 50%, #d35400 100%);
+}
+.season-winter {
+  background: linear-gradient(180deg, #74b9ff 0%, #0984e3 50%, #2980b9 100%);
+}
+.season-spring {
+  background: linear-gradient(180deg, #a8e6cf 0%, #55efc4 50%, #00b894 100%);
+}
+.season-summer {
+  background: linear-gradient(180deg, #ffeaa7 0%, #fdcb6e 50%, #e67e22 100%);
+}
 
-/* Персонаж реального часу */
+/* Анімований персонаж реального часу */
 .season-character {
   position: absolute;
-  bottom: 20%;
-  left: -100px;
-  width: 80px;
-  height: 80px;
-  background-size: contain;
-  background-repeat: no-repeat;
+  bottom: 12%;
+  left: -120px;
+  width: 100px;
+  height: 100px;
   z-index: 2;
-  animation: moveCharacter 12s infinite linear;
+  font-size: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: moveCharacter 12s linear infinite;
 }
-
-.char-autumn { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23e74c3c"/><text x="25" y="60" font-size="30">🚴</text></svg>'); }
-.char-winter { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%230984e3"/><text x="25" y="60" font-size="30">🛷</text></svg>'); }
-.char-spring-summer { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%232ecc71"/><text x="25" y="60" font-size="30">🏃</text></svg>'); }
 
 @keyframes moveCharacter {
-  0% { left: -10%; }
-  100% { left: 110%; }
+  0% { left: -120px; }
+  100% { left: 100vw; }
 }
 
-/* Glassmorphism Картка */
+/* Glassmorphism Картка з чітким контрастом */
 .glass-card {
   position: relative;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
   padding: 40px;
-  width: 360px;
+  width: 380px;
   text-align: center;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
-.glass-card h2 { margin-bottom: 20px; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-.glass-card input {
+.glass-card h2 {
+  margin-bottom: 24px;
+  color: #2c3e50;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.glass-card input[type="text"],
+.glass-card input[type="email"],
+.glass-card input[type="password"] {
   width: 100%;
-  padding: 12px;
+  padding: 14px 16px;
   margin: 8px 0;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2c3e50;
+  font-size: 15px;
+  outline: none;
 }
 
-.glass-card button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 15px;
-  border: none;
-  border-radius: 8px;
-  background: #a83232;
-  color: white;
-  font-weight: bold;
+.glass-card input::placeholder {
+  color: #7f8c8d;
+}
+
+.remember-me {
+  margin: 14px 0;
+  text-align: left;
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remember-me input {
+  width: 16px;
+  height: 16px;
   cursor: pointer;
 }
 
-.remember-me { margin: 10px 0; text-align: left; color: #fff; font-size: 14px; }
-.auth-toggle { margin-top: 15px; color: #fff; font-size: 14px; }
-.auth-toggle a { color: #fff; font-weight: bold; }
-.forgot-pass { margin-top: 10px; color: #eee; font-size: 12px; }
+.glass-card button[type="submit"] {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #a83232;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
 
-/* Основний макет додатка */
+.glass-card button[type="submit"]:hover {
+  background: #8b2828;
+}
+
+.auth-toggle {
+  margin-top: 18px;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.auth-toggle a {
+  color: #a83232;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.forgot-pass {
+  margin-top: 12px;
+  color: #555555;
+  font-size: 12px;
+}
+
+/* ==========================================
+   3. ОСНОВНИЙ МАКЕТ ПЛАТФОРМИ (DIGITAL UNIVERSITY)
+   ========================================== */
 .app-layout {
   display: flex;
   min-height: 100vh;
 }
 
+/* Бокова панель (Sidebar) */
 .sidebar {
   width: 280px;
   background-color: var(--sidebar-bg);
-  padding: 20px;
+  padding: 24px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   border-radius: 0 30px 30px 0;
+  box-shadow: 4px 0 15px var(--shadow-color);
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: white;
-  margin-bottom: 20px;
+  gap: 12px;
+  color: #ffffff;
+  margin-bottom: 24px;
+  width: 100%;
+  justify-content: center;
 }
 
 .du-logo {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  border: 2px solid white;
+  border: 3px solid #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 20px;
+  background: rgba(255, 255, 255, 0.2);
 }
 
+.du-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.du-title span {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.du-title small {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Профіль користувача у шапці sidebar */
 .user-profile-card {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(5px);
   width: 100%;
   border-radius: 20px;
-  padding: 20px;
+  padding: 20px 15px;
   text-align: center;
-  margin-bottom: 20px;
-  position: relative;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .avatar-circle {
   width: 80px;
   height: 80px;
-  background: white;
+  background: #ffffff;
   border-radius: 50%;
-  margin: 0 auto 10px;
+  margin: 0 auto 12px;
   position: relative;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .logout-icon {
   position: absolute;
-  right: -5px;
+  right: -4px;
   bottom: 0;
   background: #ff4757;
-  color: white;
-  border: none;
+  color: #ffffff;
+  border: 2px solid #ffffff;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: transform 0.2s;
 }
 
-.user-name { font-weight: bold; color: #fff; font-size: 18px; }
+.logout-icon:hover {
+  transform: scale(1.1);
+}
 
+.user-name {
+  font-weight: bold;
+  color: #ffffff;
+  font-size: 18px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Навігація */
 .sidebar-nav {
   width: 100%;
   display: flex;
@@ -201,124 +304,210 @@ body {
 .nav-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 12px 15px;
+  padding: 12px 16px;
   border: none;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.6);
-  color: #333;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.55);
+  color: #2c3e50;
   text-decoration: none;
   font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   text-align: left;
+  transition: all 0.2s ease;
 }
 
 .nav-btn.active, .nav-btn:hover {
-  background: white;
-  font-weight: bold;
+  background: #ffffff;
+  color: #0081c8;
+  transform: translateX(4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
+/* ==========================================
+   4. КОНТЕНТ ТА ВКЛАДКИ
+   ========================================== */
 .main-content {
   flex: 1;
-  padding: 30px;
+  padding: 32px;
   overflow-y: auto;
 }
 
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .card {
   background-color: var(--card-bg);
-  border-radius: 15px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.card h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
 }
 
 .alert-box {
-  background-color: #ffeaa7;
-  color: #d35400;
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #ffeeba;
+  font-weight: 600;
+}
+
+/* Розклад */
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.badge {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
   font-weight: bold;
 }
 
-.week-selector { margin: 15px 0; display: flex; gap: 10px; }
+.week-selector {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
 .week-selector button {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: 1px solid var(--border-color);
   background: var(--card-bg);
   color: var(--text-color);
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
+  font-weight: bold;
 }
+
 .week-selector button.active {
   background: var(--btn-bg);
   color: var(--btn-text);
+  border-color: var(--btn-bg);
 }
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .day-card {
   border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 15px;
+  border-radius: 12px;
+  padding: 16px;
   background: var(--card-bg);
 }
 
 .day-card h4 {
   border-bottom: 2px solid var(--btn-bg);
-  padding-bottom: 5px;
-  margin-bottom: 10px;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+  color: var(--btn-bg);
 }
 
 .class-item {
-  background: rgba(0,0,0,0.03);
-  padding: 8px;
-  border-radius: 6px;
-  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
   font-size: 13px;
+  border-left: 3px solid var(--btn-bg);
 }
 
-.task-list { list-style: none; }
+body.dark-theme .class-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Список завдань */
+.task-list {
+  list-style: none;
+}
+
 .task-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 12px;
   border-bottom: 1px solid var(--border-color);
 }
+
 .task-item.completed {
   text-decoration: line-through;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
+/* Таблиці адмін-панелі */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 12px;
 }
+
 .admin-table th, .admin-table td {
   border: 1px solid var(--border-color);
-  padding: 8px;
+  padding: 10px;
   text-align: left;
+  font-size: 14px;
+}
+
+.admin-table th {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Форми */
+form label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 form input, form select, form button {
   display: block;
   width: 100%;
-  margin: 8px 0;
-  padding: 10px;
-  border-radius: 6px;
+  margin: 8px 0 16px;
+  padding: 12px;
+  border-radius: 8px;
   border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-color);
+  font-size: 14px;
 }
 
 form button {
   background: var(--btn-bg);
   color: var(--btn-text);
   border: none;
+  font-weight: bold;
   cursor: pointer;
+  margin-top: 8px;
+}
+
+form button:hover {
+  opacity: 0.9;
 }
