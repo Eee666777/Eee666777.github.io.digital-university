@@ -34,7 +34,6 @@ body {
   min-height: 100vh;
 }
 
-/* Авторизація та відеофон */
 .auth-box {
   position: relative;
   width: 100vw;
@@ -159,7 +158,6 @@ body {
   font-size: 12px;
 }
 
-/* Макет платформи */
 .app-layout {
   display: flex;
   min-height: 100vh;
