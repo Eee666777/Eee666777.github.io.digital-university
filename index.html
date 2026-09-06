@@ -8,10 +8,10 @@
 </head>
 <body class="light-theme">
 
-  <!-- Секція авторизації / реєстрації -->
+  <!-- Авторизація / Реєстрація з відеофоном -->
   <div id="auth-container" class="auth-box">
-    <div class="season-bg" id="season-bg"></div>
-    <div class="season-character" id="season-character"></div>
+    <video id="season-video" class="season-video" autoplay loop muted playsinline></video>
+    <div id="season-character" class="season-character"></div>
 
     <div class="glass-card">
       <h2 id="auth-title">Sign In</h2>
@@ -44,9 +44,10 @@
     </div>
   </div>
 
-  <!-- Головна платформа (Digital University) -->
+  <!-- Головна платформа Digital University -->
   <div id="app-container" class="app-layout" style="display: none;">
-    <!-- Бокова панель (дизайн як на макеті) -->
+    
+    <!-- Бокова панель -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="du-logo">DU</div>
@@ -91,15 +92,15 @@
       </nav>
     </aside>
 
-    <!-- Основна область контенту -->
+    <!-- Основний контент -->
     <main class="main-content">
       
-      <!-- Вкладка: Головна -->
+      <!-- Головна -->
       <section id="tab-home" class="tab-content active">
         <h2>Головна сторінка</h2>
         
         <div class="card alert-box" id="schedule-alert">
-          <p>Завантаження розкладу на сьогодні...</p>
+          Завантаження стану занять...
         </div>
 
         <div class="card">
@@ -113,7 +114,7 @@
         </div>
       </section>
 
-      <!-- Вкладка: Розклад -->
+      <!-- Розклад -->
       <section id="tab-schedule" class="tab-content">
         <div class="schedule-header">
           <h2>Розклад занять</h2>
@@ -132,7 +133,7 @@
           <form id="add-subject-form">
             <select id="custom-week">
               <option value="1">Тиждень 1</option>
-              <option value="2">Тиждень 2</option>
+              <option value="2" selected>Тиждень 2</option>
             </select>
             <select id="custom-day">
               <option value="1">Понеділок</option>
@@ -151,7 +152,7 @@
         </div>
       </section>
 
-      <!-- Вкладка: Завдання -->
+      <!-- Завдання -->
       <section id="tab-tasks" class="tab-content">
         <h2>Завдання та нагадування</h2>
         
@@ -170,14 +171,14 @@
         </div>
       </section>
 
-      <!-- Вкладка: Налаштування -->
+      <!-- Налаштування -->
       <section id="tab-settings" class="tab-content">
         <h2>Налаштування профілю</h2>
         
         <div class="card">
           <form id="settings-form">
             <label>Група:</label>
-            <input type="text" id="setting-group" placeholder="Наприклад: КН-22">
+            <input type="text" id="setting-group" placeholder="Наприклад: ФКНТ-1">
             
             <label>Дата народження:</label>
             <input type="date" id="setting-dob">
@@ -191,16 +192,16 @@
 
         <div class="card">
           <h3>Тема оформлення</h3>
-          <button id="theme-toggle-btn">Переключити на темну тему</button>
+          <button id="theme-toggle-btn">Переключити тему</button>
         </div>
       </section>
 
-      <!-- Вкладка: Адмін-панель -->
+      <!-- Адмін-панель -->
       <section id="tab-admin" class="tab-content">
         <h2>Панель Адміністратора</h2>
         
         <div class="card">
-          <h3>Список користувачів (Всього до 15 осіб + Admin)</h3>
+          <h3>Список користувачів (Макс: 15 Студентів + 1 Адмін)</h3>
           <table class="admin-table">
             <thead>
               <tr>
@@ -216,7 +217,6 @@
 
         <div class="card">
           <h3>Керування загальним розкладом</h3>
-          <p>Внесені зміни будуть автоматично відображатися у всіх користувачів.</p>
           <form id="admin-schedule-form">
             <select id="admin-week">
               <option value="1">Тиждень 1</option>
