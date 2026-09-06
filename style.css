@@ -1,6 +1,3 @@
-/* ==========================================
-   1. ЗМІННІ ТА БАЗОВІ СТИЛІ
-   ========================================== */
 :root {
   --bg-color: #e3f2fd;
   --sidebar-bg: #00a8ff;
@@ -37,9 +34,7 @@ body {
   min-height: 100vh;
 }
 
-/* ==========================================
-   2. АВТОРИЗАЦІЯ ТА АНІМАЦІЇ ЗА ПОРАМИ РОКУ
-   ========================================== */
+/* Авторизація та відеофон */
 .auth-box {
   position: relative;
   width: 100vw;
@@ -50,28 +45,19 @@ body {
   overflow: hidden;
 }
 
-/* Фони за порами року */
-.season-bg {
+.season-video {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
   z-index: 1;
-  transition: background 1s ease;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
 }
 
-.season-autumn {
-  background: linear-gradient(180deg, #f39c12 0%, #e67e22 50%, #d35400 100%);
-}
-.season-winter {
-  background: linear-gradient(180deg, #74b9ff 0%, #0984e3 50%, #2980b9 100%);
-}
-.season-spring {
-  background: linear-gradient(180deg, #a8e6cf 0%, #55efc4 50%, #00b894 100%);
-}
-.season-summer {
-  background: linear-gradient(180deg, #ffeaa7 0%, #fdcb6e 50%, #e67e22 100%);
-}
-
-/* Анімований персонаж реального часу */
 .season-character {
   position: absolute;
   bottom: 12%;
@@ -91,7 +77,6 @@ body {
   100% { left: 100vw; }
 }
 
-/* Glassmorphism Картка з чітким контрастом */
 .glass-card {
   position: relative;
   z-index: 10;
@@ -127,16 +112,11 @@ body {
   outline: none;
 }
 
-.glass-card input::placeholder {
-  color: #7f8c8d;
-}
-
 .remember-me {
   margin: 14px 0;
   text-align: left;
   color: #2c3e50;
   font-size: 14px;
-  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -159,11 +139,6 @@ body {
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.glass-card button[type="submit"]:hover {
-  background: #8b2828;
 }
 
 .auth-toggle {
@@ -184,15 +159,12 @@ body {
   font-size: 12px;
 }
 
-/* ==========================================
-   3. ОСНОВНИЙ МАКЕТ ПЛАТФОРМИ (DIGITAL UNIVERSITY)
-   ========================================== */
+/* Макет платформи */
 .app-layout {
   display: flex;
   min-height: 100vh;
 }
 
-/* Бокова панель (Sidebar) */
 .sidebar {
   width: 280px;
   background-color: var(--sidebar-bg);
@@ -210,8 +182,6 @@ body {
   gap: 12px;
   color: #ffffff;
   margin-bottom: 24px;
-  width: 100%;
-  justify-content: center;
 }
 
 .du-logo {
@@ -232,17 +202,6 @@ body {
   flex-direction: column;
 }
 
-.du-title span {
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.du-title small {
-  font-size: 12px;
-  opacity: 0.9;
-}
-
-/* Профіль користувача у шапці sidebar */
 .user-profile-card {
   background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(5px);
@@ -251,7 +210,6 @@ body {
   padding: 20px 15px;
   text-align: center;
   margin-bottom: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .avatar-circle {
@@ -261,7 +219,6 @@ body {
   border-radius: 50%;
   margin: 0 auto 12px;
   position: relative;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .logout-icon {
@@ -275,25 +232,14 @@ body {
   width: 32px;
   height: 32px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  transition: transform 0.2s;
-}
-
-.logout-icon:hover {
-  transform: scale(1.1);
 }
 
 .user-name {
   font-weight: bold;
   color: #ffffff;
   font-size: 18px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Навігація */
 .sidebar-nav {
   width: 100%;
   display: flex;
@@ -316,38 +262,21 @@ body {
   font-weight: 600;
   cursor: pointer;
   text-align: left;
-  transition: all 0.2s ease;
 }
 
 .nav-btn.active, .nav-btn:hover {
   background: #ffffff;
   color: #0081c8;
-  transform: translateX(4px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* ==========================================
-   4. КОНТЕНТ ТА ВКЛАДКИ
-   ========================================== */
 .main-content {
   flex: 1;
   padding: 32px;
   overflow-y: auto;
 }
 
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 
 .card {
   background-color: var(--card-bg);
@@ -358,19 +287,12 @@ body {
   box-shadow: 0 4px 12px var(--shadow-color);
 }
 
-.card h3 {
-  margin-bottom: 16px;
-  font-size: 18px;
-}
-
 .alert-box {
   background-color: #fff3cd;
   color: #856404;
-  border-color: #ffeeba;
   font-weight: 600;
 }
 
-/* Розклад */
 .schedule-header {
   display: flex;
   justify-content: space-between;
@@ -406,7 +328,6 @@ body {
 .week-selector button.active {
   background: var(--btn-bg);
   color: var(--btn-text);
-  border-color: var(--btn-bg);
 }
 
 .schedule-grid {
@@ -443,11 +364,7 @@ body.dark-theme .class-item {
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* Список завдань */
-.task-list {
-  list-style: none;
-}
-
+.task-list { list-style: none; }
 .task-item {
   display: flex;
   justify-content: space-between;
@@ -461,7 +378,6 @@ body.dark-theme .class-item {
   opacity: 0.5;
 }
 
-/* Таблиці адмін-панелі */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -475,18 +391,6 @@ body.dark-theme .class-item {
   font-size: 14px;
 }
 
-.admin-table th {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-/* Форми */
-form label {
-  display: block;
-  margin-top: 12px;
-  font-weight: 600;
-  font-size: 14px;
-}
-
 form input, form select, form button {
   display: block;
   width: 100%;
@@ -496,7 +400,6 @@ form input, form select, form button {
   border: 1px solid var(--border-color);
   background: var(--card-bg);
   color: var(--text-color);
-  font-size: 14px;
 }
 
 form button {
@@ -505,9 +408,4 @@ form button {
   border: none;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 8px;
-}
-
-form button:hover {
-  opacity: 0.9;
 }
