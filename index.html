@@ -1,334 +1,251 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DU - Цифровий Університет</title>
-    <!-- FontAwesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #e0e7ff;
-            --accent: #f59e0b;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --radius-lg: 20px;
-            --radius-md: 14px;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; padding-bottom: 90px; }
-
-        .app-container { max-width: 440px; margin: 0 auto; padding: 18px; }
-
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
-        .user-greeting h3 { font-size: 19px; font-weight: 800; color: var(--text-main); }
-        .user-greeting p { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-        .avatar-box { display: flex; align-items: center; gap: 12px; }
-        .avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-light), #c7d2fe); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary-dark); font-size: 15px; box-shadow: var(--shadow); }
-        
-        /* Banner Card */
-        .promo-card { background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); border-radius: var(--radius-lg); padding: 22px; color: white; margin-bottom: 22px; box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4); position: relative; overflow: hidden; }
-        .promo-card h4 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
-        .promo-card p { font-size: 12px; opacity: 0.9; margin-bottom: 14px; font-weight: 400; }
-        .code-badge { display: inline-block; background: rgba(255,255,255,0.22); backdrop-filter: blur(8px); padding: 5px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
-
-        /* Quick Access */
-        .quick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
-        .quick-item { background: var(--card-bg); border-radius: var(--radius-md); padding: 14px 8px; text-align: center; box-shadow: var(--shadow); cursor: pointer; border: 1px solid var(--border); transition: transform 0.2s; }
-        .quick-item:active { transform: scale(0.96); }
-        .quick-item i { font-size: 20px; color: var(--primary); margin-bottom: 6px; display: block; }
-        .quick-item span { font-size: 11px; font-weight: 700; color: var(--text-main); }
-
-        /* Sections */
-        .section-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); }
-        .view-all { font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 700; cursor: pointer; }
-
-        /* Schedule Cards */
-        .schedule-card { background: var(--card-bg); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); }
-        .schedule-time { font-size: 11px; font-weight: 800; color: var(--primary-dark); background: var(--primary-light); padding: 8px 12px; border-radius: 10px; text-align: center; line-height: 1.3; }
-        .schedule-info { flex: 1; margin-left: 14px; }
-        .schedule-info h5 { font-size: 14px; font-weight: 700; color: var(--text-main); }
-        .schedule-info p { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
-
-        /* File Upload & Generator UI */
-        .card-box { background: var(--card-bg); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 22px; box-shadow: var(--shadow); border: 1px solid var(--border); }
-
-        /* Student Card Visual Generator */
-        .student-id-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border-radius: 16px; padding: 18px; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.2); margin-top: 10px; }
-        .student-id-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 8px; margin-bottom: 12px; }
-        .student-id-header span { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #a5b4fc; }
-        .student-id-body { display: flex; gap: 14px; align-items: center; }
-        .student-id-photo { width: 75px; height: 95px; background: #334155; border-radius: 8px; border: 2px solid var(--primary); object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #94a3b8; overflow: hidden; }
-        .student-id-photo img { width: 100%; height: 100%; object-fit: cover; }
-        .student-id-details h4 { font-size: 14px; font-weight: 800; line-height: 1.2; margin-bottom: 4px; }
-        .student-id-details p { font-size: 10px; color: #cbd5e1; margin-bottom: 2px; }
-
-        /* Navigation */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); height: 68px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); box-shadow: 0 -4px 20px rgba(0,0,0,0.04); max-width: 440px; margin: 0 auto; z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); text-decoration: none; font-size: 10px; font-weight: 700; gap: 4px; border: none; background: none; cursor: pointer; flex: 1; transition: color 0.2s; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item i { font-size: 19px; }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* Modals */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; }
-        .modal.open { display: flex !important; }
-        .modal-content { background: white; border-radius: var(--radius-lg); padding: 22px; width: 100%; max-width: 390px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow); }
-        
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-control { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; outline: none; font-weight: 500; transition: border 0.2s; }
-        .form-control:focus { border-color: var(--primary); }
-
-        .btn-primary { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; margin-top: 8px; transition: background 0.2s; }
-        .btn-primary:active { background: var(--primary-dark); }
-        .btn-secondary { background: #64748b; margin-top: 6px; }
-
-        .file-card { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #f1f5f9; border-radius: 10px; margin-bottom: 8px; }
-        .file-info { display: flex; align-items: center; gap: 10px; }
-        .file-info i { font-size: 20px; color: var(--primary); }
-        .file-info div h6 { font-size: 12px; font-weight: 700; }
-        .file-info div p { font-size: 10px; color: var(--text-muted); }
-
-        /* Admin user list */
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
-        .block-btn { color: #ef4444; border: none; background: none; cursor: pointer; font-weight: 700; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital University</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="light-theme">
 
-    <div class="app-container">
+  <!-- Секція авторизації / реєстрації -->
+  <div id="auth-container" class="auth-box">
+    <div class="season-bg" id="season-bg"></div>
+    <div class="season-character" id="season-character"></div>
 
-        <!-- Хедер -->
-        <div class="header">
-            <div class="user-greeting">
-                <h3 id="displayUserName">Вітаємо! 👋</h3>
-                <p id="displayUserGroup">Група: -</p>
-            </div>
-            <div class="avatar-box">
-                <div class="avatar" id="userAvatar">DU</div>
-                <i class="fa-solid fa-right-from-bracket" id="logoutBtn" style="color: #ef4444; cursor: pointer; font-size: 18px;" title="Вийти"></i>
-            </div>
+    <div class="glass-card">
+      <h2 id="auth-title">Sign In</h2>
+      
+      <form id="auth-form">
+        <div class="input-group" id="fio-group" style="display: none;">
+          <input type="text" id="auth-fio" placeholder="ПІБ (Повне ім'я)">
+        </div>
+        <div class="input-group">
+          <input type="email" id="auth-email" placeholder="Електронна пошта" required>
+        </div>
+        <div class="input-group">
+          <input type="password" id="auth-password" placeholder="Пароль" required>
+        </div>
+        
+        <div class="remember-me">
+          <label><input type="checkbox" id="auth-remember"> Автоматичний вхід</label>
         </div>
 
-        <!-- Таб 1: Головна -->
-        <div id="tab-home" class="tab-content active">
-            <div class="promo-card">
-                <h4>Цифровий Університет</h4>
-                <p>Ваші матеріали, розклад за датами та студентські документи у зручному форматі.</p>
-                <div class="code-badge" id="myUniqueCode">Код: DU-XXXX</div>
-            </div>
+        <button type="submit" id="auth-submit-btn">Увійти</button>
+      </form>
 
-            <div class="section-title">Швидкий доступ</div>
-            <div class="quick-grid">
-                <button class="quick-item" onclick="switchTab('tab-schedule')">
-                    <i class="fa-solid fa-calendar-day"></i>
-                    <span>Розклад</span>
-                </button>
+      <div class="auth-toggle">
+        <span id="toggle-text">Немає акаунту?</span> 
+        <a href="#" id="toggle-auth-btn">Зареєструватися</a>
+      </div>
+      <div class="forgot-pass">
+        <small>Забули пароль? Зверніться до адміністратора.</small>
+      </div>
+    </div>
+  </div>
 
-                <button class="quick-item" onclick="switchTab('tab-ticket')">
-                    <i class="fa-solid fa-id-card"></i>
-                    <span>Квиток</span>
-                </button>
+  <!-- Головна платформа (Digital University) -->
+  <div id="app-container" class="app-layout" style="display: none;">
+    <!-- Бокова панель (дизайн як на макеті) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="du-logo">DU</div>
+        <div class="du-title">
+          <span>Digital University</span>
+          <small>Цифровий Університет</small>
+        </div>
+      </div>
 
-                <button class="quick-item" onclick="switchTab('tab-files')">
-                    <i class="fa-solid fa-folder-open"></i>
-                    <span>Файли</span>
-                </button>
+      <div class="user-profile-card">
+        <div class="avatar-circle">
+          <button id="logout-btn" class="logout-icon" title="Вийти">↪</button>
+        </div>
+        <div class="user-name" id="display-user-name">Завантаження...</div>
+      </div>
 
-                <button class="quick-item" id="btnAdminPanel" style="display: none;">
-                    <i class="fa-solid fa-user-gear" style="color: var(--accent);"></i>
-                    <span>Адмін</span>
-                </button>
-            </div>
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-tab="tab-home">
+          <span class="icon">🏠</span> Головна сторінка
+        </button>
+        <button class="nav-btn" data-tab="tab-schedule">
+          <span class="icon">📅</span> Розклад
+        </button>
+        <button class="nav-btn" data-tab="tab-tasks">
+          <span class="icon">📋</span> Завдання
+        </button>
+        <a href="https://web.telegram.org/" target="_blank" class="nav-btn">
+          <span class="icon">✈️</span> Telegram
+        </a>
+        <a href="https://classroom.google.com/" target="_blank" class="nav-btn">
+          <span class="icon">🏫</span> Classroom
+        </a>
+        <a href="https://cabinet.nau.edu.ua/student/session/" target="_blank" class="nav-btn">
+          <span class="icon">🏛️</span> Digital
+        </a>
+        <button class="nav-btn" data-tab="tab-settings">
+          <span class="icon">⚙️</span> Налаштування
+        </button>
+        <button class="nav-btn admin-only" data-tab="tab-admin" style="display:none;">
+          <span class="icon">👑</span> Адмін-панель
+        </button>
+      </nav>
+    </aside>
 
-            <div class="section-title">
-                <span>Розклад на сьогодні</span>
-                <span class="view-all" onclick="switchTab('tab-schedule')">Всі дати</span>
-            </div>
-            <div id="todayScheduleContainer"></div>
+    <!-- Основна область контенту -->
+    <main class="main-content">
+      
+      <!-- Вкладка: Головна -->
+      <section id="tab-home" class="tab-content active">
+        <h2>Головна сторінка</h2>
+        
+        <div class="card alert-box" id="schedule-alert">
+          <p>Завантаження розкладу на сьогодні...</p>
         </div>
 
-        <!-- Таб 2: Розклад за датами -->
-        <div id="tab-schedule" class="tab-content">
-            <div class="section-title">Розклад за Датами</div>
-            <div class="form-group">
-                <label>Оберіть дату заняття:</label>
-                <input type="date" id="scheduleDatePicker" class="form-control" onchange="filterScheduleByDate()">
-            </div>
-            <div id="dateScheduleContainer"></div>
+        <div class="card">
+          <h3>Розклад на сьогодні</h3>
+          <div id="today-classes-list"></div>
         </div>
 
-        <!-- Таб 3: Студентський Квиток (Генератор) -->
-        <div id="tab-ticket" class="tab-content">
-            <div class="section-title">Студентський Квиток</div>
+        <div class="card">
+          <h3>Мої термінові завдання</h3>
+          <div id="home-tasks-list"></div>
+        </div>
+      </section>
+
+      <!-- Вкладка: Розклад -->
+      <section id="tab-schedule" class="tab-content">
+        <div class="schedule-header">
+          <h2>Розклад занять</h2>
+          <span id="current-week-indicator" class="badge">Тиждень 2</span>
+        </div>
+
+        <div class="week-selector">
+          <button id="btn-week-1" onclick="switchWeekView(1)">Тиждень 1</button>
+          <button id="btn-week-2" class="active" onclick="switchWeekView(2)">Тиждень 2</button>
+        </div>
+
+        <div id="schedule-grid" class="schedule-grid"></div>
+
+        <div class="card add-custom-class">
+          <h3>Додати вибіркову дисципліну</h3>
+          <form id="add-subject-form">
+            <select id="custom-week">
+              <option value="1">Тиждень 1</option>
+              <option value="2">Тиждень 2</option>
+            </select>
+            <select id="custom-day">
+              <option value="1">Понеділок</option>
+              <option value="2">Вівторок</option>
+              <option value="3">Середа</option>
+              <option value="4">Четвер</option>
+              <option value="5">П'ятниця</option>
+              <option value="6">Субота</option>
+            </select>
+            <input type="text" id="custom-title" placeholder="Назва предмета (напр. Вибіркова)" required>
+            <input type="text" id="custom-time" placeholder="Час (напр. 10:00 - 11:35)" required>
+            <input type="text" id="custom-room" placeholder="Аудиторія" required>
+            <input type="text" id="custom-teacher" placeholder="Викладач" required>
+            <button type="submit">Додати до свого розкладу</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Вкладка: Завдання -->
+      <section id="tab-tasks" class="tab-content">
+        <h2>Завдання та нагадування</h2>
+        
+        <div class="card">
+          <h3>Створити нове завдання</h3>
+          <form id="create-task-form">
+            <input type="text" id="task-title" placeholder="Назва завдання" required>
+            <input type="datetime-local" id="task-deadline" required>
+            <button type="submit">Зберегти завдання</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Список завдань</h3>
+          <ul id="all-tasks-list" class="task-list"></ul>
+        </div>
+      </section>
+
+      <!-- Вкладка: Налаштування -->
+      <section id="tab-settings" class="tab-content">
+        <h2>Налаштування профілю</h2>
+        
+        <div class="card">
+          <form id="settings-form">
+            <label>Група:</label>
+            <input type="text" id="setting-group" placeholder="Наприклад: КН-22">
             
-            <div class="card-box">
-                <form id="studentTicketForm">
-                    <div class="form-group">
-                        <label>ПІБ Студента</label>
-                        <input type="text" id="tkName" class="form-control" placeholder="Зайчук Назарій Вікторович" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Факультет / Група</label>
-                        <input type="text" id="tkGroup" class="form-control" placeholder="ФКНТ / Б-Ф7-25-1-КС" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Номер Квитка</label>
-                        <input type="text" id="tkNumber" class="form-control" placeholder="KB №12345678" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Фото Студента</label>
-                        <input type="file" id="tkPhotoInput" accept="image/*" class="form-control">
-                    </div>
-                    <button type="submit" class="btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Згенерувати Квиток</button>
-                </form>
-            </div>
-
-            <!-- Згенерований квиток -->
-            <div id="generatedTicketBox" style="display: none;">
-                <div class="section-title">Ваш Цифровий Квиток</div>
-                <div class="student-id-card">
-                    <div class="student-id-header">
-                        <span>СТУДЕНТСЬКИЙ КВИТОК</span>
-                        <i class="fa-solid fa-graduation-cap"></i>
-                    </div>
-                    <div class="student-id-body">
-                        <div class="student-id-photo" id="idPhotoPreview">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div class="student-id-details">
-                            <h4 id="idNameDisplay">ПІБ Студента</h4>
-                            <p id="idGroupDisplay">Група: -</p>
-                            <p id="idNumDisplay">№: -</p>
-                            <p style="color: #a5b4fc; font-weight:700; margin-top:4px;">Дійсний до: 30.06.2028</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Таб 4: Завантажені Файли -->
-        <div id="tab-files" class="tab-content">
-            <div class="section-title">Матеріали та Файли</div>
-            <div id="filesContainer"></div>
-        </div>
-
-        <!-- Таб 5: Профіль -->
-        <div id="tab-profile" class="tab-content">
-            <div class="section-title">Особистий Кабінет</div>
-            <div class="schedule-card">
-                <div>
-                    <h5 id="profName">-</h5>
-                    <p id="profGroup">-</p>
-                    <p id="profCode" style="color: var(--primary); font-weight:700; margin-top:4px;">-</p>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Навігація -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('tab-home', this)">
-            <i class="fa-solid fa-house"></i>
-            <span>Головна</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-schedule', this)">
-            <i class="fa-solid fa-calendar-days"></i>
-            <span>Розклад</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-ticket', this)">
-            <i class="fa-solid fa-id-card"></i>
-            <span>Квиток</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-files', this)">
-            <i class="fa-solid fa-folder"></i>
-            <span>Файли</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-profile', this)">
-            <i class="fa-solid fa-user"></i>
-            <span>Профіль</span>
-        </button>
-    </nav>
-
-    <!-- Авторизація -->
-    <div id="authModal" class="modal open">
-        <div class="modal-content">
-            <h3 style="margin-bottom: 16px; text-align: center; font-weight:800;">Вхід у DU</h3>
-            <form id="authForm">
-                <div class="form-group">
-                    <label>Оберіть користувача</label>
-                    <select id="userSelect" class="form-control" required></select>
-                </div>
-                <div class="form-group">
-                    <label>Пароль</label>
-                    <input type="password" id="authPass" class="form-control" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn-primary">Увійти</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Адмін Панель -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <h3 style="font-weight: 800;">⚙️ Панель Адміністратора</h3>
+            <label>Дата народження:</label>
+            <input type="date" id="setting-dob">
             
-            <div class="section-title" style="margin-top:16px;">Додати Розклад (включаючи суботи)</div>
-            <form id="addScheduleForm">
-                <div class="form-group">
-                    <label>Дата Заняття</label>
-                    <input type="date" id="schDate" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Предмет</label>
-                    <input type="text" id="schSubject" class="form-control" placeholder="Вища математика / Лекція" required>
-                </div>
-                <div style="display:flex; gap: 8px;">
-                    <div class="form-group" style="flex:1;">
-                        <label>Початок</label>
-                        <input type="time" id="schStart" class="form-control" required>
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Кінець</label>
-                        <input type="time" id="schEnd" class="form-control" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn-primary" style="background:var(--accent);">Додати пару у розклад</button>
-            </form>
-
-            <hr style="margin: 18px 0; border: none; border-top: 1px solid var(--border);">
-
-            <div class="section-title">Завантажити Файл для Студентів</div>
-            <form id="uploadAdminFileForm">
-                <div class="form-group">
-                    <label>Назва Файлу / Опис</label>
-                    <input type="text" id="adminFileName" class="form-control" placeholder="Методичка №1" required>
-                </div>
-                <div class="form-group">
-                    <label>Файл з комп'ютера</label>
-                    <input type="file" id="adminFileInput" class="form-control" required>
-                </div>
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-upload"></i> Опублікувати файл</button>
-            </form>
-
-            <button class="btn-primary btn-secondary" onclick="closeModal('adminModal')">Закрити</button>
+            <label>Новий пароль:</label>
+            <input type="password" id="setting-password" placeholder="Залиште порожнім, якщо не змінюєте">
+            
+            <button type="submit">Зберегти зміни</button>
+          </form>
         </div>
-    </div>
 
-    <script src="script.js"></script>
+        <div class="card">
+          <h3>Тема оформлення</h3>
+          <button id="theme-toggle-btn">Переключити на темну тему</button>
+        </div>
+      </section>
+
+      <!-- Вкладка: Адмін-панель -->
+      <section id="tab-admin" class="tab-content">
+        <h2>Панель Адміністратора</h2>
+        
+        <div class="card">
+          <h3>Список користувачів (Всього до 15 осіб + Admin)</h3>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ПІБ</th>
+                <th>Email</th>
+                <th>Пароль</th>
+                <th>Роль</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-table"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Керування загальним розкладом</h3>
+          <p>Внесені зміни будуть автоматично відображатися у всіх користувачів.</p>
+          <form id="admin-schedule-form">
+            <select id="admin-week">
+              <option value="1">Тиждень 1</option>
+              <option value="2">Тиждень 2</option>
+            </select>
+            <select id="admin-day">
+              <option value="1">Понеділок</option>
+              <option value="2">Вівторок</option>
+              <option value="3">Середа</option>
+              <option value="4">Четвер</option>
+              <option value="5">П'ятниця</option>
+              <option value="6">Субота</option>
+            </select>
+            <input type="text" id="admin-title" placeholder="Назва предмета" required>
+            <input type="text" id="admin-time" placeholder="Час (напр. 08:30 - 10:05)" required>
+            <input type="text" id="admin-room" placeholder="Аудиторія" required>
+            <input type="text" id="admin-teacher" placeholder="Викладач" required>
+            <button type="submit">Додати у загальний розклад</button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
