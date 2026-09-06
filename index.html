@@ -47,7 +47,6 @@
   <!-- Головна платформа Digital University -->
   <div id="app-container" class="app-layout" style="display: none;">
     
-    <!-- Бокова панель -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <div class="du-logo">DU</div>
@@ -92,40 +91,30 @@
       </nav>
     </aside>
 
-    <!-- Основний контент -->
     <main class="main-content">
       
-      <!-- Головна -->
       <section id="tab-home" class="tab-content active">
         <h2>Головна сторінка</h2>
-        
-        <div class="card alert-box" id="schedule-alert">
-          Завантаження стану занять...
-        </div>
-
+        <div class="card alert-box" id="schedule-alert">Завантаження стану занять...</div>
         <div class="card">
           <h3>Розклад на сьогодні</h3>
           <div id="today-classes-list"></div>
         </div>
-
         <div class="card">
           <h3>Мої термінові завдання</h3>
           <div id="home-tasks-list"></div>
         </div>
       </section>
 
-      <!-- Розклад -->
       <section id="tab-schedule" class="tab-content">
         <div class="schedule-header">
           <h2>Розклад занять</h2>
           <span id="current-week-indicator" class="badge">Тиждень 2</span>
         </div>
-
         <div class="week-selector">
           <button id="btn-week-1" onclick="switchWeekView(1)">Тиждень 1</button>
           <button id="btn-week-2" class="active" onclick="switchWeekView(2)">Тиждень 2</button>
         </div>
-
         <div id="schedule-grid" class="schedule-grid"></div>
 
         <div class="card add-custom-class">
@@ -143,19 +132,17 @@
               <option value="5">П'ятниця</option>
               <option value="6">Субота</option>
             </select>
-            <input type="text" id="custom-title" placeholder="Назва предмета (напр. Вибіркова)" required>
+            <input type="text" id="custom-title" placeholder="Назва предмета" required>
             <input type="text" id="custom-time" placeholder="Час (напр. 10:00 - 11:35)" required>
             <input type="text" id="custom-room" placeholder="Аудиторія" required>
             <input type="text" id="custom-teacher" placeholder="Викладач" required>
-            <button type="submit">Додати до свого розкладу</button>
+            <button type="submit">Додати до розкладу</button>
           </form>
         </div>
       </section>
 
-      <!-- Завдання -->
       <section id="tab-tasks" class="tab-content">
         <h2>Завдання та нагадування</h2>
-        
         <div class="card">
           <h3>Створити нове завдання</h3>
           <form id="create-task-form">
@@ -164,44 +151,35 @@
             <button type="submit">Зберегти завдання</button>
           </form>
         </div>
-
         <div class="card">
           <h3>Список завдань</h3>
           <ul id="all-tasks-list" class="task-list"></ul>
         </div>
       </section>
 
-      <!-- Налаштування -->
       <section id="tab-settings" class="tab-content">
         <h2>Налаштування профілю</h2>
-        
         <div class="card">
           <form id="settings-form">
             <label>Група:</label>
             <input type="text" id="setting-group" placeholder="Наприклад: ФКНТ-1">
-            
             <label>Дата народження:</label>
             <input type="date" id="setting-dob">
-            
             <label>Новий пароль:</label>
             <input type="password" id="setting-password" placeholder="Залиште порожнім, якщо не змінюєте">
-            
             <button type="submit">Зберегти зміни</button>
           </form>
         </div>
-
         <div class="card">
           <h3>Тема оформлення</h3>
           <button id="theme-toggle-btn">Переключити тему</button>
         </div>
       </section>
 
-      <!-- Адмін-панель -->
       <section id="tab-admin" class="tab-content">
         <h2>Панель Адміністратора</h2>
-        
         <div class="card">
-          <h3>Список користувачів (Макс: 15 Студентів + 1 Адмін)</h3>
+          <h3>Список користувачів</h3>
           <table class="admin-table">
             <thead>
               <tr>
@@ -214,7 +192,6 @@
             <tbody id="admin-users-table"></tbody>
           </table>
         </div>
-
         <div class="card">
           <h3>Керування загальним розкладом</h3>
           <form id="admin-schedule-form">
@@ -242,10 +219,6 @@
     </main>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
