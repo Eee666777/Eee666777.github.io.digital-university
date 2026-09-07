@@ -8,9 +8,12 @@
 </head>
 <body class="light-theme">
 
-  <!-- Панель авторизації з відео на тлі -->
+  <!-- Панель авторизації з фоновим відео -->
   <div id="auth-container" class="auth-box">
-    <video id="season-video" class="season-video" autoplay loop muted playsinline></video>
+    <video id="season-video" class="season-video" autoplay loop muted playsinline preload="auto">
+      <source src="osen.mp4" type="video/mp4">
+      Ваш браузер не підтримує відтворення відео.
+    </video>
 
     <div class="glass-card">
       <h2 id="auth-title">Sign In</h2>
