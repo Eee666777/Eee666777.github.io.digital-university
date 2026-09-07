@@ -76,7 +76,6 @@ if (authForm) {
     const fioInput = document.getElementById('auth-fio').value.trim();
 
     try {
-      // Спочатку пробуємо авторизуватись через сервер, якщо він є
       const endpoint = isSignUpMode ? '/api/register' : '/api/login';
       const body = isSignUpMode ? { fio: fioInput, email: emailInput, password: passwordInput } : { email: emailInput, password: passwordInput };
 
@@ -93,7 +92,6 @@ if (authForm) {
         throw new Error("Сервер недоступний, перехід на офлайн-базу");
       }
     } catch (err) {
-      // Резервна офлайн-авторизація за таблицею користувачів
       const usersDB = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
 
       if (isSignUpMode) {
@@ -241,9 +239,7 @@ async function renderSchedule() {
 
     const customRes = await fetch(`/api/schedule/custom/${currentUser.id}`);
     if (customRes.ok) customClasses = await customRes.json();
-  } catch (e) {
-    // Резервне завантаження з localStorage
-  }
+  } catch (e) {}
 
   const adminClasses = globalClasses.filter(c => Number(c.week) === selectedWeekView);
   const userClasses = customClasses.filter(c => Number(c.week) === selectedWeekView);
