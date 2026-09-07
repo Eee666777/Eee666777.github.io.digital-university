@@ -1,25 +1,3 @@
-:root {
-  --bg-color: #e3f2fd;
-  --sidebar-bg: #00a8ff;
-  --card-bg: #ffffff;
-  --text-color: #2c3e50;
-  --btn-bg: #4c8bf5;
-  --btn-text: #ffffff;
-  --border-color: #e0e0e0;
-  --shadow-color: rgba(0, 0, 0, 0.08);
-}
-
-body.dark-theme {
-  --bg-color: #121212;
-  --sidebar-bg: #1f1f1f;
-  --card-bg: #2d2d2d;
-  --text-color: #f5f5f5;
-  --btn-bg: #3700b3;
-  --btn-text: #ffffff;
-  --border-color: #444444;
-  --shadow-color: rgba(0, 0, 0, 0.3);
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -28,12 +6,14 @@ body.dark-theme {
 }
 
 body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f4f6f9;
+  color: #333;
 }
 
+/* --- Контейнер Авторизації --- */
 .auth-box {
   position: relative;
   width: 100vw;
@@ -44,6 +24,7 @@ body {
   overflow: hidden;
 }
 
+/* Відео фону на весь екран */
 .season-video {
   position: absolute;
   top: 50%;
@@ -57,353 +38,325 @@ body {
   object-fit: cover;
 }
 
-.season-character {
-  position: absolute;
-  bottom: 12%;
-  left: -120px;
-  width: 100px;
-  height: 100px;
-  z-index: 2;
-  font-size: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: moveCharacter 12s linear infinite;
-}
-
-@keyframes moveCharacter {
-  0% { left: -120px; }
-  100% { left: 100vw; }
-}
-
+/* Картка входу поверх відео */
 .glass-card {
   position: relative;
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 40px;
-  width: 380px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 400px;
   text-align: center;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 .glass-card h2 {
-  margin-bottom: 24px;
-  color: #2c3e50;
-  font-size: 28px;
-  font-weight: 700;
+  margin-bottom: 25px;
+  color: #1a252f;
+  font-size: 26px;
 }
 
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group input, 
 .glass-card input[type="text"],
 .glass-card input[type="email"],
 .glass-card input[type="password"] {
   width: 100%;
-  padding: 14px 16px;
-  margin: 8px 0;
+  padding: 12px 15px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #2c3e50;
-  font-size: 15px;
   outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
 }
 
 .remember-me {
-  margin: 14px 0;
-  text-align: left;
-  color: #2c3e50;
-  font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #444;
 }
 
 .remember-me input {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+  margin-right: 8px;
 }
 
 .glass-card button[type="submit"] {
   width: 100%;
-  padding: 14px;
-  margin-top: 10px;
+  padding: 12px;
+  background-color: #b33939;
+  color: white;
   border: none;
   border-radius: 10px;
-  background: #a83232;
-  color: #ffffff;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.glass-card button[type="submit"]:hover {
+  background-color: #8e2a2a;
 }
 
 .auth-toggle {
-  margin-top: 18px;
-  color: #2c3e50;
-  font-size: 14px;
+  margin-top: 20px;
+  font-size: 13px;
 }
 
 .auth-toggle a {
-  color: #a83232;
+  color: #b33939;
+  text-decoration: none;
   font-weight: bold;
-  text-decoration: underline;
 }
 
 .forgot-pass {
-  margin-top: 12px;
-  color: #555555;
-  font-size: 12px;
+  margin-top: 10px;
+  color: #666;
 }
 
+/* --- Головна макетна сітка додатку --- */
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
 }
 
+/* Бічна панель */
 .sidebar {
-  width: 280px;
-  background-color: var(--sidebar-bg);
-  padding: 24px 16px;
+  width: 260px;
+  background-color: #1e272e;
+  color: #fff;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  border-radius: 0 30px 30px 0;
-  box-shadow: 4px 0 15px var(--shadow-color);
+  padding: 20px;
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #ffffff;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
 }
 
 .du-logo {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 3px solid #ffffff;
+  width: 40px;
+  height: 40px;
+  background-color: #3498db;
+  border-radius: 10px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   font-weight: bold;
-  font-size: 20px;
-  background: rgba(255, 255, 255, 0.2);
 }
 
-.du-title {
-  display: flex;
-  flex-direction: column;
+.du-title span {
+  display: block;
+  font-weight: bold;
+}
+
+.du-title small {
+  color: #808e9b;
+  font-size: 11px;
 }
 
 .user-profile-card {
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(5px);
-  width: 100%;
-  border-radius: 20px;
-  padding: 20px 15px;
-  text-align: center;
-  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 25px;
+  background: #2c3e50;
+  padding: 10px;
+  border-radius: 10px;
 }
 
 .avatar-circle {
-  width: 80px;
-  height: 80px;
-  background: #ffffff;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  margin: 0 auto 12px;
-  position: relative;
+  background: #e74c3c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .logout-icon {
-  position: absolute;
-  right: -4px;
-  bottom: 0;
-  background: #ff4757;
-  color: #ffffff;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  background: none;
+  border: none;
+  color: white;
   cursor: pointer;
+  font-size: 16px;
 }
 
 .user-name {
-  font-weight: bold;
-  color: #ffffff;
-  font-size: 18px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-nav {
-  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .nav-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 16px;
+  gap: 10px;
+  background: none;
   border: none;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.55);
-  color: #2c3e50;
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: 600;
+  color: #d2dae2;
+  padding: 12px;
+  border-radius: 8px;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.2s;
 }
 
-.nav-btn.active, .nav-btn:hover {
-  background: #ffffff;
-  color: #0081c8;
+.nav-btn:hover, .nav-btn.active {
+  background-color: #34495e;
+  color: #fff;
 }
 
+/* Основний контент */
 .main-content {
   flex: 1;
-  padding: 32px;
+  padding: 30px;
   overflow-y: auto;
+  background-color: #f4f6f9;
 }
 
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
 
 .card {
-  background-color: var(--card-bg);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px var(--shadow-color);
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .alert-box {
-  background-color: #fff3cd;
-  color: #856404;
-  font-weight: 600;
+  background-color: #e17055;
+  color: white;
+  font-weight: bold;
 }
 
+/* Розклад */
 .schedule-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 .badge {
-  background: var(--btn-bg);
-  color: var(--btn-text);
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
+  background: #0984e3;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 12px;
 }
 
 .week-selector {
-  margin-bottom: 20px;
-  display: flex;
-  gap: 10px;
+  margin: 15px 0;
 }
 
 .week-selector button {
-  padding: 10px 20px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-color);
-  border-radius: 10px;
+  padding: 8px 16px;
+  border: 1px solid #0984e3;
+  background: none;
+  color: #0984e3;
+  border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
+  margin-right: 5px;
 }
 
 .week-selector button.active {
-  background: var(--btn-bg);
-  color: var(--btn-text);
+  background: #0984e3;
+  color: white;
 }
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
 }
 
 .day-card {
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px;
-  background: var(--card-bg);
-}
-
-.day-card h4 {
-  border-bottom: 2px solid var(--btn-bg);
-  padding-bottom: 6px;
-  margin-bottom: 12px;
-  color: var(--btn-bg);
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .class-item {
-  background: rgba(0, 0, 0, 0.03);
+  background: #f8f9fa;
+  border-left: 4px solid #0984e3;
   padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  margin-top: 10px;
+  border-radius: 4px;
   font-size: 13px;
-  border-left: 3px solid var(--btn-bg);
 }
 
-body.dark-theme .class-item {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.task-list { list-style: none; }
-.task-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.task-item.completed {
-  text-decoration: line-through;
-  opacity: 0.5;
+/* Таблиці та форми */
+input, select {
+  padding: 8px 12px;
+  margin: 5px 0 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .admin-table th, .admin-table td {
-  border: 1px solid var(--border-color);
+  border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
-  font-size: 14px;
 }
 
-form input, form select, form button {
-  display: block;
-  width: 100%;
-  margin: 8px 0 16px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-color);
+.admin-table th {
+  background-color: #f2f2f2;
 }
 
-form button {
-  background: var(--btn-bg);
-  color: var(--btn-text);
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
+/* Темна тема */
+body.dark-theme {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark-theme .main-content {
+  background-color: #121212;
+}
+
+body.dark-theme .card, 
+body.dark-theme .day-card {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.dark-theme .class-item {
+  background-color: #2a2a2a;
+  color: #fff;
 }
