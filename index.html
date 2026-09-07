@@ -106,15 +106,161 @@
       
       <!-- Вкладка: Головна сторінка -->
       <section id="tab-home" class="tab-content active">
-        <h2>Головна сторінка</h2>
-        <div class="card alert-box" id="schedule-alert">Завантаження стану занять...</div>
-        <div class="card">
-          <h3>Розклад на сьогодні</h3>
-          <div id="today-classes-list"></div>
-        </div>
-        <div class="card">
-          <h3>Мої термінові завдання</h3>
-          <div id="home-tasks-list"></div>
+        <div class="dashboard-grid">
+          
+          <!-- Ліва колонка: Мій Розклад -->
+          <div class="card schedule-widget">
+            <div class="widget-header">
+              <h2>Мій Розклад</h2>
+            </div>
+
+            <div class="date-navigator">
+              <button class="nav-arrow" id="prev-day-btn">&lt;</button>
+              <span id="current-day-label">Понеділок, 14 Вересня</span>
+              <button class="nav-arrow" id="next-day-btn">&gt;</button>
+            </div>
+
+            <div class="time-schedule">
+              <div class="time-slot">
+                <span class="time-label">9:00<br>10:00</span>
+                <div class="event-card blue">
+                  <div class="event-title">9:00 - Математичний Аналіз II</div>
+                  <div class="event-details">
+                    <span>Учитель: Математика II</span>
+                    <span class="room-badge">ром. 20</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="time-slot">
+                <span class="time-label">10:45<br>12:45</span>
+                <div class="event-card light-blue">
+                  <div class="event-title">10:45 - Англійська Мова</div>
+                  <div class="event-details">
+                    <span>Учитель: Англійська Мова</span>
+                    <span class="room-badge">ром. 35</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="time-slot">
+                <span class="time-label">13:00<br>14:00</span>
+                <div class="event-card yellow">
+                  <div class="event-title">13:00 - Історія України</div>
+                  <div class="event-details">
+                    <span>Учитель: Історія України</span>
+                    <span class="room-badge">ром. 38</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="time-slot">
+                <span class="time-label">15:15<br>16:10</span>
+                <div class="event-card blue">
+                  <div class="event-title">15:15 - Лабораторна Робота: Фізика</div>
+                  <div class="event-details">
+                    <span>Учитель: Каф Фізика</span>
+                    <span class="room-badge">ром. 38</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Календар-стрічка -->
+            <div class="mini-calendar">
+              <div class="cal-header">
+                <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span>
+              </div>
+              <div class="cal-days">
+                <span class="active-day">14</span>
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+                <span>4</span>
+                <span>5</span>
+                <span>6</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Права колонка: Завдання та Дедлайни -->
+          <div class="card tasks-widget">
+            <div class="widget-header">
+              <h2>Завдання та Дедлайни</h2>
+            </div>
+
+            <div class="tasks-feed">
+              <div class="task-card">
+                <div class="task-top">
+                  <div class="task-icon yellow-bg">📄</div>
+                  <div class="task-info">
+                    <div class="task-name">Домашнє Завдання 3: Математика</div>
+                    <div class="task-sub">Дедлайн: 16.09 (залишилось 2 дні)</div>
+                  </div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill yellow" style="width: 60%;"></div>
+                </div>
+              </div>
+
+              <div class="task-card">
+                <div class="task-top">
+                  <div class="task-icon blue-bg">📝</div>
+                  <div class="task-info">
+                    <div class="task-name">Есе з Історії України</div>
+                    <div class="task-sub">Дедлайн: 21.09 (в процесі)</div>
+                  </div>
+                  <button class="action-btn">Переглянути деталі</button>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill yellow" style="width: 40%;"></div>
+                </div>
+              </div>
+
+              <div class="task-card">
+                <div class="task-top">
+                  <div class="task-icon red-bg">❗</div>
+                  <div class="task-info">
+                    <div class="task-name">Тест з Фізики</div>
+                    <div class="task-sub">Дедлайн: 18.09 (не розпочато)</div>
+                  </div>
+                  <button class="action-btn">Переглянути деталі</button>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill gray" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="task-card">
+                <div class="task-top">
+                  <div class="task-icon green-bg">✓</div>
+                  <div class="task-info">
+                    <div class="task-name">Презентація: Англійська</div>
+                    <div class="task-sub">Дедлайн: 23.09 (завершено)</div>
+                  </div>
+                  <button class="action-btn">Переглянути деталі</button>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill green" style="width: 100%;"></div>
+                </div>
+              </div>
+
+              <div class="task-card">
+                <div class="task-top">
+                  <div class="task-icon orange-bg">💻</div>
+                  <div class="task-info">
+                    <div class="task-name">Практична Робота 4: Інформа...</div>
+                    <div class="task-sub alert-text">Дедлайн: 15.09 (сьогодні!)</div>
+                  </div>
+                  <button class="action-btn">Переглянути деталі</button>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill red" style="width: 85%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
