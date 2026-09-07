@@ -9,7 +9,7 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-color: #f4f6f9;
+  background-color: #111827;
   color: #333;
 }
 
@@ -25,7 +25,7 @@ body {
   background-color: #111827; /* Фоновий колір, якщо відео завантажується */
 }
 
-/* Відео фону на весь екран */
+/* Фонове відео */
 .season-video {
   position: absolute;
   top: 50%;
@@ -37,9 +37,10 @@ body {
   z-index: 1;
   transform: translate(-50%, -50%);
   object-fit: cover;
+  pointer-events: none;
 }
 
-/* Картка входу поверх відео */
+/* Картка входу */
 .glass-card {
   position: relative;
   z-index: 10;
