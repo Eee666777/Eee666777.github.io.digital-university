@@ -25,7 +25,7 @@ body {
   background-color: #111827;
 }
 
-/* Фонова картинка сезону */
+/* Фонова картинка сезону (osen.png, zima.png, leto.png) */
 .season-bg {
   position: absolute;
   top: 0;
