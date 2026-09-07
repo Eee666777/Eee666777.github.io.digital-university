@@ -11,7 +11,6 @@
       background-color: #f4f7f6;
     }
 
-    /* Навігація вкладок */
     .nav-tabs {
       display: flex;
       border-bottom: 2px solid #ccc;
@@ -44,7 +43,20 @@
       display: block;
     }
 
-    /* Стилі календаря */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .author-info {
+      font-size: 13px;
+      color: #555;
+      text-align: right;
+    }
+
     .legend {
       display: flex;
       gap: 15px;
@@ -80,6 +92,7 @@
       border-radius: 8px;
       padding: 15px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      position: relative;
     }
 
     .month-title {
@@ -109,23 +122,50 @@
       font-weight: 500;
     }
 
-    /* Кольорові позначення згідно з графіком */
+    /* Кольорові позначення */
     .type-week1 { background-color: #00d2ff; color: #000; } /* заняття I тижня */
     .type-week2 { background-color: #ffd000; color: #000; } /* заняття II тижня */
     .type-exam  { background-color: #e66020; color: #fff; } /* сесія */
     .type-vacation { background-color: #a2e825; color: #000; } /* канікули */
 
     .subtext {
-      font-size: 9px;
+      font-size: 8px;
       display: block;
       line-height: 1;
       margin-top: 1px;
+    }
+
+    /* Картка для Січня з розмиттям */
+    .blur-overlay {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .blur-overlay .blur-content {
+      filter: blur(4px);
+      user-select: none;
+    }
+
+    .blur-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(162, 232, 37, 0.85);
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #2e5a00;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 2;
     }
   </style>
 </head>
 <body>
 
-  <!-- Кнопки вкладок -->
+  <!-- Навігація вкладок -->
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="openTab('schedule')">Розклад</button>
     <button class="tab-btn" onclick="openTab('calendar')">Календар</button>
@@ -133,35 +173,42 @@
 
   <!-- Вкладка 1: Розклад -->
   <div id="schedule" class="tab-content active">
-    <h2>Ваш розклад занять</h2>
-    <p>Тут розміщується ваш поточний розклад занять.</p>
+    <h2>Розклад занять</h2>
+    <p>Ваш розклад пар відображається тут.</p>
   </div>
 
-  <!-- Вкладка 2: Календар навчального семестру -->
+  <!-- Вкладка 2: Календар -->
   <div id="calendar" class="tab-content">
-    <h2>Графік навчання в осінньому семестрі</h2>
+    
+    <div class="header-bar">
+      <h2>Графік навчання в осінньому семестрі</h2>
+      <div class="author-info">
+        @by_denistor<br>
+        Оновлено 27.08.2026
+      </div>
+    </div>
 
     <!-- Легенда -->
     <div class="legend">
       <div class="legend-item">
         <div class="color-box type-week1"></div>
-        <span>заняття I тижня</span>
+        <span>- заняття I тижня</span>
       </div>
       <div class="legend-item">
         <div class="color-box type-week2"></div>
-        <span>заняття II тижня</span>
+        <span>- заняття II тижня</span>
       </div>
       <div class="legend-item">
         <div class="color-box type-exam"></div>
-        <span>сесія</span>
+        <span>- сесія</span>
       </div>
       <div class="legend-item">
         <div class="color-box type-vacation"></div>
-        <span>канікули</span>
+        <span>- канікули</span>
       </div>
     </div>
 
-    <!-- Календарна сітка -->
+    <!-- Сітка місяців -->
     <div class="months-grid">
 
       <!-- Вересень -->
@@ -173,13 +220,13 @@
             <td class="type-week1">31</td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week1">3</td><td class="type-week1">4</td><td class="type-week1">5</td><td>6</td>
           </tr>
           <tr>
-            <td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10</td><td class="type-week2">11</td><td class="type-week2">12<span class="subtext">Пн(II)</span></td><td>13</td>
+            <td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10</td><td class="type-week2">11</td><td class="type-week2">12<span class="subtext">Пн (II)</span></td><td>13</td>
           </tr>
           <tr>
-            <td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17</td><td class="type-week1">18</td><td class="type-week1">19<span class="subtext">Вт(II)</span></td><td>20</td>
+            <td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17</td><td class="type-week1">18</td><td class="type-week1">19<span class="subtext">Вт (II)</span></td><td>20</td>
           </tr>
           <tr>
-            <td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week2">24</td><td class="type-week2">25</td><td class="type-week2">26<span class="subtext">Ср(II)</span></td><td>27</td>
+            <td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week2">24</td><td class="type-week2">25</td><td class="type-week2">26<span class="subtext">Ср (II)</span></td><td>27</td>
           </tr>
           <tr>
             <td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td></td><td></td><td></td><td></td>
@@ -193,19 +240,19 @@
         <table class="calendar-table">
           <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
           <tr>
-            <td></td><td></td><td></td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week2">3<span class="subtext">Чт(II)</span></td><td>4</td>
+            <td></td><td></td><td></td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week2">3<span class="subtext">Чт (II)</span></td><td>4</td>
           </tr>
           <tr>
-            <td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10<span class="subtext">Пт(II)</span></td><td>11</td>
+            <td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10<span class="subtext">Пт (II)</span></td><td>11</td>
           </tr>
           <tr>
-            <td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17<span class="subtext">Пн(I)</span></td><td>18</td>
+            <td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17<span class="subtext">Пн (I)</span></td><td>18</td>
           </tr>
           <tr>
-            <td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week1">24<span class="subtext">Вт(I)</span></td><td>25</td>
+            <td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week1">24<span class="subtext">Вт (I)</span></td><td>25</td>
           </tr>
           <tr>
-            <td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td class="type-week1">31<span class="subtext">Ср(I)</span></td><td></td>
+            <td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td class="type-week1">31<span class="subtext">Ср (I)</span></td><td></td>
           </tr>
         </table>
       </div>
@@ -219,16 +266,16 @@
             <td></td><td></td><td></td><td></td><td></td><td></td><td>1</td>
           </tr>
           <tr>
-            <td class="type-week2">2</td><td class="type-week2">3</td><td class="type-week2">4</td><td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week1">7<span class="subtext">Чт(I)</span></td><td>8</td>
+            <td class="type-week2">2</td><td class="type-week2">3</td><td class="type-week2">4</td><td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week1">7<span class="subtext">Чт (I)</span></td><td>8</td>
           </tr>
           <tr>
-            <td class="type-week1">9</td><td class="type-week1">10</td><td class="type-week1">11</td><td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14<span class="subtext">Пт(I)</span></td><td>15</td>
+            <td class="type-week1">9</td><td class="type-week1">10</td><td class="type-week1">11</td><td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14<span class="subtext">Пт (I)</span></td><td>15</td>
           </tr>
           <tr>
-            <td class="type-week2">16</td><td class="type-week2">17</td><td class="type-week2">18</td><td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21<span class="subtext">Пн(II)</span></td><td>22</td>
+            <td class="type-week2">16</td><td class="type-week2">17</td><td class="type-week2">18</td><td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21<span class="subtext">Пн (II)</span></td><td>22</td>
           </tr>
           <tr>
-            <td class="type-week1">23</td><td class="type-week1">24</td><td class="type-week1">25</td><td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week2">28<span class="subtext">Вт(II)</span></td><td>29</td>
+            <td class="type-week1">23</td><td class="type-week1">24</td><td class="type-week1">25</td><td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week2">28<span class="subtext">Вт (II)</span></td><td>29</td>
           </tr>
           <tr>
             <td class="type-exam">30</td><td></td><td></td><td></td><td></td><td></td><td></td>
@@ -257,6 +304,32 @@
             <td class="type-vacation">28</td><td class="type-vacation">29</td><td class="type-vacation">30</td><td class="type-vacation">31</td><td></td><td></td><td></td>
           </tr>
         </table>
+      </div>
+
+      <!-- Січень -->
+      <div class="month-card blur-overlay">
+        <div class="month-title">Січень</div>
+        <div class="blur-text">Можливі зміни</div>
+        <div class="blur-content">
+          <table class="calendar-table">
+            <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+            <tr>
+              <td></td><td></td><td></td><td></td><td class="type-vacation">1</td><td class="type-vacation">2</td><td>3</td>
+            </tr>
+            <tr>
+              <td class="type-vacation">4</td><td class="type-vacation">5</td><td class="type-vacation">6</td><td class="type-vacation">7</td><td class="type-vacation">8</td><td class="type-vacation">9</td><td>10</td>
+            </tr>
+            <tr>
+              <td class="type-vacation">11</td><td class="type-vacation">12</td><td class="type-vacation">13</td><td class="type-vacation">14</td><td class="type-vacation">15</td><td class="type-vacation">16</td><td>17</td>
+            </tr>
+            <tr>
+              <td class="type-vacation">18</td><td class="type-vacation">19</td><td class="type-vacation">20</td><td class="type-vacation">21</td><td class="type-vacation">22</td><td class="type-vacation">23</td><td>24</td>
+            </tr>
+            <tr>
+              <td class="type-vacation">25</td><td class="type-vacation">26</td><td class="type-vacation">27</td><td class="type-vacation">28</td><td class="type-vacation">29</td><td class="type-vacation">30</td><td>31</td>
+            </tr>
+          </table>
+        </div>
       </div>
 
     </div>
