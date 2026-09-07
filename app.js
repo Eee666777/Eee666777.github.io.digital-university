@@ -17,13 +17,49 @@ const INITIAL_USERS = [
   { id: "admin", fio: "Адміністратор", email: "admin@kai.edu.ua", password: "admin", role: "admin" }
 ];
 
+// Базовий розклад згідно з графіком осіннього семестру
+const INITIAL_SCHEDULE = [
+  // --- I ТИЖДЕНЬ ---
+  { week: 1, day: 1, title: "Заняття I тижня (Пн)", time: "08:30-09:50", room: "Ауд. 1", teacher: "Викладач" },
+  { week: 1, day: 2, title: "Заняття I тижня (Вт)", time: "08:30-09:50", room: "Ауд. 1", teacher: "Викладач" },
+  { week: 1, day: 3, title: "Заняття I тижня (Ср)", time: "08:30-09:50", room: "Ауд. 1", teacher: "Викладач" },
+  { week: 1, day: 4, title: "Заняття I тижня (Чт)", time: "08:30-09:50", room: "Ауд. 1", teacher: "Викладач" },
+  { week: 1, day: 5, title: "Заняття I тижня (Пт)", time: "08:30-09:50", room: "Ауд. 1", teacher: "Викладач" },
+  
+  // Суботи відпрацювань для I тижня
+  { week: 1, day: 6, title: "Відпрацювання за Понеділок (I)", time: "08:30-09:50", room: "17 Жовтня", teacher: "За розкладом Пн" },
+  { week: 1, day: 6, title: "Відпрацювання за Вівторок (I)", time: "10:00-11:20", room: "24 Жовтня", teacher: "За розкладом Вт" },
+  { week: 1, day: 6, title: "Відпрацювання за Середу (I)", time: "11:40-13:00", room: "31 Жовтня", teacher: "За розкладом Ср" },
+  { week: 1, day: 6, title: "Відпрацювання за Четвер (I)", time: "13:20-14:40", room: "07 Листопада", teacher: "За розкладом Чт" },
+  { week: 1, day: 6, title: "Відпрацювання за П'ятницю (I)", time: "15:00-16:20", room: "14 Листопада", teacher: "За розкладом Пт" },
+
+  // --- II ТИЖДЕНЬ ---
+  { week: 2, day: 1, title: "Заняття II тижня (Пн)", time: "08:30-09:50", room: "Ауд. 2", teacher: "Викладач" },
+  { week: 2, day: 2, title: "Заняття II тижня (Вт)", time: "08:30-09:50", room: "Ауд. 2", teacher: "Викладач" },
+  { week: 2, day: 3, title: "Заняття II тижня (Ср)", time: "08:30-09:50", room: "Ауд. 2", teacher: "Викладач" },
+  { week: 2, day: 4, title: "Заняття II тижня (Чт)", time: "08:30-09:50", room: "Ауд. 2", teacher: "Викладач" },
+  { week: 2, day: 5, title: "Заняття II тижня (Пт)", time: "08:30-09:50", room: "Ауд. 2", teacher: "Викладач" },
+
+  // Суботи відпрацювань для II тижня
+  { week: 2, day: 6, title: "Відпрацювання за Понеділок (II)", time: "08:30-09:50", room: "12 Вересня", teacher: "За розкладом Пн" },
+  { week: 2, day: 6, title: "Відпрацювання за Вівторок (II)", time: "10:00-11:20", room: "19 Вересня", teacher: "За розкладом Вт" },
+  { week: 2, day: 6, title: "Відпрацювання за Середу (II)", time: "11:40-13:00", room: "26 Вересня", teacher: "За розкладом Ср" },
+  { week: 2, day: 6, title: "Відпрацювання за Четвер (II)", time: "13:20-14:40", room: "03 Жовтня", teacher: "За розкладом Чт" },
+  { week: 2, day: 6, title: "Відпрацювання за П'ятницю (II)", time: "15:00-16:20", room: "10 Жовтня", teacher: "За розкладом Пт" }
+];
+
 if (!localStorage.getItem('usersDB')) {
   localStorage.setItem('usersDB', JSON.stringify(INITIAL_USERS));
+}
+
+if (!localStorage.getItem('globalSchedule')) {
+  localStorage.setItem('globalSchedule', JSON.stringify(INITIAL_SCHEDULE));
 }
 
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let isSignUpMode = false;
 let selectedWeekView = 2;
+let selectedHomeDayIdx = 0; // 0 = Понеділок, 1 = Вівторок...
 
 const SEASON_IMAGES = {
   autumn: 'osen.png',
@@ -49,6 +85,15 @@ function updateSeasonImage() {
   bgElement.style.backgroundImage = `url('${imgSrc}')`;
 }
 
+// Перемикач теми
+const themeBtn = document.getElementById('theme-toggle-btn');
+if (themeBtn) {
+  themeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+  });
+}
+
+// Перемикач входу / реєстрації
 const toggleAuthBtn = document.getElementById('toggle-auth-btn');
 if (toggleAuthBtn) {
   toggleAuthBtn.addEventListener('click', (e) => {
@@ -62,6 +107,7 @@ if (toggleAuthBtn) {
   });
 }
 
+// Авторизація
 const authForm = document.getElementById('auth-form');
 if (authForm) {
   authForm.addEventListener('submit', async (e) => {
@@ -70,51 +116,33 @@ if (authForm) {
     const passwordInput = document.getElementById('auth-password').value.trim();
     const fioInput = document.getElementById('auth-fio').value.trim();
 
-    try {
-      const endpoint = isSignUpMode ? '/api/register' : '/api/login';
-      const body = isSignUpMode ? { fio: fioInput, email: emailInput, password: passwordInput } : { email: emailInput, password: passwordInput };
+    const usersDB = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        currentUser = data.user;
-      } else {
-        throw new Error("Сервер недоступний, перехід на офлайн-базу");
+    if (isSignUpMode) {
+      const exists = usersDB.find(u => u.email.toLowerCase() === emailInput.toLowerCase());
+      if (exists) {
+        alert('Користувач з таким логином/поштою вже існує');
+        return;
       }
-    } catch (err) {
-      const usersDB = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
+      currentUser = {
+        id: Date.now().toString(),
+        fio: fioInput || "Новий Користувач",
+        email: emailInput,
+        password: passwordInput,
+        role: "student"
+      };
+      usersDB.push(currentUser);
+      localStorage.setItem('usersDB', JSON.stringify(usersDB));
+    } else {
+      const user = usersDB.find(u => 
+        u.email.toLowerCase() === emailInput.toLowerCase() && u.password === passwordInput
+      );
 
-      if (isSignUpMode) {
-        const exists = usersDB.find(u => u.email.toLowerCase() === emailInput.toLowerCase());
-        if (exists) {
-          alert('Користувач з таким логином/поштою вже існує');
-          return;
-        }
-        currentUser = {
-          id: Date.now().toString(),
-          fio: fioInput || "Новий Користувач",
-          email: emailInput,
-          password: passwordInput,
-          role: "student"
-        };
-        usersDB.push(currentUser);
-        localStorage.setItem('usersDB', JSON.stringify(usersDB));
-      } else {
-        const user = usersDB.find(u => 
-          u.email.toLowerCase() === emailInput.toLowerCase() && u.password === passwordInput
-        );
-
-        if (!user) {
-          alert('Невірні дані авторизації');
-          return;
-        }
-        currentUser = user;
+      if (!user) {
+        alert('Невірні дані авторизації');
+        return;
       }
+      currentUser = user;
     }
 
     if (document.getElementById('auth-remember').checked) {
@@ -146,7 +174,7 @@ function checkAuthState() {
     if (nameDisplay) nameDisplay.innerText = currentUser.fio || currentUser.email;
 
     if (currentUser.role === 'admin') {
-      document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
       loadAdminUsers();
     } else {
       document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
@@ -160,6 +188,7 @@ function checkAuthState() {
   }
 }
 
+// Навігація вкладками
 document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -171,85 +200,149 @@ document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
   });
 });
 
-const themeBtn = document.getElementById('theme-toggle-btn');
-if (themeBtn) {
-  themeBtn.addEventListener('click', () => {
-    document.body.classList.toggle('dark-theme');
-  });
-}
-
-function getCurrentWeekType() {
-  const startDate = new Date(2026, 8, 7);
-  const now = new Date();
-  const diffDays = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
-  if (diffDays < 0) return 2;
-  const weekNum = Math.floor(diffDays / 7);
-  return (weekNum % 2 === 0) ? 2 : 1;
-}
-
-function getDatesForWeek(weekType) {
-  const currentWeek = getCurrentWeekType();
-  const today = new Date();
-  const currentDayOfWeek = today.getDay() === 0 ? 7 : today.getDay();
-
-  const mondayCurrent = new Date(today);
-  mondayCurrent.setDate(today.getDate() - (currentDayOfWeek - 1));
-
-  let mondayTarget = new Date(mondayCurrent);
-  if (weekType !== currentWeek) {
-    mondayTarget.setDate(mondayCurrent.getDate() + 7);
-  }
-
-  const days = [];
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(mondayTarget);
-    d.setDate(mondayTarget.getDate() + i);
-    days.push(d);
-  }
-  return days;
-}
-
 function initDashboard() {
+  renderHomeWidget();
   renderSchedule();
   loadTasks();
 }
 
-async function renderSchedule() {
+/* --- РЕНДЕР ГОЛОВНОЇ СТОРІНКИ --- */
+const dayNames = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота'];
+
+function renderHomeWidget() {
+  const label = document.getElementById('current-day-label');
+  if (label) {
+    label.innerText = `${dayNames[selectedHomeDayIdx]}`;
+  }
+
+  const homeScheduleList = document.getElementById('home-schedule-list');
+  if (homeScheduleList) {
+    homeScheduleList.innerHTML = '';
+
+    let globalClasses = JSON.parse(localStorage.getItem('globalSchedule')) || INITIAL_SCHEDULE;
+    let customClasses = JSON.parse(localStorage.getItem(`customSchedule_${currentUser.id}`)) || [];
+
+    const allClasses = [...globalClasses, ...customClasses].filter(c => 
+      Number(c.week) === selectedWeekView && Number(c.day) === (selectedHomeDayIdx + 1)
+    );
+
+    if (allClasses.length === 0) {
+      homeScheduleList.innerHTML = `
+        <div class="empty-box">
+          <span>📅</span>
+          <p>На цей день розклад відсутній</p>
+        </div>
+      `;
+    } else {
+      allClasses.forEach(c => {
+        homeScheduleList.innerHTML += `
+          <div class="time-slot">
+            <span class="time-label">${c.time.replace('-', '<br>')}</span>
+            <div class="event-card">
+              <div class="event-title">${c.title}</div>
+              <div class="event-details">
+                <span>Викладач: ${c.teacher}</span>
+                <span class="room-badge">${c.room}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+  }
+
+  const miniCal = document.getElementById('mini-calendar-days');
+  if (miniCal) {
+    miniCal.innerHTML = '';
+    dayNames.forEach((_, idx) => {
+      const span = document.createElement('span');
+      span.innerText = idx + 1;
+      if (idx === selectedHomeDayIdx) span.className = 'active-day';
+      span.style.cursor = 'pointer';
+      span.onclick = () => {
+        selectedHomeDayIdx = idx;
+        renderHomeWidget();
+      };
+      miniCal.appendChild(span);
+    });
+  }
+
+  renderHomeTasks();
+}
+
+document.getElementById('prev-day-btn')?.addEventListener('click', () => {
+  selectedHomeDayIdx = (selectedHomeDayIdx - 1 + 6) % 6;
+  renderHomeWidget();
+});
+
+document.getElementById('next-day-btn')?.addEventListener('click', () => {
+  selectedHomeDayIdx = (selectedHomeDayIdx + 1) % 6;
+  renderHomeWidget();
+});
+
+function renderHomeTasks() {
+  const container = document.getElementById('home-tasks-list');
+  if (!container) return;
+
+  let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
+  container.innerHTML = '';
+
+  if (tasks.length === 0) {
+    container.innerHTML = `
+      <div class="empty-box">
+        <span>📝</span>
+        <p>Немає активних завдань</p>
+      </div>
+    `;
+    return;
+  }
+
+  tasks.slice(0, 5).forEach(task => {
+    const isDone = task.completed;
+    container.innerHTML += `
+      <div class="task-card">
+        <div class="task-top">
+          <div class="task-icon">${isDone ? '✓' : '📄'}</div>
+          <div class="task-info">
+            <div class="task-name">${task.title}</div>
+            <div class="task-sub">Дедлайн: ${new Date(task.deadline).toLocaleDateString()}</div>
+          </div>
+          <button class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="toggleTask('${task.id}')">
+            ${isDone ? 'Відновити' : 'Завершити'}
+          </button>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill ${isDone ? 'completed' : ''}" style="width: ${isDone ? '100%' : '50%'};"></div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+/* --- РЕНДЕР ВКЛАДКИ "РОЗКЛАД" --- */
+function renderSchedule() {
   const grid = document.getElementById('schedule-grid');
   if (!grid) return;
   
   grid.innerHTML = '';
-  const dates = getDatesForWeek(selectedWeekView);
-  const dayNames = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота'];
 
-  let globalClasses = JSON.parse(localStorage.getItem('globalSchedule')) || [];
+  let globalClasses = JSON.parse(localStorage.getItem('globalSchedule')) || INITIAL_SCHEDULE;
   let customClasses = JSON.parse(localStorage.getItem(`customSchedule_${currentUser.id}`)) || [];
-
-  try {
-    const globalRes = await fetch('/api/schedule/global');
-    if (globalRes.ok) globalClasses = await globalRes.json();
-
-    const customRes = await fetch(`/api/schedule/custom/${currentUser.id}`);
-    if (customRes.ok) customClasses = await customRes.json();
-  } catch (e) {}
 
   const adminClasses = globalClasses.filter(c => Number(c.week) === selectedWeekView);
   const userClasses = customClasses.filter(c => Number(c.week) === selectedWeekView);
 
   dayNames.forEach((dayName, idx) => {
-    const dayDate = dates[idx];
-    const dateStr = dayDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' });
-
     const dayCard = document.createElement('div');
     dayCard.className = 'day-card';
-    dayCard.innerHTML = `<h4>${dayName} (${dateStr})</h4><div id="day-classes-${idx+1}"></div>`;
+    dayCard.innerHTML = `<h4>${dayName}</h4><div id="day-classes-${idx+1}"></div>`;
     grid.appendChild(dayCard);
 
     const container = dayCard.querySelector(`#day-classes-${idx+1}`);
     const allClasses = [...adminClasses, ...userClasses].filter(c => Number(c.day) === (idx + 1));
 
     if (allClasses.length === 0) {
-      container.innerHTML = '<small>Пар немає</small>';
+      container.innerHTML = '<small style="color: #94a3b8;">Пар немає</small>';
     } else {
       allClasses.forEach(c => {
         container.innerHTML += `
@@ -266,128 +359,112 @@ async function renderSchedule() {
 
 window.switchWeekView = function(week) {
   selectedWeekView = week;
-  const btn1 = document.getElementById('btn-week-1');
-  const btn2 = document.getElementById('btn-week-2');
-  if (btn1) btn1.classList.toggle('active', week === 1);
-  if (btn2) btn2.classList.toggle('active', week === 2);
+  document.getElementById('btn-week-1')?.classList.toggle('btn-primary', week === 1);
+  document.getElementById('btn-week-1')?.classList.toggle('btn-outline', week !== 1);
+  document.getElementById('btn-week-2')?.classList.toggle('btn-primary', week === 2);
+  document.getElementById('btn-week-2')?.classList.toggle('btn-outline', week !== 2);
   renderSchedule();
+  renderHomeWidget();
 };
 
-const addSubjectForm = document.getElementById('add-subject-form');
-if (addSubjectForm) {
-  addSubjectForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const classObj = {
-      week: Number(document.getElementById('custom-week').value),
-      day: Number(document.getElementById('custom-day').value),
-      title: document.getElementById('custom-title').value + " (Вибіркова)",
-      time: document.getElementById('custom-time').value,
-      room: document.getElementById('custom-room').value,
-      teacher: document.getElementById('custom-teacher').value
-    };
+document.getElementById('add-subject-form')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const classObj = {
+    week: Number(document.getElementById('custom-week').value),
+    day: Number(document.getElementById('custom-day').value),
+    title: document.getElementById('custom-title').value + " (Вибіркова)",
+    time: document.getElementById('custom-time').value,
+    room: document.getElementById('custom-room').value,
+    teacher: document.getElementById('custom-teacher').value
+  };
 
-    try {
-      await fetch(`/api/schedule/custom/${currentUser.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(classObj)
-      });
-    } catch (err) {
-      let custom = JSON.parse(localStorage.getItem(`customSchedule_${currentUser.id}`)) || [];
-      custom.push(classObj);
-      localStorage.setItem(`customSchedule_${currentUser.id}`, JSON.stringify(custom));
-    }
+  let custom = JSON.parse(localStorage.getItem(`customSchedule_${currentUser.id}`)) || [];
+  custom.push(classObj);
+  localStorage.setItem(`customSchedule_${currentUser.id}`, JSON.stringify(custom));
 
-    alert('Предмет додано!');
-    e.target.reset();
-    renderSchedule();
-  });
-}
+  alert('Предмет додано!');
+  e.target.reset();
+  renderSchedule();
+  renderHomeWidget();
+});
 
-const createTaskForm = document.getElementById('create-task-form');
-if (createTaskForm) {
-  createTaskForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('task-title').value;
-    const deadline = document.getElementById('task-deadline').value;
-    const newTask = { id: Date.now().toString(), title, deadline, completed: false };
+/* --- РЕНДЕР ВКЛАДКИ "ЗАВДАННЯ" --- */
+document.getElementById('create-task-form')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const title = document.getElementById('task-title').value;
+  const deadline = document.getElementById('task-deadline').value;
+  const newTask = { id: Date.now().toString(), title, deadline, completed: false };
 
-    try {
-      await fetch(`/api/tasks/${currentUser.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTask)
-      });
-    } catch (err) {
-      let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
-      tasks.push(newTask);
-      localStorage.setItem(`tasks_${currentUser.id}`, JSON.stringify(tasks));
-    }
-
-    e.target.reset();
-    loadTasks();
-  });
-}
-
-async function loadTasks() {
   let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
+  tasks.push(newTask);
+  localStorage.setItem(`tasks_${currentUser.id}`, JSON.stringify(tasks));
 
-  try {
-    const res = await fetch(`/api/tasks/${currentUser.id}`);
-    if (res.ok) tasks = await res.json();
-  } catch (e) {}
+  e.target.reset();
+  loadTasks();
+  renderHomeTasks();
+});
 
+function loadTasks() {
+  let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
   const tasksList = document.getElementById('all-tasks-list');
+
   if (tasksList) {
     tasksList.innerHTML = '';
+    if (tasks.length === 0) {
+      tasksList.innerHTML = '<div class="empty-box"><span>📝</span><p>Список завдань порожній</p></div>';
+      return;
+    }
+
     tasks.forEach(task => {
       const li = document.createElement('li');
-      li.className = `task-item ${task.completed ? 'completed' : ''}`;
+      li.className = `styled-task-item ${task.completed ? 'completed' : ''}`;
       li.innerHTML = `
-        <span>${task.title} — <small>${new Date(task.deadline).toLocaleString()}</small></span>
-        <button onclick="toggleTask('${task.id}')">${task.completed ? 'Викреслено' : 'Завершити'}</button>
+        <div>
+          <strong>${task.title}</strong>
+          <br><small style="color: #64748b;">Дедлайн: ${new Date(task.deadline).toLocaleString()}</small>
+        </div>
+        <button class="btn btn-outline" onclick="toggleTask('${task.id}')">
+          ${task.completed ? 'Відновити' : 'Завершити'}
+        </button>
       `;
       tasksList.appendChild(li);
     });
   }
 }
 
-window.toggleTask = async function(taskId) {
-  try {
-    await fetch(`/api/tasks/${currentUser.id}/toggle/${taskId}`, { method: 'POST' });
-  } catch (err) {
-    let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
-    tasks = tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
-    localStorage.setItem(`tasks_${currentUser.id}`, JSON.stringify(tasks));
-  }
+window.toggleTask = function(taskId) {
+  let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
+  tasks = tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
+  localStorage.setItem(`tasks_${currentUser.id}`, JSON.stringify(tasks));
+  
   loadTasks();
+  renderHomeTasks();
 };
 
-const settingsForm = document.getElementById('settings-form');
-if (settingsForm) {
-  settingsForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const group = document.getElementById('setting-group').value;
-    const dob = document.getElementById('setting-dob').value;
-    const newPass = document.getElementById('setting-password').value;
+/* --- ВКЛАДКА НАЛАШТУВАННЯ --- */
+document.getElementById('settings-form')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const group = document.getElementById('setting-group').value;
+  const dob = document.getElementById('setting-dob').value;
+  const newPass = document.getElementById('setting-password').value;
 
-    if (group) currentUser.group = group;
-    if (dob) currentUser.dob = dob;
-    if (newPass) currentUser.password = newPass;
+  if (group) currentUser.group = group;
+  if (dob) currentUser.dob = dob;
+  if (newPass) currentUser.password = newPass;
 
-    const usersDB = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
-    const idx = usersDB.findIndex(u => u.id === currentUser.id);
-    if (idx !== -1) usersDB[idx] = currentUser;
-    localStorage.setItem('usersDB', JSON.stringify(usersDB));
+  const usersDB = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
+  const idx = usersDB.findIndex(u => u.id === currentUser.id);
+  if (idx !== -1) usersDB[idx] = currentUser;
+  localStorage.setItem('usersDB', JSON.stringify(usersDB));
 
-    if (localStorage.getItem('currentUser')) {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    }
+  if (localStorage.getItem('currentUser')) {
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  }
 
-    alert('Налаштування збережено!');
-  });
-}
+  alert('Налаштування збережено!');
+});
 
+/* --- ВКЛАДКА АДМІН --- */
 function loadAdminUsers() {
   const users = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
   const tbody = document.getElementById('admin-users-table');
@@ -400,42 +477,32 @@ function loadAdminUsers() {
         <td>${u.fio || 'Не вказано'}</td>
         <td>${u.email}</td>
         <td><code>${u.password || '******'}</code></td>
-        <td>${u.role}</td>
+        <td><span class="badge" style="background: ${u.role === 'admin' ? '#e74c3c' : '#1e3a8a'}">${u.role}</span></td>
       </tr>
     `;
   });
 }
 
-const adminScheduleForm = document.getElementById('admin-schedule-form');
-if (adminScheduleForm) {
-  adminScheduleForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const classObj = {
-      week: Number(document.getElementById('admin-week').value),
-      day: Number(document.getElementById('admin-day').value),
-      title: document.getElementById('admin-title').value,
-      time: document.getElementById('admin-time').value,
-      room: document.getElementById('admin-room').value,
-      teacher: document.getElementById('admin-teacher').value
-    };
+document.getElementById('admin-schedule-form')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const classObj = {
+    week: Number(document.getElementById('admin-week').value),
+    day: Number(document.getElementById('admin-day').value),
+    title: document.getElementById('admin-title').value,
+    time: document.getElementById('admin-time').value,
+    room: document.getElementById('admin-room').value,
+    teacher: document.getElementById('admin-teacher').value
+  };
 
-    try {
-      await fetch('/api/schedule/global', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(classObj)
-      });
-    } catch (err) {
-      let global = JSON.parse(localStorage.getItem('globalSchedule')) || [];
-      global.push(classObj);
-      localStorage.setItem('globalSchedule', JSON.stringify(global));
-    }
+  let global = JSON.parse(localStorage.getItem('globalSchedule')) || INITIAL_SCHEDULE;
+  global.push(classObj);
+  localStorage.setItem('globalSchedule', JSON.stringify(global));
 
-    alert('Додано у загальний розклад!');
-    e.target.reset();
-    renderSchedule();
-  });
-}
+  alert('Додано у загальний розклад!');
+  e.target.reset();
+  renderSchedule();
+  renderHomeWidget();
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   checkAuthState();
