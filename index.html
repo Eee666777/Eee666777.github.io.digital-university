@@ -3,349 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Розклад та Графік Навчання</title>
+  <title>KAI Schedule App</title>
+  <link rel="stylesheet" href="style.css">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f4f7f6;
-    }
-
-    .nav-tabs {
-      display: flex;
-      border-bottom: 2px solid #ccc;
-      margin-bottom: 20px;
-    }
-
-    .tab-btn {
-      padding: 10px 20px;
-      cursor: pointer;
-      border: none;
-      background: none;
-      font-size: 16px;
-      font-weight: bold;
-      color: #555;
-      outline: none;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s ease;
-    }
-
-    .tab-btn.active {
-      color: #007bff;
-      border-bottom: 3px solid #007bff;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-    }
-
-    .author-info {
-      font-size: 13px;
-      color: #555;
-      text-align: right;
-    }
-
-    .legend {
+    /* Додаткові стилі для вкладки Календар */
+    .calendar-legend {
       display: flex;
       gap: 15px;
       flex-wrap: wrap;
       margin-bottom: 20px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.05);
       padding: 12px;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 14px;
-    }
-
-    .color-box {
-      width: 18px;
-      height: 18px;
-      border-radius: 3px;
-    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    .color-box { width: 16px; height: 16px; border-radius: 3px; }
+    .type-week1 { background-color: #00d2ff; color: #000; }
+    .type-week2 { background-color: #ffd000; color: #000; }
+    .type-exam  { background-color: #e66020; color: #fff; }
+    .type-vacation { background-color: #a2e825; color: #000; }
 
     .months-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 20px;
     }
-
     .month-card {
-      background: #fff;
+      background: var(--card-bg, #ffffff);
       border-radius: 8px;
       padding: 15px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.08);
       position: relative;
     }
+    .month-title { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+    .calendar-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
+    .calendar-table th { padding: 6px 0; opacity: 0.7; }
+    .calendar-table td { width: 14%; height: 32px; border: 1px solid rgba(0,0,0,0.05); font-weight: 500; }
+    .subtext { font-size: 8px; display: block; line-height: 1; margin-top: 1px; }
 
-    .month-title {
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .calendar-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      font-size: 13px;
-    }
-
-    .calendar-table th {
-      padding: 6px 0;
-      color: #666;
-    }
-
-    .calendar-table td {
-      width: 14%;
-      height: 32px;
-      border: 1px solid #eee;
-      position: relative;
-      font-weight: 500;
-    }
-
-    /* Кольорові позначення */
-    .type-week1 { background-color: #00d2ff; color: #000; } /* заняття I тижня */
-    .type-week2 { background-color: #ffd000; color: #000; } /* заняття II тижня */
-    .type-exam  { background-color: #e66020; color: #fff; } /* сесія */
-    .type-vacation { background-color: #a2e825; color: #000; } /* канікули */
-
-    .subtext {
-      font-size: 8px;
-      display: block;
-      line-height: 1;
-      margin-top: 1px;
-    }
-
-    /* Картка для Січня з розмиттям */
-    .blur-overlay {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .blur-overlay .blur-content {
-      filter: blur(4px);
-      user-select: none;
-    }
-
+    .blur-overlay { position: relative; overflow: hidden; }
+    .blur-overlay .blur-content { filter: blur(4px); user-select: none; }
     .blur-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(162, 232, 37, 0.85);
-      padding: 10px 15px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 18px;
-      color: #2e5a00;
-      white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      z-index: 2;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(162, 232, 37, 0.9); padding: 8px 12px; border-radius: 6px;
+      font-weight: bold; font-size: 16px; color: #2e5a00; white-space: nowrap; z-index: 2;
     }
   </style>
 </head>
 <body>
 
-  <!-- Навігація вкладок -->
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="openTab('schedule')">Розклад</button>
-    <button class="tab-btn" onclick="openTab('calendar')">Календар</button>
-  </div>
+  <!-- Фон пір року -->
+  <div id="season-bg" class="season-background"></div>
 
-  <!-- Вкладка 1: Розклад -->
-  <div id="schedule" class="tab-content active">
-    <h2>Розклад занять</h2>
-    <p>Ваш розклад пар відображається тут.</p>
-  </div>
-
-  <!-- Вкладка 2: Календар -->
-  <div id="calendar" class="tab-content">
-    
-    <div class="header-bar">
-      <h2>Графік навчання в осінньому семестрі</h2>
-      <div class="author-info">
-        @by_denistor<br>
-        Оновлено 27.08.2026
+  <!-- Контейнер Авторизації -->
+  <div id="auth-container" class="auth-wrapper">
+    <div class="auth-card">
+      <h2 id="auth-title">Sign In</h2>
+      <form id="auth-form">
+        <div class="form-group" id="fio-group" style="display: none;">
+          <label>ПІБ:</label>
+          <input type="text" id="auth-fio" placeholder="Іванов Іван Іванович">
+        </div>
+        <div class="form-group">
+          <label>Email / Логін:</label>
+          <input type="text" id="auth-email" required placeholder="user@kai.edu.ua">
+        </div>
+        <div class="form-group">
+          <label>Пароль:</label>
+          <input type="password" id="auth-password" required>
+        </div>
+        <div class="form-checkbox">
+          <input type="checkbox" id="auth-remember" checked>
+          <label for="auth-remember">Запам'ятати мене</label>
+        </div>
+        <button type="submit" id="auth-submit-btn" class="btn btn-primary">Увійти</button>
+      </form>
+      <div class="auth-toggle">
+        <span id="toggle-text">Немає акаунту?</span>
+        <a href="#" id="toggle-auth-btn">Зареєструватися</a>
       </div>
     </div>
+  </div>
 
-    <!-- Легенда -->
-    <div class="legend">
-      <div class="legend-item">
-        <div class="color-box type-week1"></div>
-        <span>- заняття I тижня</span>
-      </div>
-      <div class="legend-item">
-        <div class="color-box type-week2"></div>
-        <span>- заняття II тижня</span>
-      </div>
-      <div class="legend-item">
-        <div class="color-box type-exam"></div>
-        <span>- сесія</span>
-      </div>
-      <div class="legend-item">
-        <div class="color-box type-vacation"></div>
-        <span>- канікули</span>
-      </div>
-    </div>
-
-    <!-- Сітка місяців -->
-    <div class="months-grid">
-
-      <!-- Вересень -->
-      <div class="month-card">
-        <div class="month-title">Вересень</div>
-        <table class="calendar-table">
-          <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
-          <tr>
-            <td class="type-week1">31</td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week1">3</td><td class="type-week1">4</td><td class="type-week1">5</td><td>6</td>
-          </tr>
-          <tr>
-            <td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10</td><td class="type-week2">11</td><td class="type-week2">12<span class="subtext">Пн (II)</span></td><td>13</td>
-          </tr>
-          <tr>
-            <td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17</td><td class="type-week1">18</td><td class="type-week1">19<span class="subtext">Вт (II)</span></td><td>20</td>
-          </tr>
-          <tr>
-            <td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week2">24</td><td class="type-week2">25</td><td class="type-week2">26<span class="subtext">Ср (II)</span></td><td>27</td>
-          </tr>
-          <tr>
-            <td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td></td><td></td><td></td><td></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- Жовтень -->
-      <div class="month-card">
-        <div class="month-title">Жовтень</div>
-        <table class="calendar-table">
-          <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
-          <tr>
-            <td></td><td></td><td></td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week2">3<span class="subtext">Чт (II)</span></td><td>4</td>
-          </tr>
-          <tr>
-            <td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10<span class="subtext">Пт (II)</span></td><td>11</td>
-          </tr>
-          <tr>
-            <td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17<span class="subtext">Пн (I)</span></td><td>18</td>
-          </tr>
-          <tr>
-            <td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week1">24<span class="subtext">Вт (I)</span></td><td>25</td>
-          </tr>
-          <tr>
-            <td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td class="type-week1">31<span class="subtext">Ср (I)</span></td><td></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- Листопад -->
-      <div class="month-card">
-        <div class="month-title">Листопад</div>
-        <table class="calendar-table">
-          <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
-          <tr>
-            <td></td><td></td><td></td><td></td><td></td><td></td><td>1</td>
-          </tr>
-          <tr>
-            <td class="type-week2">2</td><td class="type-week2">3</td><td class="type-week2">4</td><td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week1">7<span class="subtext">Чт (I)</span></td><td>8</td>
-          </tr>
-          <tr>
-            <td class="type-week1">9</td><td class="type-week1">10</td><td class="type-week1">11</td><td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14<span class="subtext">Пт (I)</span></td><td>15</td>
-          </tr>
-          <tr>
-            <td class="type-week2">16</td><td class="type-week2">17</td><td class="type-week2">18</td><td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21<span class="subtext">Пн (II)</span></td><td>22</td>
-          </tr>
-          <tr>
-            <td class="type-week1">23</td><td class="type-week1">24</td><td class="type-week1">25</td><td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week2">28<span class="subtext">Вт (II)</span></td><td>29</td>
-          </tr>
-          <tr>
-            <td class="type-exam">30</td><td></td><td></td><td></td><td></td><td></td><td></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- Грудень -->
-      <div class="month-card">
-        <div class="month-title">Грудень</div>
-        <table class="calendar-table">
-          <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
-          <tr>
-            <td></td><td class="type-exam">1</td><td class="type-exam">2</td><td class="type-exam">3</td><td class="type-exam">4</td><td>5</td><td>6</td>
-          </tr>
-          <tr>
-            <td class="type-exam">7</td><td class="type-exam">8</td><td class="type-exam">9</td><td class="type-exam">10</td><td class="type-exam">11</td><td>12</td><td>13</td>
-          </tr>
-          <tr>
-            <td class="type-vacation">14</td><td class="type-vacation">15</td><td class="type-vacation">16</td><td class="type-vacation">17</td><td class="type-vacation">18</td><td class="type-vacation">19</td><td class="type-vacation">20</td>
-          </tr>
-          <tr>
-            <td class="type-vacation">21</td><td class="type-vacation">22</td><td class="type-vacation">23</td><td class="type-vacation">24</td><td class="type-vacation">25</td><td class="type-vacation">26</td><td class="type-vacation">27</td>
-          </tr>
-          <tr>
-            <td class="type-vacation">28</td><td class="type-vacation">29</td><td class="type-vacation">30</td><td class="type-vacation">31</td><td></td><td></td><td></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- Січень -->
-      <div class="month-card blur-overlay">
-        <div class="month-title">Січень</div>
-        <div class="blur-text">Можливі зміни</div>
-        <div class="blur-content">
-          <table class="calendar-table">
-            <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
-            <tr>
-              <td></td><td></td><td></td><td></td><td class="type-vacation">1</td><td class="type-vacation">2</td><td>3</td>
-            </tr>
-            <tr>
-              <td class="type-vacation">4</td><td class="type-vacation">5</td><td class="type-vacation">6</td><td class="type-vacation">7</td><td class="type-vacation">8</td><td class="type-vacation">9</td><td>10</td>
-            </tr>
-            <tr>
-              <td class="type-vacation">11</td><td class="type-vacation">12</td><td class="type-vacation">13</td><td class="type-vacation">14</td><td class="type-vacation">15</td><td class="type-vacation">16</td><td>17</td>
-            </tr>
-            <tr>
-              <td class="type-vacation">18</td><td class="type-vacation">19</td><td class="type-vacation">20</td><td class="type-vacation">21</td><td class="type-vacation">22</td><td class="type-vacation">23</td><td>24</td>
-            </tr>
-            <tr>
-              <td class="type-vacation">25</td><td class="type-vacation">26</td><td class="type-vacation">27</td><td class="type-vacation">28</td><td class="type-vacation">29</td><td class="type-vacation">30</td><td>31</td>
-            </tr>
-          </table>
+  <!-- Головний додаток -->
+  <div id="app-container" class="app-layout" style="display: none;">
+    <!-- Бокова панель -->
+    <aside class="sidebar">
+      <div class="user-profile">
+        <div class="avatar">👤</div>
+        <div class="user-info">
+          <span id="display-user-name">Користувач</span>
         </div>
       </div>
+      <nav class="nav-menu">
+        <button class="nav-btn active" data-tab="home">🏠 Головна</button>
+        <button class="nav-btn" data-tab="schedule">📅 Розклад</button>
+        <button class="nav-btn" data-tab="calendar">📆 Календар</button>
+        <button class="nav-btn" data-tab="tasks">📝 Завдання</button>
+        <button class="nav-btn" data-tab="settings">⚙️ Налаштування</button>
+        <button class="nav-btn admin-only" data-tab="admin" style="display: none;">👑 Адмін Панель</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="theme-toggle-btn" class="btn btn-outline">🌗 Тема</button>
+        <button id="logout-btn" class="btn btn-danger">Вийти</button>
+      </div>
+    </aside>
 
-    </div>
+    <!-- Основний контент -->
+    <main class="main-content">
+
+      <!-- ВКЛАДКА: ГОЛОВНА -->
+      <section id="home" class="tab-content active">
+        <h2>Головна Панель</h2>
+        <div class="dashboard-grid">
+          <div class="widget-card">
+            <div class="widget-header">
+              <button id="prev-day-btn" class="btn-sm">◀</button>
+              <h3 id="current-day-label">Понеділок</h3>
+              <button id="next-day-btn" class="btn-sm">▶</button>
+            </div>
+            <div id="home-schedule-list" class="schedule-mini-list"></div>
+            <div id="mini-calendar-days" class="mini-calendar-strip"></div>
+          </div>
+
+          <div class="widget-card">
+            <h3>Активні завдання</h3>
+            <div id="home-tasks-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ВКЛАДКА: РОЗКЛАД -->
+      <section id="schedule" class="tab-content">
+        <div class="tab-header">
+          <h2>Розклад занять</h2>
+          <div class="week-selector">
+            <button id="btn-week-1" class="btn btn-outline" onclick="switchWeekView(1)">1 Тиждень</button>
+            <button id="btn-week-2" class="btn btn-primary" onclick="switchWeekView(2)">2 Тиждень</button>
+          </div>
+        </div>
+        
+        <div id="schedule-grid" class="schedule-grid"></div>
+
+        <div class="custom-subject-box">
+          <h3>Додати вибірковий предмет</h3>
+          <form id="add-subject-form" class="inline-form">
+            <select id="custom-week" required>
+              <option value="1">1 Тиждень</option>
+              <option value="2" selected>2 Тиждень</option>
+            </select>
+            <select id="custom-day" required>
+              <option value="1">Понеділок</option>
+              <option value="2">Вівторок</option>
+              <option value="3">Середа</option>
+              <option value="4">Четвер</option>
+              <option value="5">П'ятниця</option>
+              <option value="6">Субота</option>
+            </select>
+            <input type="text" id="custom-title" placeholder="Назва предмета" required>
+            <input type="text" id="custom-time" placeholder="Час (08:30-09:50)" required>
+            <input type="text" id="custom-room" placeholder="Аудиторія" required>
+            <input type="text" id="custom-teacher" placeholder="Викладач" required>
+            <button type="submit" class="btn btn-primary">Додати</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ВКЛАДКА: КАЛЕНДАР (НОВА) -->
+      <section id="calendar" class="tab-content">
+        <div class="tab-header">
+          <h2>Графік навчання в осінньому семестрі</h2>
+          <small>@by_denistor | Оновлено 27.08.2026</small>
+        </div>
+
+        <div class="calendar-legend">
+          <div class="legend-item"><div class="color-box type-week1"></div><span>- заняття I тижня</span></div>
+          <div class="legend-item"><div class="color-box type-week2"></div><span>- заняття II тижня</span></div>
+          <div class="legend-item"><div class="color-box type-exam"></div><span>- сесія</span></div>
+          <div class="legend-item"><div class="color-box type-vacation"></div><span>- канікули</span></div>
+        </div>
+
+        <div class="months-grid">
+          <!-- Вересень -->
+          <div class="month-card">
+            <div class="month-title">Вересень</div>
+            <table class="calendar-table">
+              <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+              <tr><td class="type-week1">31</td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week1">3</td><td class="type-week1">4</td><td class="type-week1">5</td><td>6</td></tr>
+              <tr><td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10</td><td class="type-week2">11</td><td class="type-week2">12<span class="subtext">Пн (II)</span></td><td>13</td></tr>
+              <tr><td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17</td><td class="type-week1">18</td><td class="type-week1">19<span class="subtext">Вт (II)</span></td><td>20</td></tr>
+              <tr><td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week2">24</td><td class="type-week2">25</td><td class="type-week2">26<span class="subtext">Ср (II)</span></td><td>27</td></tr>
+              <tr><td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td></td><td></td><td></td><td></td></tr>
+            </table>
+          </div>
+
+          <!-- Жовтень -->
+          <div class="month-card">
+            <div class="month-title">Жовтень</div>
+            <table class="calendar-table">
+              <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+              <tr><td></td><td></td><td></td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week2">3<span class="subtext">Чт (II)</span></td><td>4</td></tr>
+              <tr><td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10<span class="subtext">Пт (II)</span></td><td>11</td></tr>
+              <tr><td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17<span class="subtext">Пн (I)</span></td><td>18</td></tr>
+              <tr><td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week1">24<span class="subtext">Вт (I)</span></td><td>25</td></tr>
+              <tr><td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td class="type-week1">31<span class="subtext">Ср (I)</span></td><td></td></tr>
+            </table>
+          </div>
+
+          <!-- Листопад -->
+          <div class="month-card">
+            <div class="month-title">Листопад</div>
+            <table class="calendar-table">
+              <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+              <tr><td></td><td></td><td></td><td></td><td></td><td></td><td>1</td></tr>
+              <tr><td class="type-week2">2</td><td class="type-week2">3</td><td class="type-week2">4</td><td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week1">7<span class="subtext">Чт (I)</span></td><td>8</td></tr>
+              <tr><td class="type-week1">9</td><td class="type-week1">10</td><td class="type-week1">11</td><td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14<span class="subtext">Пт (I)</span></td><td>15</td></tr>
+              <tr><td class="type-week2">16</td><td class="type-week2">17</td><td class="type-week2">18</td><td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21<span class="subtext">Пн (II)</span></td><td>22</td></tr>
+              <tr><td class="type-week1">23</td><td class="type-week1">24</td><td class="type-week1">25</td><td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week2">28<span class="subtext">Вт (II)</span></td><td>29</td></tr>
+              <tr><td class="type-exam">30</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            </table>
+          </div>
+
+          <!-- Грудень -->
+          <div class="month-card">
+            <div class="month-title">Грудень</div>
+            <table class="calendar-table">
+              <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+              <tr><td></td><td class="type-exam">1</td><td class="type-exam">2</td><td class="type-exam">3</td><td class="type-exam">4</td><td>5</td><td>6</td></tr>
+              <tr><td class="type-exam">7</td><td class="type-exam">8</td><td class="type-exam">9</td><td class="type-exam">10</td><td class="type-exam">11</td><td>12</td><td>13</td></tr>
+              <tr><td class="type-vacation">14</td><td class="type-vacation">15</td><td class="type-vacation">16</td><td class="type-vacation">17</td><td class="type-vacation">18</td><td class="type-vacation">19</td><td class="type-vacation">20</td></tr>
+              <tr><td class="type-vacation">21</td><td class="type-vacation">22</td><td class="type-vacation">23</td><td class="type-vacation">24</td><td class="type-vacation">25</td><td class="type-vacation">26</td><td class="type-vacation">27</td></tr>
+              <tr><td class="type-vacation">28</td><td class="type-vacation">29</td><td class="type-vacation">30</td><td class="type-vacation">31</td><td></td><td></td><td></td></tr>
+            </table>
+          </div>
+
+          <!-- Січень -->
+          <div class="month-card blur-overlay">
+            <div class="month-title">Січень</div>
+            <div class="blur-text">Можливі зміни</div>
+            <div class="blur-content">
+              <table class="calendar-table">
+                <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+                <tr><td></td><td></td><td></td><td></td><td class="type-vacation">1</td><td class="type-vacation">2</td><td>3</td></tr>
+                <tr><td class="type-vacation">4</td><td class="type-vacation">5</td><td class="type-vacation">6</td><td class="type-vacation">7</td><td class="type-vacation">8</td><td class="type-vacation">9</td><td>10</td></tr>
+                <tr><td class="type-vacation">11</td><td class="type-vacation">12</td><td class="type-vacation">13</td><td class="type-vacation">14</td><td class="type-vacation">15</td><td class="type-vacation">16</td><td>17</td></tr>
+                <tr><td class="type-vacation">18</td><td class="type-vacation">19</td><td class="type-vacation">20</td><td class="type-vacation">21</td><td class="type-vacation">22</td><td class="type-vacation">23</td><td>24</td></tr>
+                <tr><td class="type-vacation">25</td><td class="type-vacation">26</td><td class="type-vacation">27</td><td class="type-vacation">28</td><td class="type-vacation">29</td><td class="type-vacation">30</td><td>31</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ВКЛАДКА: ЗАВДАННЯ -->
+      <section id="tasks" class="tab-content">
+        <h2>Управління завданнями</h2>
+        <form id="create-task-form" class="inline-form">
+          <input type="text" id="task-title" placeholder="Опис завдання" required>
+          <input type="datetime-local" id="task-deadline" required>
+          <button type="submit" class="btn btn-primary">Створити</button>
+        </form>
+        <ul id="all-tasks-list" class="tasks-list"></ul>
+      </section>
+
+      <!-- ВКЛАДКА: НАЛАШТУВАННЯ -->
+      <section id="settings" class="tab-content">
+        <h2>Налаштування профілю</h2>
+        <form id="settings-form" class="settings-form">
+          <div class="form-group">
+            <label>Група:</label>
+            <input type="text" id="setting-group" placeholder="напр. ФКНТ-101">
+          </div>
+          <div class="form-group">
+            <label>Дата народження:</label>
+            <input type="date" id="setting-dob">
+          </div>
+          <div class="form-group">
+            <label>Новий пароль:</label>
+            <input type="password" id="setting-password">
+          </div>
+          <button type="submit" class="btn btn-primary">Зберегти</button>
+        </form>
+      </section>
+
+      <!-- ВКЛАДКА: АДМІН -->
+      <section id="admin" class="tab-content admin-only">
+        <h2>Панель Адміністратора</h2>
+        <h3>Користувачі</h3>
+        <table class="admin-table">
+          <thead>
+            <tr><th>ПІБ</th><th>Email</th><th>Пароль</th><th>Роль</th></tr>
+          </thead>
+          <tbody id="admin-users-table"></tbody>
+        </table>
+
+        <h3 style="margin-top: 20px;">Редагувати загальний розклад</h3>
+        <form id="admin-schedule-form" class="inline-form">
+          <select id="admin-week" required><option value="1">1 Тиждень</option><option value="2">2 Тиждень</option></select>
+          <select id="admin-day" required>
+            <option value="1">Пн</option><option value="2">Вт</option><option value="3">Ср</option>
+            <option value="4">Чт</option><option value="5">Пт</option><option value="6">Сб</option>
+          </select>
+          <input type="text" id="admin-title" placeholder="Предмет" required>
+          <input type="text" id="admin-time" placeholder="08:30-09:50" required>
+          <input type="text" id="admin-room" placeholder="Аудиторія" required>
+          <input type="text" id="admin-teacher" placeholder="Викладач" required>
+          <button type="submit" class="btn btn-primary">Додати в глобальний</button>
+        </form>
+      </section>
+
+    </main>
   </div>
 
-  <script>
-    function openTab(tabName) {
-      const contents = document.querySelectorAll('.tab-content');
-      const buttons = document.querySelectorAll('.tab-btn');
-
-      contents.forEach(content => content.classList.remove('active'));
-      buttons.forEach(button => button.classList.remove('active'));
-
-      document.getElementById(tabName).classList.add('active');
-      event.currentTarget.classList.add('active');
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
