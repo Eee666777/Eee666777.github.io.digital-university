@@ -2,44 +2,30 @@ let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 let isSignUpMode = false;
 let selectedWeekView = 2;
 
-// Назви відеофалів для пір року
-const SEASON_VIDEOS = {
-  autumn: 'osen.mp4',
-  winter: 'zima.mp4',
-  springSummer: 'leto.mp4'
+// Назви .png файлів для пір року
+const SEASON_IMAGES = {
+  autumn: 'osen.png',
+  winter: 'zima.png',
+  springSummer: 'leto.png'
 };
 
-// Функція вибору та безпечного автозапуску відео
-function updateSeasonAnimation() {
-  const video = document.getElementById('season-video');
-  if (!video) return;
+// Встановлення фонової картинки залежно від місяця
+function updateSeasonImage() {
+  const bgElement = document.getElementById('season-bg');
+  if (!bgElement) return;
 
   const month = new Date().getMonth() + 1;
-  let videoSrc = SEASON_VIDEOS.autumn;
+  let imgSrc = SEASON_IMAGES.autumn;
 
   if (month >= 9 && month <= 11) {
-    videoSrc = SEASON_VIDEOS.autumn;
+    imgSrc = SEASON_IMAGES.autumn;
   } else if (month === 12 || month === 1 || month === 2) {
-    videoSrc = SEASON_VIDEOS.winter;
+    imgSrc = SEASON_IMAGES.winter;
   } else {
-    videoSrc = SEASON_VIDEOS.springSummer;
+    imgSrc = SEASON_IMAGES.springSummer;
   }
 
-  // Обов'язкові параметри для обходу блокування браузера
-  video.muted = true;
-  video.playsInline = true;
-
-  if (!video.src || !video.src.endsWith(videoSrc)) {
-    video.src = videoSrc;
-    video.load();
-  }
-
-  const playPromise = video.play();
-  if (playPromise !== undefined) {
-    playPromise.catch(error => {
-      console.warn("Браузер заблокував автозапуск відео:", error);
-    });
-  }
+  bgElement.style.backgroundImage = `url('${imgSrc}')`;
 }
 
 // Перемикання Вхід / Реєстрація
@@ -126,7 +112,7 @@ function checkAuthState() {
   } else {
     if (authContainer) authContainer.style.display = 'flex';
     if (appContainer) appContainer.style.display = 'none';
-    updateSeasonAnimation();
+    updateSeasonImage();
   }
 }
 
@@ -446,5 +432,5 @@ if (adminScheduleForm) {
 // Ініціалізація при завантаженні
 document.addEventListener('DOMContentLoaded', () => {
   checkAuthState();
-  updateSeasonAnimation();
+  updateSeasonImage();
 });
