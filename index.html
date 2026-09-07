@@ -3,354 +3,276 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Digital University</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Розклад та Графік Навчання</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f7f6;
+    }
+
+    /* Навігація вкладок */
+    .nav-tabs {
+      display: flex;
+      border-bottom: 2px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 16px;
+      font-weight: bold;
+      color: #555;
+      outline: none;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      color: #007bff;
+      border-bottom: 3px solid #007bff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Стилі календаря */
+    .legend {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+
+    .color-box {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+    }
+
+    .months-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .month-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .month-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .calendar-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .calendar-table th {
+      padding: 6px 0;
+      color: #666;
+    }
+
+    .calendar-table td {
+      width: 14%;
+      height: 32px;
+      border: 1px solid #eee;
+      position: relative;
+      font-weight: 500;
+    }
+
+    /* Кольорові позначення згідно з графіком */
+    .type-week1 { background-color: #00d2ff; color: #000; } /* заняття I тижня */
+    .type-week2 { background-color: #ffd000; color: #000; } /* заняття II тижня */
+    .type-exam  { background-color: #e66020; color: #fff; } /* сесія */
+    .type-vacation { background-color: #a2e825; color: #000; } /* канікули */
+
+    .subtext {
+      font-size: 9px;
+      display: block;
+      line-height: 1;
+      margin-top: 1px;
+    }
+  </style>
 </head>
-<body class="light-theme">
+<body>
 
-  <!-- Панель авторизації -->
-  <div id="auth-container" class="auth-box">
-    <div id="season-bg" class="season-bg"></div>
+  <!-- Кнопки вкладок -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="openTab('schedule')">Розклад</button>
+    <button class="tab-btn" onclick="openTab('calendar')">Календар</button>
+  </div>
 
-    <div class="glass-card">
-      <h2 id="auth-title">Sign In</h2>
-      
-      <form id="auth-form">
-        <div class="input-group" id="fio-group" style="display: none;">
-          <input type="text" id="auth-fio" placeholder="ПІБ (Повне ім'я)">
-        </div>
-        <div class="input-group">
-          <input type="text" id="auth-email" placeholder="Логін / Пошта (напр. Bileckiy.kai.edu.ua)" required>
-        </div>
-        <div class="input-group">
-          <input type="password" id="auth-password" placeholder="Пароль" required>
-        </div>
-        
-        <div class="remember-me">
-          <label><input type="checkbox" id="auth-remember"> Автоматичний вхід</label>
-        </div>
+  <!-- Вкладка 1: Розклад -->
+  <div id="schedule" class="tab-content active">
+    <h2>Ваш розклад занять</h2>
+    <p>Тут розміщується ваш поточний розклад занять.</p>
+  </div>
 
-        <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-full">Увійти</button>
-      </form>
+  <!-- Вкладка 2: Календар навчального семестру -->
+  <div id="calendar" class="tab-content">
+    <h2>Графік навчання в осінньому семестрі</h2>
 
-      <div class="auth-toggle">
-        <span id="toggle-text">Немає акаунту?</span> 
-        <a href="#" id="toggle-auth-btn">Зареєструватися</a>
+    <!-- Легенда -->
+    <div class="legend">
+      <div class="legend-item">
+        <div class="color-box type-week1"></div>
+        <span>заняття I тижня</span>
       </div>
-      <div class="forgot-pass">
-        <small>Забули пароль? Зверніться до адміністратора.</small>
+      <div class="legend-item">
+        <div class="color-box type-week2"></div>
+        <span>заняття II тижня</span>
       </div>
+      <div class="legend-item">
+        <div class="color-box type-exam"></div>
+        <span>сесія</span>
+      </div>
+      <div class="legend-item">
+        <div class="color-box type-vacation"></div>
+        <span>канікули</span>
+      </div>
+    </div>
+
+    <!-- Календарна сітка -->
+    <div class="months-grid">
+
+      <!-- Вересень -->
+      <div class="month-card">
+        <div class="month-title">Вересень</div>
+        <table class="calendar-table">
+          <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+          <tr>
+            <td class="type-week1">31</td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week1">3</td><td class="type-week1">4</td><td class="type-week1">5</td><td>6</td>
+          </tr>
+          <tr>
+            <td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10</td><td class="type-week2">11</td><td class="type-week2">12<span class="subtext">Пн(II)</span></td><td>13</td>
+          </tr>
+          <tr>
+            <td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17</td><td class="type-week1">18</td><td class="type-week1">19<span class="subtext">Вт(II)</span></td><td>20</td>
+          </tr>
+          <tr>
+            <td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week2">24</td><td class="type-week2">25</td><td class="type-week2">26<span class="subtext">Ср(II)</span></td><td>27</td>
+          </tr>
+          <tr>
+            <td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td></td><td></td><td></td><td></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Жовтень -->
+      <div class="month-card">
+        <div class="month-title">Жовтень</div>
+        <table class="calendar-table">
+          <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+          <tr>
+            <td></td><td></td><td></td><td class="type-week1">1</td><td class="type-week1">2</td><td class="type-week2">3<span class="subtext">Чт(II)</span></td><td>4</td>
+          </tr>
+          <tr>
+            <td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week2">7</td><td class="type-week2">8</td><td class="type-week2">9</td><td class="type-week2">10<span class="subtext">Пт(II)</span></td><td>11</td>
+          </tr>
+          <tr>
+            <td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14</td><td class="type-week1">15</td><td class="type-week1">16</td><td class="type-week1">17<span class="subtext">Пн(I)</span></td><td>18</td>
+          </tr>
+          <tr>
+            <td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21</td><td class="type-week2">22</td><td class="type-week2">23</td><td class="type-week1">24<span class="subtext">Вт(I)</span></td><td>25</td>
+          </tr>
+          <tr>
+            <td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week1">28</td><td class="type-week1">29</td><td class="type-week1">30</td><td class="type-week1">31<span class="subtext">Ср(I)</span></td><td></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Листопад -->
+      <div class="month-card">
+        <div class="month-title">Листопад</div>
+        <table class="calendar-table">
+          <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+          <tr>
+            <td></td><td></td><td></td><td></td><td></td><td></td><td>1</td>
+          </tr>
+          <tr>
+            <td class="type-week2">2</td><td class="type-week2">3</td><td class="type-week2">4</td><td class="type-week2">5</td><td class="type-week2">6</td><td class="type-week1">7<span class="subtext">Чт(I)</span></td><td>8</td>
+          </tr>
+          <tr>
+            <td class="type-week1">9</td><td class="type-week1">10</td><td class="type-week1">11</td><td class="type-week1">12</td><td class="type-week1">13</td><td class="type-week1">14<span class="subtext">Пт(I)</span></td><td>15</td>
+          </tr>
+          <tr>
+            <td class="type-week2">16</td><td class="type-week2">17</td><td class="type-week2">18</td><td class="type-week2">19</td><td class="type-week2">20</td><td class="type-week2">21<span class="subtext">Пн(II)</span></td><td>22</td>
+          </tr>
+          <tr>
+            <td class="type-week1">23</td><td class="type-week1">24</td><td class="type-week1">25</td><td class="type-week1">26</td><td class="type-week1">27</td><td class="type-week2">28<span class="subtext">Вт(II)</span></td><td>29</td>
+          </tr>
+          <tr>
+            <td class="type-exam">30</td><td></td><td></td><td></td><td></td><td></td><td></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Грудень -->
+      <div class="month-card">
+        <div class="month-title">Грудень</div>
+        <table class="calendar-table">
+          <tr><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Нд</th></tr>
+          <tr>
+            <td></td><td class="type-exam">1</td><td class="type-exam">2</td><td class="type-exam">3</td><td class="type-exam">4</td><td>5</td><td>6</td>
+          </tr>
+          <tr>
+            <td class="type-exam">7</td><td class="type-exam">8</td><td class="type-exam">9</td><td class="type-exam">10</td><td class="type-exam">11</td><td>12</td><td>13</td>
+          </tr>
+          <tr>
+            <td class="type-vacation">14</td><td class="type-vacation">15</td><td class="type-vacation">16</td><td class="type-vacation">17</td><td class="type-vacation">18</td><td class="type-vacation">19</td><td class="type-vacation">20</td>
+          </tr>
+          <tr>
+            <td class="type-vacation">21</td><td class="type-vacation">22</td><td class="type-vacation">23</td><td class="type-vacation">24</td><td class="type-vacation">25</td><td class="type-vacation">26</td><td class="type-vacation">27</td>
+          </tr>
+          <tr>
+            <td class="type-vacation">28</td><td class="type-vacation">29</td><td class="type-vacation">30</td><td class="type-vacation">31</td><td></td><td></td><td></td>
+          </tr>
+        </table>
+      </div>
+
     </div>
   </div>
 
-  <!-- Головна платформа Digital University -->
-  <div id="app-container" class="app-layout" style="display: none;">
-    
-    <!-- Бічна навігаційна панель -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="du-logo">
-          <img src="preview.png" alt="Digital University Logo" class="header-logo-img">
-        </div>
-        <div class="du-title">
-          <span>Digital University</span>
-          <small>Цифровий Університет</small>
-        </div>
-      </div>
+  <script>
+    function openTab(tabName) {
+      const contents = document.querySelectorAll('.tab-content');
+      const buttons = document.querySelectorAll('.tab-btn');
 
-      <div class="user-profile-card">
-        <div class="avatar-circle">
-          <button id="logout-btn" class="logout-icon" title="Вийти">↪</button>
-        </div>
-        <div class="user-name" id="display-user-name">Завантаження...</div>
-      </div>
+      contents.forEach(content => content.classList.remove('active'));
+      buttons.forEach(button => button.classList.remove('active'));
 
-      <nav class="sidebar-nav">
-        <button class="nav-btn active" data-tab="tab-home">
-          <img src="golovna.png" alt="Головна" class="nav-icon-img">
-          <span>Головна сторінка</span>
-        </button>
-        <button class="nav-btn" data-tab="tab-schedule">
-          <img src="rozklad.png" alt="Розклад" class="nav-icon-img">
-          <span>Розклад</span>
-        </button>
-        <button class="nav-btn" data-tab="tab-tasks">
-          <img src="zadanie.png" alt="Завдання" class="nav-icon-img">
-          <span>Завдання</span>
-        </button>
-        <a href="https://web.telegram.org/" target="_blank" class="nav-btn">
-          <img src="telegram.png" alt="Telegram" class="nav-icon-img">
-          <span>Telegram</span>
-        </a>
-        <a href="https://classroom.google.com/" target="_blank" class="nav-btn">
-          <img src="classroom.png" alt="Classroom" class="nav-icon-img">
-          <span>Classroom</span>
-        </a>
-        <a href="https://cabinet.nau.edu.ua/student/session/" target="_blank" class="nav-btn">
-          <img src="digital.png" alt="Digital" class="nav-icon-img">
-          <span>Digital</span>
-        </a>
-        <button class="nav-btn" data-tab="tab-settings">
-          <img src="nastroyka.png" alt="Налаштування" class="nav-icon-img">
-          <span>Налаштування</span>
-        </button>
-        <button class="nav-btn admin-only" data-tab="tab-admin" style="display:none;">
-          <img src="nastroyka.png" alt="Адмін" class="nav-icon-img">
-          <span>Адмін-панель</span>
-        </button>
-      </nav>
-    </aside>
-
-    <!-- Основна область контенту -->
-    <main class="main-content">
-      
-      <!-- Вкладка 1: Головна сторінка -->
-      <section id="tab-home" class="tab-content active">
-        <div class="dashboard-grid">
-          
-          <!-- Ліва колонка: Мій Розклад -->
-          <div class="card schedule-widget">
-            <div class="widget-header">
-              <h2>Мій Розклад</h2>
-            </div>
-
-            <div class="date-navigator">
-              <button class="nav-arrow" id="prev-day-btn">&lt;</button>
-              <span id="current-day-label">Завантаження...</span>
-              <button class="nav-arrow" id="next-day-btn">&gt;</button>
-            </div>
-
-            <!-- Контейнер для занять (динамічний) -->
-            <div id="home-schedule-list" class="time-schedule"></div>
-
-            <!-- Календар-стрічка -->
-            <div class="mini-calendar">
-              <div class="cal-header">
-                <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span>
-              </div>
-              <div class="cal-days" id="mini-calendar-days"></div>
-            </div>
-          </div>
-
-          <!-- Права колонка: Завдання та Дедлайни -->
-          <div class="card tasks-widget">
-            <div class="widget-header">
-              <h2>Завдання та Дедлайни</h2>
-            </div>
-
-            <!-- Контейнер для завдань (динамічний) -->
-            <div id="home-tasks-list" class="tasks-feed"></div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- Вкладка 2: Розклад (Повний) -->
-      <section id="tab-schedule" class="tab-content">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">Розклад занять</h1>
-            <p class="page-subtitle">Перегляд графіку пар за тижнями</p>
-          </div>
-          <span id="current-week-indicator" class="badge">Тиждень 2</span>
-        </div>
-
-        <div class="card mb-20">
-          <div class="week-selector">
-            <button id="btn-week-1" class="btn btn-outline" onclick="switchWeekView(1)">Тиждень 1</button>
-            <button id="btn-week-2" class="btn btn-primary" onclick="switchWeekView(2)">Тиждень 2</button>
-          </div>
-          <div id="schedule-grid" class="schedule-grid"></div>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">Додати вибіркову дисципліну</h3>
-          <form id="add-subject-form" class="form-grid">
-            <div class="form-group">
-              <label>Тиждень</label>
-              <select id="custom-week" class="form-control">
-                <option value="1">Тиждень 1</option>
-                <option value="2" selected>Тиждень 2</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>День тижня</label>
-              <select id="custom-day" class="form-control">
-                <option value="1">Понеділок</option>
-                <option value="2">Вівторок</option>
-                <option value="3">Середа</option>
-                <option value="4">Четвер</option>
-                <option value="5">П'ятниця</option>
-                <option value="6">Субота</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Назва предмета</label>
-              <input type="text" id="custom-title" class="form-control" placeholder="Наприклад: Вища Математика" required>
-            </div>
-            <div class="form-group">
-              <label>Час проведення</label>
-              <input type="text" id="custom-time" class="form-control" placeholder="10:00 - 11:35" required>
-            </div>
-            <div class="form-group">
-              <label>Аудиторія</label>
-              <input type="text" id="custom-room" class="form-control" placeholder="ауд. 204" required>
-            </div>
-            <div class="form-group">
-              <label>Викладач</label>
-              <input type="text" id="custom-teacher" class="form-control" placeholder="ПІБ викладача" required>
-            </div>
-            <div class="form-group full-width">
-              <button type="submit" class="btn btn-primary">Додати до розкладу</button>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      <!-- Вкладка 3: Завдання -->
-      <section id="tab-tasks" class="tab-content">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">Завдання та дедлайни</h1>
-            <p class="page-subtitle">Керуйте своїми навчальними та особистими тасками</p>
-          </div>
-        </div>
-
-        <div class="card mb-20">
-          <h3 class="card-title">Створити нове завдання</h3>
-          <form id="create-task-form" class="form-grid">
-            <div class="form-group full-width">
-              <label>Назва завдання</label>
-              <input type="text" id="task-title" class="form-control" placeholder="Введіть опис або назву таски..." required>
-            </div>
-            <div class="form-group">
-              <label>Кінцевий термін (Дедлайн)</label>
-              <input type="datetime-local" id="task-deadline" class="form-control" required>
-            </div>
-            <div class="form-group full-width">
-              <button type="submit" class="btn btn-primary">Зберегти завдання</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">Усі завдання</h3>
-          <ul id="all-tasks-list" class="styled-task-list"></ul>
-        </div>
-      </section>
-
-      <!-- Вкладка 4: Налаштування -->
-      <section id="tab-settings" class="tab-content">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">Налаштування</h1>
-            <p class="page-subtitle">Персональні параметри та тема системи</p>
-          </div>
-        </div>
-
-        <div class="card mb-20">
-          <h3 class="card-title">Профіль користувача</h3>
-          <form id="settings-form" class="form-grid">
-            <div class="form-group">
-              <label>Академічна група</label>
-              <input type="text" id="setting-group" class="form-control" placeholder="Наприклад: ФКНТ-1">
-            </div>
-            <div class="form-group">
-              <label>Дата народження</label>
-              <input type="date" id="setting-dob" class="form-control">
-            </div>
-            <div class="form-group full-width">
-              <label>Новий пароль</label>
-              <input type="password" id="setting-password" class="form-control" placeholder="Залиште порожнім, якщо не бажаєте змінювати">
-            </div>
-            <div class="form-group full-width">
-              <button type="submit" class="btn btn-primary">Зберегти зміни</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">Зовнішній вигляд</h3>
-          <div class="theme-setting-row">
-            <span>Переключити колірну схему інтерфейсу (Світла / Темна)</span>
-            <button id="theme-toggle-btn" class="btn btn-outline">Змінити тему</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Вкладка 5: Адмін-панель -->
-      <section id="tab-admin" class="tab-content">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">Адміністративна панель</h1>
-            <p class="page-subtitle">Управління користувачами та загальним розкладом</p>
-          </div>
-        </div>
-
-        <div class="card mb-20">
-          <h3 class="card-title">Зареєстровані користувачі</h3>
-          <div class="table-responsive">
-            <table class="styled-table">
-              <thead>
-                <tr>
-                  <th>ПІБ</th>
-                  <th>Email / Логін</th>
-                  <th>Пароль</th>
-                  <th>Роль</th>
-                </tr>
-              </thead>
-              <tbody id="admin-users-table"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3 class="card-title">Додати предмет у загальний розклад</h3>
-          <form id="admin-schedule-form" class="form-grid">
-            <div class="form-group">
-              <label>Тиждень</label>
-              <select id="admin-week" class="form-control">
-                <option value="1">Тиждень 1</option>
-                <option value="2">Тиждень 2</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>День тижня</label>
-              <select id="admin-day" class="form-control">
-                <option value="1">Понеділок</option>
-                <option value="2">Вівторок</option>
-                <option value="3">Середа</option>
-                <option value="4">Четвер</option>
-                <option value="5">П'ятниця</option>
-                <option value="6">Субота</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Назва дисципліни</label>
-              <input type="text" id="admin-title" class="form-control" placeholder="Предмет" required>
-            </div>
-            <div class="form-group">
-              <label>Час проведення</label>
-              <input type="text" id="admin-time" class="form-control" placeholder="08:30 - 10:05" required>
-            </div>
-            <div class="form-group">
-              <label>Аудиторія</label>
-              <input type="text" id="admin-room" class="form-control" placeholder="Аудиторія" required>
-            </div>
-            <div class="form-group">
-              <label>Викладач</label>
-              <input type="text" id="admin-teacher" class="form-control" placeholder="Викладач" required>
-            </div>
-            <div class="form-group full-width">
-              <button type="submit" class="btn btn-primary">Опублікувати в розклад</button>
-            </div>
-          </form>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <script src="app.js"></script>
+      document.getElementById(tabName).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+  </script>
 </body>
 </html>
