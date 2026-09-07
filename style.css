@@ -22,6 +22,7 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  background-color: #111827; /* Фоновий колір, якщо відео завантажується */
 }
 
 /* Відео фону на весь екран */
@@ -41,13 +42,13 @@ body {
 /* Картка входу поверх відео */
 .glass-card {
   position: relative;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   padding: 40px;
   border-radius: 20px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   width: 90%;
   max-width: 400px;
   text-align: center;
@@ -69,10 +70,10 @@ body {
 .glass-card input[type="password"] {
   width: 100%;
   padding: 12px 15px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 10px;
   outline: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   font-size: 14px;
 }
 
@@ -316,7 +317,7 @@ body {
   font-size: 13px;
 }
 
-/* Таблиці та форми */
+/* Форми та таблиці */
 input, select {
   padding: 8px 12px;
   margin: 5px 0 10px 0;
