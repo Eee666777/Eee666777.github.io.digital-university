@@ -1,4 +1,11 @@
-// База користувачів із наданого списку (плюс локально зареєстровані)
+// ==========================================
+// ГЛОБАЛЬНИЙ СТАН ТА СХОВИЩЕ (LocalStorage)
+// ==========================================
+
+const UKRAINE_ALARM_TOKEN = "72b33dc3:bfa08d61c3d0e08623a7a68fb80247b5";
+const ALARM_API_URL = "https://api.ukrainealarm.com/api/v3/alerts";
+
+// Початковий список користувачів
 const INITIAL_USERS = [
   { id: "1", fio: "Білецький Сергій Євгенійович", email: "Bileckiy.kai.edu.ua", password: "Bileckiy-01", role: "student" },
   { id: "2", fio: "Зайчук Назарій Вікторович", email: "Zaec.kai.edu.ua", password: "Zaec-02", role: "student" },
@@ -18,22 +25,58 @@ const INITIAL_USERS = [
   { id: "admin", fio: "Адміністратор", email: "admin@kai.edu.ua", password: "admin", role: "admin" }
 ];
 
-// Ініціалізація баз даних в localStorage
-if (!localStorage.getItem('usersDB')) {
-  localStorage.setItem('usersDB', JSON.stringify(INITIAL_USERS));
-}
+const defaultMonitoredRegions = [
+  { id: "31", name: "м. Київ" }
+];
 
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-let isSignUpMode = false;
-let selectedWeekView = 2;
-
-// Картинки сезонів (.png)
+// Сезонні зображення
 const SEASON_IMAGES = {
   autumn: 'osen.png',
   winter: 'zima.png',
   springSummer: 'leto.png'
 };
 
+// Ініціалізація баз даних в localStorage
+if (!localStorage.getItem('usersDB')) {
+  localStorage.setItem('usersDB', JSON.stringify(INITIAL_USERS));
+}
+
+let usersDB = JSON.parse(localStorage.getItem('usersDB'));
+let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+let userRegions = JSON.parse(localStorage.getItem('userRegions')) || defaultMonitoredRegions;
+
+let isSignUpMode = false;
+let selectedWeekView = 2;
+let selectedCalendarDate = new Date();
+let availableRegionsList = [];
+
+// Збереження глобального стану
+function saveData() {
+  localStorage.setItem('usersDB', JSON.stringify(usersDB));
+  if (currentUser) {
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  } else {
+    localStorage.removeItem('currentUser');
+  }
+  localStorage.setItem('userRegions', JSON.stringify(userRegions));
+}
+
+// ==========================================
+// ІНІЦІАЛІЗАЦІЯ ПРИ ЗАВАНТАЖЕННІ
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  initAuth();
+  initNavigation();
+  initTheme();
+  initMapModal();
+  initAlertsSystem();
+  updateSeasonImage();
+  checkAuthState();
+});
+
+// ==========================================
+// 1. СЕЗОННЕ ФОНОВЕ ЗОБРАЖЕННЯ
+// ==========================================
 function updateSeasonImage() {
   const bgElement = document.getElementById('season-bg');
   if (!bgElement) return;
@@ -52,92 +95,100 @@ function updateSeasonImage() {
   bgElement.style.backgroundImage = `url('${imgSrc}')`;
 }
 
-// Перемикання між формою входу та реєстрації
-const toggleAuthBtn = document.getElementById('toggle-auth-btn');
-if (toggleAuthBtn) {
-  toggleAuthBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    isSignUpMode = !isSignUpMode;
-    document.getElementById('auth-title').innerText = isSignUpMode ? 'Registration' : 'Sign In';
-    document.getElementById('fio-group').style.display = isSignUpMode ? 'block' : 'none';
-    document.getElementById('auth-submit-btn').innerText = isSignUpMode ? 'Зареєструватися' : 'Увійти';
-    document.getElementById('toggle-text').innerText = isSignUpMode ? 'Вже є акаунт?' : 'Немає акаунту?';
-    document.getElementById('toggle-auth-btn').innerText = isSignUpMode ? 'Увійти' : 'Зареєструватися';
-  });
-}
+// ==========================================
+// 2. АВТОРИЗАЦІЯ ТА РЕЄСТРАЦІЯ
+// ==========================================
+function initAuth() {
+  const toggleAuthBtn = document.getElementById('toggle-auth-btn');
+  const authForm = document.getElementById('auth-form');
+  const logoutBtn = document.getElementById('logout-btn');
 
-// Обробка авторизації
-const authForm = document.getElementById('auth-form');
-if (authForm) {
-  authForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const emailInput = document.getElementById('auth-email').value.trim();
-    const passwordInput = document.getElementById('auth-password').value.trim();
-    const fioInput = document.getElementById('auth-fio').value.trim();
+  if (toggleAuthBtn) {
+    toggleAuthBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      isSignUpMode = !isSignUpMode;
+      document.getElementById('auth-title').innerText = isSignUpMode ? 'Registration' : 'Sign In';
+      document.getElementById('fio-group').style.display = isSignUpMode ? 'block' : 'none';
+      document.getElementById('auth-submit-btn').innerText = isSignUpMode ? 'Зареєструватися' : 'Увійти';
+      document.getElementById('toggle-text').innerText = isSignUpMode ? 'Вже є акаунт?' : 'Немає акаунту?';
+      toggleAuthBtn.innerText = isSignUpMode ? 'Увійти' : 'Зареєструватися';
+      
+      const fioInput = document.getElementById('auth-fio');
+      if (fioInput) fioInput.required = isSignUpMode;
+    });
+  }
 
-    try {
-      const endpoint = isSignUpMode ? '/api/register' : '/api/login';
-      const body = isSignUpMode ? { fio: fioInput, email: emailInput, password: passwordInput } : { email: emailInput, password: passwordInput };
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const emailInput = document.getElementById('auth-email').value.trim();
+      const passwordInput = document.getElementById('auth-password').value.trim();
+      const fioInput = document.getElementById('auth-fio') ? document.getElementById('auth-fio').value.trim() : '';
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+      try {
+        const endpoint = isSignUpMode ? '/api/register' : '/api/login';
+        const body = isSignUpMode ? { fio: fioInput, email: emailInput, password: passwordInput } : { email: emailInput, password: passwordInput };
 
-      if (res.ok) {
-        const data = await res.json();
-        currentUser = data.user;
-      } else {
-        throw new Error("Сервер недоступний, перехід на офлайн-базу");
-      }
-    } catch (err) {
-      const usersDB = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
 
-      if (isSignUpMode) {
-        const exists = usersDB.find(u => u.email.toLowerCase() === emailInput.toLowerCase());
-        if (exists) {
-          alert('Користувач з таким логином/поштою вже існує');
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          currentUser = data.user;
+        } else {
+          throw new Error("Сервер недоступний, перехід на локальну базу");
         }
-        currentUser = {
-          id: Date.now().toString(),
-          fio: fioInput || "Новий Користувач",
-          email: emailInput,
-          password: passwordInput,
-          role: "student"
-        };
-        usersDB.push(currentUser);
+      } catch (err) {
+        usersDB = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
+
+        if (isSignUpMode) {
+          const exists = usersDB.find(u => u.email.toLowerCase() === emailInput.toLowerCase());
+          if (exists) {
+            alert('Користувач з таким логином/поштою вже існує!');
+            return;
+          }
+          currentUser = {
+            id: Date.now().toString(),
+            fio: fioInput || "Новий Користувач",
+            email: emailInput,
+            password: passwordInput,
+            role: "student"
+          };
+          usersDB.push(currentUser);
+        } else {
+          const user = usersDB.find(u => 
+            u.email.toLowerCase() === emailInput.toLowerCase() && u.password === passwordInput
+          );
+
+          if (!user) {
+            alert('Невірні дані авторизації!');
+            return;
+          }
+          currentUser = user;
+        }
+      }
+
+      const rememberCheck = document.getElementById('auth-remember');
+      if (rememberCheck && rememberCheck.checked) {
+        saveData();
+      } else {
         localStorage.setItem('usersDB', JSON.stringify(usersDB));
-      } else {
-        const user = usersDB.find(u => 
-          u.email.toLowerCase() === emailInput.toLowerCase() && u.password === passwordInput
-        );
-
-        if (!user) {
-          alert('Невірні дані авторизації');
-          return;
-        }
-        currentUser = user;
       }
-    }
 
-    if (document.getElementById('auth-remember').checked) {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    }
+      checkAuthState();
+    });
+  }
 
-    checkAuthState();
-  });
-}
-
-// Вихід з акаунту
-const logoutBtn = document.getElementById('logout-btn');
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', () => {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    checkAuthState();
-  });
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      currentUser = null;
+      localStorage.removeItem('currentUser');
+      checkAuthState();
+    });
+  }
 }
 
 function checkAuthState() {
@@ -159,6 +210,7 @@ function checkAuthState() {
     }
 
     initDashboard();
+    fetchAlertsData();
   } else {
     if (authContainer) authContainer.style.display = 'flex';
     if (appContainer) appContainer.style.display = 'none';
@@ -166,25 +218,68 @@ function checkAuthState() {
   }
 }
 
-// Навігація вкладок
-document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+// ==========================================
+// 3. НАВІГАЦІЯ ТА ВКЛАДКИ
+// ==========================================
+function initNavigation() {
+  document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
 
-    btn.classList.add('active');
-    const targetTab = document.getElementById(btn.dataset.tab);
-    if (targetTab) targetTab.classList.add('active');
-  });
-});
-
-const themeBtn = document.getElementById('theme-toggle-btn');
-if (themeBtn) {
-  themeBtn.addEventListener('click', () => {
-    document.body.classList.toggle('dark-theme');
+      btn.classList.add('active');
+      const targetTab = document.getElementById(btn.dataset.tab);
+      if (targetTab) targetTab.classList.add('active');
+    });
   });
 }
 
+// ==========================================
+// 4. ТЕМИ ТА НАЛАШТУВАННЯ
+// ==========================================
+function initTheme() {
+  const themeBtn = document.getElementById('theme-toggle-btn');
+  const body = document.body;
+
+  const savedTheme = localStorage.getItem('du_theme') || 'light-theme';
+  body.className = savedTheme;
+
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      if (body.classList.contains('light-theme')) {
+        body.className = 'dark-theme';
+        localStorage.setItem('du_theme', 'dark-theme');
+      } else {
+        body.className = 'light-theme';
+        localStorage.setItem('du_theme', 'light-theme');
+      }
+    });
+  }
+
+  const settingsForm = document.getElementById('settings-form');
+  if (settingsForm) {
+    settingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const group = document.getElementById('setting-group')?.value;
+      const dob = document.getElementById('setting-dob')?.value;
+      const newPass = document.getElementById('setting-password')?.value;
+
+      if (group) currentUser.group = group;
+      if (dob) currentUser.dob = dob;
+      if (newPass) currentUser.password = newPass;
+
+      const idx = usersDB.findIndex(u => u.id === currentUser.id || u.email === currentUser.email);
+      if (idx !== -1) usersDB[idx] = currentUser;
+
+      saveData();
+      alert('Налаштування збережено!');
+    });
+  }
+}
+
+// ==========================================
+// 5. ДАШБОРД ТА РОЗКЛАД
+// ==========================================
 function getCurrentWeekType() {
   const startDate = new Date(2026, 8, 7);
   const now = new Date();
@@ -220,6 +315,8 @@ function initDashboard() {
   renderSchedule();
   loadTasks();
   checkTodaySchedule();
+  renderHomeSchedule();
+  renderMiniCalendar();
 }
 
 async function renderSchedule() {
@@ -356,6 +453,40 @@ async function checkTodaySchedule() {
   }
 }
 
+// Перемикання днів у календарі на головній
+document.getElementById('prev-day-btn')?.addEventListener('click', () => {
+  selectedCalendarDate.setDate(selectedCalendarDate.getDate() - 1);
+  renderHomeSchedule();
+  renderMiniCalendar();
+});
+
+document.getElementById('next-day-btn')?.addEventListener('click', () => {
+  selectedCalendarDate.setDate(selectedCalendarDate.getDate() + 1);
+  renderHomeSchedule();
+  renderMiniCalendar();
+});
+
+function renderHomeSchedule() {
+  const label = document.getElementById('current-day-label');
+  if (label) {
+    label.innerText = selectedCalendarDate.toLocaleDateString('uk-UA', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
+    });
+  }
+}
+
+function renderMiniCalendar() {
+  const calendarContainer = document.getElementById('mini-calendar-container');
+  if (calendarContainer) {
+    calendarContainer.innerText = `Обрана дата: ${selectedCalendarDate.toLocaleDateString('uk-UA')}`;
+  }
+}
+
+// ==========================================
+// 6. УПРАВЛІННЯ ЗАВДАННЯМИ (TASKS)
+// ==========================================
 const createTaskForm = document.getElementById('create-task-form');
 if (createTaskForm) {
   createTaskForm.addEventListener('submit', async (e) => {
@@ -382,6 +513,7 @@ if (createTaskForm) {
 }
 
 async function loadTasks() {
+  if (!currentUser) return;
   let tasks = JSON.parse(localStorage.getItem(`tasks_${currentUser.id}`)) || [];
 
   try {
@@ -423,31 +555,166 @@ window.toggleTask = async function(taskId) {
   loadTasks();
 };
 
-const settingsForm = document.getElementById('settings-form');
-if (settingsForm) {
-  settingsForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const group = document.getElementById('setting-group').value;
-    const dob = document.getElementById('setting-dob').value;
-    const newPass = document.getElementById('setting-password').value;
+// ==========================================
+// 7. СИСТЕМА СПОВІЩЕНЬ ПРО ПОВІТРЯНІ ТРИВОГИ
+// ==========================================
+function initAlertsSystem() {
+  loadRegionsList();
 
-    if (group) currentUser.group = group;
-    if (dob) currentUser.dob = dob;
-    if (newPass) currentUser.password = newPass;
+  const addRegionForm = document.getElementById('add-region-form');
+  if (addRegionForm) {
+    addRegionForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const select = document.getElementById('region-select');
+      const regionId = select.value;
+      const regionName = select.options[select.selectedIndex].text;
 
-    const usersDB = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
-    const idx = usersDB.findIndex(u => u.id === currentUser.id);
-    if (idx !== -1) usersDB[idx] = currentUser;
-    localStorage.setItem('usersDB', JSON.stringify(usersDB));
+      if (!regionId) return;
 
-    if (localStorage.getItem('currentUser')) {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      if (userRegions.some(r => r.id === regionId)) {
+        alert('Цей регіон вже є у вашому списку!');
+        return;
+      }
+
+      userRegions.push({ id: regionId, name: regionName });
+      saveData();
+      fetchAlertsData();
+      alert('Регіон успішно додано!');
+    });
+  }
+
+  // Оновлення кожні 30 секунд
+  setInterval(fetchAlertsData, 30000);
+}
+
+async function loadRegionsList() {
+  const select = document.getElementById('region-select');
+  if (!select) return;
+
+  try {
+    const response = await fetch("https://api.ukrainealarm.com/api/v3/regions", {
+      headers: { "Authorization": UKRAINE_ALARM_TOKEN }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      availableRegionsList = data.states || data || [];
+      populateRegionsSelect(availableRegionsList);
+    } else {
+      fallbackRegionsList();
     }
+  } catch (err) {
+    fallbackRegionsList();
+  }
+}
 
-    alert('Налаштування збережено!');
+function populateRegionsSelect(list) {
+  const select = document.getElementById('region-select');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Оберіть регіон --</option>';
+  list.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.regionId || r.id;
+    opt.textContent = r.regionName || r.name;
+    select.appendChild(opt);
   });
 }
 
+function fallbackRegionsList() {
+  const fallback = [
+    { id: "31", name: "м. Київ" },
+    { id: "10", name: "Київська область" },
+    { id: "14", name: "Львівська область" },
+    { id: "13", name: "Одеська область" },
+    { id: "17", name: "Харківська область" },
+    { id: "5", name: "Дніпропетровська область" },
+    { id: "3", name: "Волинська область" }
+  ];
+  populateRegionsSelect(fallback);
+}
+
+async function fetchAlertsData() {
+  try {
+    const response = await fetch(ALARM_API_URL, {
+      headers: { "Authorization": UKRAINE_ALARM_TOKEN }
+    });
+
+    let activeAlerts = [];
+    if (response.ok) {
+      activeAlerts = await response.json();
+    }
+
+    renderAlertsUI(activeAlerts);
+  } catch (error) {
+    renderAlertsUI([]);
+  }
+}
+
+function renderAlertsUI(alertsData) {
+  const homeContainer = document.getElementById('home-alerts-container');
+  const tabContainer = document.getElementById('monitored-regions-list');
+
+  let homeHtml = '';
+  let tabHtml = '';
+
+  userRegions.forEach(region => {
+    const isAlert = alertsData.some(a => String(a.regionId) === String(region.id));
+
+    const statusClass = isAlert ? 'status-active' : 'status-clear';
+    const statusText = isAlert ? '🚨 ПОВІТРЯНА ТРИВОГА!' : '🟢 Спокійно';
+
+    homeHtml += `
+      <div class="alert-card-status ${statusClass}">
+        <span><strong>${region.name}</strong></span>
+        <span>${statusText}</span>
+      </div>
+    `;
+
+    tabHtml += `
+      <div class="alert-card-status ${statusClass}">
+        <div>
+          <strong>${region.name}</strong> — ${statusText}
+        </div>
+        ${region.id !== '31' ? `<button class="btn btn-outline" style="padding: 2px 8px; color: red;" onclick="removeRegion('${region.id}')">Видалити</button>` : '<small>(Основний)</small>'}
+      </div>
+    `;
+  });
+
+  if (homeContainer) homeContainer.innerHTML = homeHtml;
+  if (tabContainer) tabContainer.innerHTML = tabHtml;
+}
+
+window.removeRegion = function(id) {
+  userRegions = userRegions.filter(r => r.id !== id);
+  saveData();
+  fetchAlertsData();
+};
+
+// ==========================================
+// 8. ІНТЕРАКТИВНА КАРТА (МОДАЛЬНЕ ВІКНО)
+// ==========================================
+function initMapModal() {
+  const modal = document.getElementById('map-modal');
+  if (!modal) return;
+
+  const openBtn1 = document.getElementById('open-map-btn');
+  const openBtn2 = document.getElementById('tab-open-map-btn');
+  const closeBtn = document.getElementById('close-map-btn');
+
+  const openModal = () => modal.classList.add('active');
+  const closeModal = () => modal.classList.remove('active');
+
+  if (openBtn1) openBtn1.addEventListener('click', openModal);
+  if (openBtn2) openBtn2.addEventListener('click', openModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+}
+
+// ==========================================
+// 9. АДМІНІСТРАТИВНА ПАНЕЛЬ
+// ==========================================
 function loadAdminUsers() {
   const users = JSON.parse(localStorage.getItem('usersDB')) || INITIAL_USERS;
   const tbody = document.getElementById('admin-users-table');
@@ -459,7 +726,7 @@ function loadAdminUsers() {
       <tr>
         <td>${u.fio || 'Не вказано'}</td>
         <td>${u.email}</td>
-        <td><code>${u.password || '******'}</code></td>
+        <td><code>${u.password || u.pass || '******'}</code></td>
         <td>${u.role}</td>
       </tr>
     `;
@@ -496,9 +763,3 @@ if (adminScheduleForm) {
     renderSchedule();
   });
 }
-
-// Початковий запуск
-document.addEventListener('DOMContentLoaded', () => {
-  checkAuthState();
-  updateSeasonImage();
-});
