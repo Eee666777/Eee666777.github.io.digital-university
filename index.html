@@ -5,16 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Digital University</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Стилі для модального вікна карти -->
+  <style>
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--bg-card, #fff); padding: 20px; border-radius: 12px; width: 90%; max-width: 900px;
+      position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .modal-close {
+      position: absolute; top: 10px; right: 15px; font-size: 24px; border: none; background: none; cursor: pointer;
+    }
+    .map-frame { width: 100%; height: 500px; border: none; border-radius: 8px; margin-top: 10px; }
+    .alert-card-status { padding: 10px 15px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .status-active { background-color: #ffe6e6; color: #d93025; border: 1px solid #f5c6cb; }
+    .status-clear { background-color: #e6f4ea; color: #137333; border: 1px solid #c3e6cb; }
+    .alerts-header-actions { display: flex; align-items: center; justify-content: space-between; }
+    .map-icon-btn { cursor: pointer; border: none; background: transparent; font-size: 20px; }
+  </style>
 </head>
 <body class="light-theme">
 
   <!-- Панель авторизації -->
   <div id="auth-container" class="auth-box">
     <div id="season-bg" class="season-bg"></div>
-
     <div class="glass-card">
       <h2 id="auth-title">Sign In</h2>
-      
       <form id="auth-form">
         <div class="input-group" id="fio-group" style="display: none;">
           <input type="text" id="auth-fio" placeholder="ПІБ (Повне ім'я)">
@@ -25,14 +44,11 @@
         <div class="input-group">
           <input type="password" id="auth-password" placeholder="Пароль" required>
         </div>
-        
         <div class="remember-me">
           <label><input type="checkbox" id="auth-remember"> Автоматичний вхід</label>
         </div>
-
         <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-full">Увійти</button>
       </form>
-
       <div class="auth-toggle">
         <span id="toggle-text">Немає акаунту?</span> 
         <a href="#" id="toggle-auth-btn">Зареєструватися</a>
@@ -78,6 +94,11 @@
           <img src="zadanie.png" alt="Завдання" class="nav-icon-img">
           <span>Завдання</span>
         </button>
+        <!-- Нова вкладка Повітряні Тривоги -->
+        <button class="nav-btn" data-tab="tab-alerts">
+          <span style="font-size: 18px; margin-right: 8px;">🚨</span>
+          <span>Тривоги</span>
+        </button>
         <a href="https://web.telegram.org/" target="_blank" class="nav-btn">
           <img src="telegram.png" alt="Telegram" class="nav-icon-img">
           <span>Telegram</span>
@@ -106,24 +127,30 @@
       
       <!-- Вкладка 1: Головна сторінка -->
       <section id="tab-home" class="tab-content active">
+        
+        <!-- Віджет тривог на головній сторінці -->
+        <div class="card mb-20">
+          <div class="alerts-header-actions">
+            <h2>Статус повітряної тривоги</h2>
+            <button id="open-map-btn" class="map-icon-btn" title="Відкрити карту тривог">🗺️ Карта</button>
+          </div>
+          <div id="home-alerts-container" style="margin-top: 15px;">
+            <p>Завантаження даних про тривоги...</p>
+          </div>
+        </div>
+
         <div class="dashboard-grid">
-          
           <!-- Ліва колонка: Мій Розклад -->
           <div class="card schedule-widget">
             <div class="widget-header">
               <h2>Мій Розклад</h2>
             </div>
-
             <div class="date-navigator">
               <button class="nav-arrow" id="prev-day-btn">&lt;</button>
               <span id="current-day-label">Завантаження...</span>
               <button class="nav-arrow" id="next-day-btn">&gt;</button>
             </div>
-
-            <!-- Контейнер для занять (динамічний) -->
             <div id="home-schedule-list" class="time-schedule"></div>
-
-            <!-- Календар-стрічка -->
             <div class="mini-calendar">
               <div class="cal-header">
                 <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span>
@@ -137,11 +164,39 @@
             <div class="widget-header">
               <h2>Завдання та Дедлайни</h2>
             </div>
-
-            <!-- Контейнер для завдань (динамічний) -->
             <div id="home-tasks-list" class="tasks-feed"></div>
           </div>
+        </div>
+      </section>
 
+      <!-- Нова Вкладка: Тривоги -->
+      <section id="tab-alerts" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Моніторинг Повітряних Тривог</h1>
+            <p class="page-subtitle">Відстеження актуального стану безпеки по регіонах</p>
+          </div>
+          <button id="tab-open-map-btn" class="btn btn-outline">🗺️ Переглянути карту</button>
+        </div>
+
+        <div class="card mb-20">
+          <h3 class="card-title">Додати місто або область для відстеження</h3>
+          <form id="add-region-form" class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Оберіть регіон</label>
+              <select id="region-select" class="form-control" required>
+                <option value="">Завантаження списку регіонів...</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <button type="submit" class="btn btn-primary">Додати регіон</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Ваші відстежувані регіони</h3>
+          <div id="monitored-regions-list" style="margin-top: 15px;"></div>
         </div>
       </section>
 
@@ -154,7 +209,6 @@
           </div>
           <span id="current-week-indicator" class="badge">Тиждень 2</span>
         </div>
-
         <div class="card mb-20">
           <div class="week-selector">
             <button id="btn-week-1" class="btn btn-outline" onclick="switchWeekView(1)">Тиждень 1</button>
@@ -162,7 +216,6 @@
           </div>
           <div id="schedule-grid" class="schedule-grid"></div>
         </div>
-
         <div class="card">
           <h3 class="card-title">Додати вибіркову дисципліну</h3>
           <form id="add-subject-form" class="form-grid">
@@ -215,7 +268,6 @@
             <p class="page-subtitle">Керуйте своїми навчальними та особистими тасками</p>
           </div>
         </div>
-
         <div class="card mb-20">
           <h3 class="card-title">Створити нове завдання</h3>
           <form id="create-task-form" class="form-grid">
@@ -232,7 +284,6 @@
             </div>
           </form>
         </div>
-
         <div class="card">
           <h3 class="card-title">Усі завдання</h3>
           <ul id="all-tasks-list" class="styled-task-list"></ul>
@@ -247,7 +298,6 @@
             <p class="page-subtitle">Персональні параметри та тема системи</p>
           </div>
         </div>
-
         <div class="card mb-20">
           <h3 class="card-title">Профіль користувача</h3>
           <form id="settings-form" class="form-grid">
@@ -268,7 +318,6 @@
             </div>
           </form>
         </div>
-
         <div class="card">
           <h3 class="card-title">Зовнішній вигляд</h3>
           <div class="theme-setting-row">
@@ -286,7 +335,6 @@
             <p class="page-subtitle">Управління користувачами та загальним розкладом</p>
           </div>
         </div>
-
         <div class="card mb-20">
           <h3 class="card-title">Зареєстровані користувачі</h3>
           <div class="table-responsive">
@@ -303,7 +351,6 @@
             </table>
           </div>
         </div>
-
         <div class="card">
           <h3 class="card-title">Додати предмет у загальний розклад</h3>
           <form id="admin-schedule-form" class="form-grid">
@@ -349,6 +396,15 @@
       </section>
 
     </main>
+  </div>
+
+  <!-- Модальне вікно для Карти Повітряних Тривог -->
+  <div id="map-modal" class="modal-overlay">
+    <div class="modal-content">
+      <button id="close-map-btn" class="modal-close">&times;</button>
+      <h3>Інтерактивна Карта Тривог</h3>
+      <iframe src="https://alerts.in.ua/" class="map-frame" title="Карта повітряних тривог"></iframe>
+    </div>
   </div>
 
   <script src="app.js"></script>
