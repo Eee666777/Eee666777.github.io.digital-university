@@ -5,6 +5,10 @@
 const UKRAINE_ALARM_TOKEN = "72b33dc3:bfa08d61c3d0e08623a7a68fb80247b5";
 const ALARM_API_URL = "https://api.ukrainealarm.com/api/v3/alerts";
 
+// Збереження попередніх станів тривоги для уникнення спаму сповіщеннями
+// Формат: { "31": true, "10": false } (true = тривога, false = спокійно)
+let previousAlertStates = JSON.parse(localStorage.getItem('previousAlertStates')) || {};
+
 // Початковий список користувачів
 const INITIAL_USERS = [
   { id: "1", fio: "Білецький Сергій Євгенійович", email: "Bileckiy.kai.edu.ua", password: "Bileckiy-01", role: "student" },
@@ -29,14 +33,12 @@ const defaultMonitoredRegions = [
   { id: "31", name: "м. Київ" }
 ];
 
-// Сезонні зображення
 const SEASON_IMAGES = {
   autumn: 'osen.png',
   winter: 'zima.png',
   springSummer: 'leto.png'
 };
 
-// Ініціалізація баз даних в localStorage
 if (!localStorage.getItem('usersDB')) {
   localStorage.setItem('usersDB', JSON.stringify(INITIAL_USERS));
 }
@@ -50,7 +52,6 @@ let selectedWeekView = 2;
 let selectedCalendarDate = new Date();
 let availableRegionsList = [];
 
-// Збереження глобального стану
 function saveData() {
   localStorage.setItem('usersDB', JSON.stringify(usersDB));
   if (currentUser) {
@@ -59,6 +60,7 @@ function saveData() {
     localStorage.removeItem('currentUser');
   }
   localStorage.setItem('userRegions', JSON.stringify(userRegions));
+  localStorage.setItem('previousAlertStates', JSON.stringify(previousAlertStates));
 }
 
 // ==========================================
@@ -453,7 +455,6 @@ async function checkTodaySchedule() {
   }
 }
 
-// Перемикання днів у календарі на головній
 document.getElementById('prev-day-btn')?.addEventListener('click', () => {
   selectedCalendarDate.setDate(selectedCalendarDate.getDate() - 1);
   renderHomeSchedule();
@@ -556,10 +557,78 @@ window.toggleTask = async function(taskId) {
 };
 
 // ==========================================
-// 7. СИСТЕМА СПОВІЩЕНЬ ПРО ПОВІТРЯНІ ТРИВОГИ
+// 7. СИСТЕМА РЕАЛЬНИХ СПОВІЩЕНЬ (AUDIO & NOTIFICATIONS)
 // ==========================================
+
+// Запит дозволу на браузерні сповіщення
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        console.log("Дозвіл на сповіщення отримано!");
+      }
+    });
+  }
+}
+
+// Генерація звукового сигналу сирени або відбою через Web Audio API (працює без зовнішніх MP3-файлів)
+function playAlarmSound(type = 'start') {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'start') {
+      // Сирена: частота гармонійно піднімається і опускається
+      osc.type = 'sawtooth';
+      const now = ctx.currentTime;
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.linearRampToValueAtTime(800, now + 0.8);
+      osc.frequency.linearRampToValueAtTime(400, now + 1.6);
+      
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 1.8);
+
+      osc.start(now);
+      osc.stop(now + 1.8);
+    } else {
+      // Відбій: приємний подвійний біп
+      osc.type = 'sine';
+      const now = ctx.currentTime;
+      osc.frequency.setValueAtTime(523.25, now); // C5
+      osc.frequency.setValueAtTime(659.25, now + 0.2); // E5
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+      osc.start(now);
+      osc.stop(now + 0.5);
+    }
+  } catch (e) {
+    console.error("Помилка відтворення звуку:", e);
+  }
+}
+
+// Надсилання пуш-сповіщення у браузер
+function triggerBrowserNotification(title, body, iconType = 'warning') {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, {
+      body: body,
+      icon: iconType === 'warning' ? '🚨' : '🟢',
+      requireInteraction: true // Сповіщення висітиме, поки користувач його не закриє
+    });
+  }
+}
+
 function initAlertsSystem() {
   loadRegionsList();
+  requestNotificationPermission();
 
   const addRegionForm = document.getElementById('add-region-form');
   if (addRegionForm) {
@@ -583,8 +652,8 @@ function initAlertsSystem() {
     });
   }
 
-  // Оновлення кожні 30 секунд
-  setInterval(fetchAlertsData, 30000);
+  // Оновлення кожні 15 секунд для більш оперативних сповіщень
+  setInterval(fetchAlertsData, 15000);
 }
 
 async function loadRegionsList() {
@@ -643,10 +712,44 @@ async function fetchAlertsData() {
       activeAlerts = await response.json();
     }
 
+    // Перевірка змін стану тривог
+    processAlertNotifications(activeAlerts);
     renderAlertsUI(activeAlerts);
   } catch (error) {
     renderAlertsUI([]);
   }
+}
+
+// Логіка порівняння станів та сповіщення користувача
+function processAlertNotifications(activeAlerts) {
+  userRegions.forEach(region => {
+    const isCurrentlyAlert = activeAlerts.some(a => String(a.regionId) === String(region.id));
+    const wasAlert = previousAlertStates[region.id] || false;
+
+    // Сценарій 1: Почалася нова тривога
+    if (isCurrentlyAlert && !wasAlert) {
+      playAlarmSound('start');
+      triggerBrowserNotification(
+        `🚨 ПОВІТРЯНА ТРИВОГА!`,
+        `У регіоні ${region.name} оголошено повітряну тривогу! Прямуйте в укриття!`,
+        'warning'
+      );
+    }
+    // Сценарій 2: Відбій тривоги
+    else if (!isCurrentlyAlert && wasAlert) {
+      playAlarmSound('end');
+      triggerBrowserNotification(
+        `🟢 ВІДБІЙ ТРИВОГИ`,
+        `У регіоні ${region.name} оголошено відбій повітряної тривоги.`,
+        'clear'
+      );
+    }
+
+    // Оновлюємо стан
+    previousAlertStates[region.id] = isCurrentlyAlert;
+  });
+
+  saveData();
 }
 
 function renderAlertsUI(alertsData) {
@@ -685,6 +788,7 @@ function renderAlertsUI(alertsData) {
 
 window.removeRegion = function(id) {
   userRegions = userRegions.filter(r => r.id !== id);
+  delete previousAlertStates[id];
   saveData();
   fetchAlertsData();
 };
