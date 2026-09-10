@@ -3,339 +3,625 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Мобільний Інтерфейс</title>
+  <title>Digital University</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Стилі для модального вікна карти та адаптивності (ПК / Мобільна версія) -->
   <style>
-    /* ==========================================
-       ОСНОВНІ СТИЛІ СТОРІНКИ ТА СКИНУТТЯ (RESET)
-       ========================================== */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    body {
-      background-color: #f4f6f9;
-      color: #333333;
-      padding-top: 70px;
-      padding-bottom: 90px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    /* Сезонне фонове зображення (за замовчуванням) */
-    #season-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
+    /* ----------------------------------------------------
+       Модальне вікно для карти
+       ---------------------------------------------------- */
+    .modal-overlay {
+      display: none; 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
       height: 100%;
-      background-size: cover;
-      background-position: center;
-      z-index: -1;
-      opacity: 0.15;
-    }
-
-    /* ==========================================
-       ВІДЖЕТ КАРТИ У ПРАВОМУ ВЕРХНЬОМУ КУТКУ
-       ========================================== */
-    .top-map-widget {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      z-index: 999;
-      background: linear-gradient(135deg, #0052d4, #4364f7);
-      color: #ffffff;
-      padding: 8px 14px;
-      border-radius: 20px;
-      display: flex;
+      background: rgba(0,0,0,0.6); 
+      z-index: 2000; 
+      justify-content: center; 
       align-items: center;
-      gap: 6px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      border: 2px solid rgba(255, 255, 255, 0.3);
     }
-
-    .top-map-widget:active {
-      transform: scale(0.92);
-    }
-
-    .top-map-widget .map-icon {
-      font-size: 18px;
-    }
-
-    .top-map-widget .map-label {
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    /* ==========================================
-       ОСНОВНИЙ КОНТЕНТ ВІДОБРАЖЕННЯ
-       ========================================== */
-    .app-container {
-      width: 100%;
-      max-width: 480px;
-      padding: 0 16px;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .card {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    }
-
-    .card h2 {
-      font-size: 18px;
-      margin-bottom: 12px;
-      color: #031038;
-    }
-
-    /* ==========================================
-       НИЖНЯ НАВІГАЦІЙНА ПАНЕЛЬ (BOTTOM NAV BAR)
-       ========================================== */
-    .mobile-nav-bar {
-      position: fixed;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 92%;
-      max-width: 420px;
-      height: 62px;
-      background-color: #031038; /* Глибокий синій колір з макету */
-      border-radius: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      padding: 0 8px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      z-index: 1000;
-      border: 1.5px solid rgba(255, 255, 255, 0.15);
-    }
-
-    /* Кнопки всередині навігації */
-    .mobile-nav-bar .nav-btn {
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      outline: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Округлі квадратні іконки */
-    .nav-icon-box {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(145deg, #0d3882, #062157);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      transition: all 0.2s ease;
-    }
-
-    /* Ефект при натисканні/активності */
-    .mobile-nav-bar .nav-btn.active .nav-icon-box,
-    .mobile-nav-bar .nav-btn:active .nav-icon-box {
-      background: linear-gradient(145deg, #0072ff, #00c6ff);
-      border-color: #ffffff;
-      box-shadow: 0 0 10px rgba(0, 198, 255, 0.6);
-    }
-
-    /* Центральна виділена кнопка "Головна" (Home) */
-    .mobile-nav-bar .main-home-btn {
-      position: relative;
-      top: -8px;
-    }
-
-    .mobile-nav-bar .main-home-btn .nav-icon-box.home-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #0066ff, #00d4ff);
-      border: 3px solid #031038;
-      font-size: 24px;
-      box-shadow: 0 4px 15px rgba(0, 114, 255, 0.5);
-    }
-
-    .mobile-nav-bar .main-home-btn.active .nav-icon-box.home-icon {
-      background: linear-gradient(135deg, #0044cc, #0099ff);
-      transform: scale(1.05);
-    }
-
-    /* ==========================================
-       МОДАЛЬНЕ ВІКНО КАРТИ
-       ========================================== */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal.active {
-      display: flex;
-    }
-
+    .modal-overlay.active { display: flex; }
     .modal-content {
-      background: #ffffff;
-      width: 90%;
-      max-width: 400px;
-      border-radius: 20px;
-      padding: 20px;
-      position: relative;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      background: var(--bg-card, #fff); 
+      padding: 20px; 
+      border-radius: 12px; 
+      width: 90%; 
+      max-width: 900px;
+      position: relative; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .modal-close {
+      position: absolute; 
+      top: 10px; 
+      right: 15px; 
+      font-size: 24px; 
+      border: none; 
+      background: none; 
+      cursor: pointer;
+    }
+    .map-frame { width: 100%; height: 500px; border: none; border-radius: 8px; margin-top: 10px; }
+    .alert-card-status { padding: 10px 15px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .status-active { background-color: #ffe6e6; color: #d93025; border: 1px solid #f5c6cb; }
+    .status-clear { background-color: #e6f4ea; color: #137333; border: 1px solid #c3e6cb; }
+    .alerts-header-actions { display: flex; align-items: center; justify-content: space-between; }
+    .map-icon-btn { cursor: pointer; border: none; background: transparent; font-size: 20px; }
+
+    /* ----------------------------------------------------
+       Мобільні стилі (Media Query для екранів <= 768px)
+       ---------------------------------------------------- */
+    .mobile-nav-bar, .mobile-top-map-btn {
+      display: none; /* За замовчуванням приховано на ПК */
     }
 
-    .close-btn {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
+    @media (max-width: 768px) {
+      /* Приховуємо стандартний лівий боковий бар на мобільних */
+      aside.sidebar {
+        display: none !important;
+      }
+
+      /* Основний контент отримує відступи під нижню та верхню мобільні панелі */
+      main.main-content {
+        margin-left: 0 !important;
+        padding-top: 60px !important;
+        padding-bottom: 90px !important;
+        width: 100% !important;
+      }
+
+      /* Плаваюча кнопка карти у правому верхньому кутку */
+      .mobile-top-map-btn {
+        display: flex !important;
+        align-items: center;
+        gap: 6px;
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 1001;
+        background: linear-gradient(135deg, #0052d4, #4364f7);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 8px 14px;
+        font-weight: 600;
+        font-size: 13px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        cursor: pointer;
+      }
+
+      /* Нижня закруглена синя навігаційна панель */
+      .mobile-nav-bar {
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 92%;
+        max-width: 450px;
+        height: 62px;
+        background-color: #031038;
+        border-radius: 35px;
+        display: flex !important;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        border: 1.5px solid rgba(255, 255, 255, 0.15);
+      }
+
+      .mobile-nav-bar .mobile-tab-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-nav-bar .mobile-icon-box {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(145deg, #0d3882, #062157);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s ease;
+      }
+
+      .mobile-nav-bar .mobile-tab-btn img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+      }
+
+      /* Активний стан кнопки в мобільному меню */
+      .mobile-nav-bar .mobile-tab-btn.active .mobile-icon-box {
+        background: linear-gradient(145deg, #0072ff, #00c6ff);
+        border-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0, 198, 255, 0.6);
+      }
+
+      /* Центральна акцентна кнопка "Головна" */
+      .mobile-nav-bar .mobile-home-btn {
+        position: relative;
+        top: -10px;
+      }
+
+      .mobile-nav-bar .mobile-home-btn .mobile-icon-box {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0066ff, #00d4ff);
+        border: 3px solid #031038;
+        box-shadow: 0 4px 15px rgba(0, 114, 255, 0.5);
+      }
+
+      .mobile-nav-bar .mobile-home-btn .mobile-icon-box img {
+        width: 26px;
+        height: 26px;
+      }
+
+      /* Адаптація сітки форм та гріду для мобільних екранів */
+      .dashboard-grid, .form-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .modal-content {
+        width: 95%;
+        padding: 15px;
+      }
+
+      .map-frame {
+        height: 380px;
+      }
     }
   </style>
 </head>
-<body>
+<body class="light-theme">
 
-  <!-- Фон -->
-  <div id="season-bg"></div>
-
-  <!-- Карта в правому верхньому кутку -->
-  <div class="top-map-widget" id="open-map-btn" title="Відкрити карту">
-    <div class="map-icon">🗺️</div>
-    <span class="map-label">Карта</span>
-  </div>
-
-  <!-- Основний контент сторінки -->
-  <main class="app-container">
-    
-    <!-- Вкладка 1: Тривоги -->
-    <section id="tab-alerts" class="tab-content">
-      <div class="card">
-        <h2>🚨 Статус тривог</h2>
-        <p>Інформація про повітряну тривогу в обраних областях.</p>
+  <!-- Панель авторизації -->
+  <div id="auth-container" class="auth-box">
+    <div id="season-bg" class="season-bg"></div>
+    <div class="glass-card">
+      <h2 id="auth-title">Sign In</h2>
+      <form id="auth-form">
+        <div class="input-group" id="fio-group" style="display: none;">
+          <input type="text" id="auth-fio" placeholder="ПІБ (Повне ім'я)">
+        </div>
+        <div class="input-group">
+          <input type="text" id="auth-email" placeholder="Логін / Пошта (напр. Bileckiy.kai.edu.ua)" required>
+        </div>
+        <div class="input-group">
+          <input type="password" id="auth-password" placeholder="Пароль" required>
+        </div>
+        <div class="remember-me">
+          <label><input type="checkbox" id="auth-remember"> Автоматичний вхід</label>
+        </div>
+        <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-full">Увійти</button>
+      </form>
+      <div class="auth-toggle">
+        <span id="toggle-text">Немає акаунту?</span> 
+        <a href="#" id="toggle-auth-btn">Зареєструватися</a>
       </div>
-    </section>
-
-    <!-- Вкладка 2: Телеграм -->
-    <section id="tab-telegram" class="tab-content">
-      <div class="card">
-        <h2>✈️ Канали та Повідомлення</h2>
-        <p>Оперативні сповіщення з месенджера.</p>
+      <div class="forgot-pass">
+        <small>Забули пароль? Зверніться до адміністратора.</small>
       </div>
-    </section>
-
-    <!-- Вкладка 3: Розклад -->
-    <section id="tab-schedule" class="tab-content">
-      <div class="card">
-        <h2>📅 Розклад занять</h2>
-        <p>Список пар та графік на поточний тиждень.</p>
-      </div>
-    </section>
-
-    <!-- Вкладка 4: Головна (за замовчуванням) -->
-    <section id="tab-home" class="tab-content active">
-      <div class="card">
-        <h2>🏠 Головна панель</h2>
-        <p>Вітаємо в системі! Використовуйте нижню панель для швидкого переходу між розділами.</p>
-      </div>
-    </section>
-
-    <!-- Вкладка 5: Завдання -->
-    <section id="tab-tasks" class="tab-content">
-      <div class="card">
-        <h2>📖 Список завдань</h2>
-        <p>Ваші поточні лабораторні та практичні роботи.</p>
-      </div>
-    </section>
-
-    <!-- Вкладка 6: Бібліотека -->
-    <section id="tab-books" class="tab-content">
-      <div class="card">
-        <h2>📚 Бібліотека</h2>
-        <p>Доступ до навчальних матеріалів та методичок.</p>
-      </div>
-    </section>
-
-    <!-- Вкладка 7: Налаштування -->
-    <section id="tab-settings" class="tab-content">
-      <div class="card">
-        <h2>🏛️ Налаштування</h2>
-        <p>Керування профілем, темами та сповіщеннями.</p>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Модальне вікно карти -->
-  <div id="map-modal" class="modal">
-    <div class="modal-content">
-      <button class="close-btn" id="close-map-btn">&times;</button>
-      <h2>🗺️ Карта тривог України</h2>
-      <p style="margin-top: 10px;">Тут відображається інтерактивна карта в реальному часі.</p>
     </div>
   </div>
 
-  <!-- Нижня мобільна панель навігації -->
-  <nav class="mobile-nav-bar">
-    <button class="nav-btn" data-tab="tab-alerts" title="Тривоги">
-      <div class="nav-icon-box">🚨</div>
-    </button>
+  <!-- Головна платформа Digital University -->
+  <div id="app-container" class="app-layout" style="display: none;">
     
-    <button class="nav-btn" data-tab="tab-telegram" title="Телеграм">
-      <div class="nav-icon-box">✈️</div>
-    </button>
-    
-    <button class="nav-btn" data-tab="tab-schedule" title="Розклад">
-      <div class="nav-icon-box">📅</div>
+    <!-- Мобільна кнопка Карти (відображається тільки на смартфонах) -->
+    <button id="mobile-top-map-btn" class="mobile-top-map-btn">
+      <span>🗺️</span> Карта
     </button>
 
-    <!-- Центральна виділена кнопка -->
-    <button class="nav-btn main-home-btn active" data-tab="tab-home" title="Головна">
-      <div class="nav-icon-box home-icon">🏠</div>
-    </button>
+    <!-- Бічна навігаційна панель (Десктоп) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="du-logo">
+          <img src="preview.png" alt="Digital University Logo" class="header-logo-img">
+        </div>
+        <div class="du-title">
+          <span>Digital University</span>
+          <small>Цифровий Університет</small>
+        </div>
+      </div>
 
-    <button class="nav-btn" data-tab="tab-tasks" title="Завдання">
-      <div class="nav-icon-box">📖</div>
-    </button>
+      <div class="user-profile-card">
+        <div class="avatar-circle">
+          <button id="logout-btn" class="logout-icon" title="Вийти">↪</button>
+        </div>
+        <div class="user-name" id="display-user-name">Завантаження...</div>
+      </div>
 
-    <button class="nav-btn" data-tab="tab-books" title="Бібліотека">
-      <div class="nav-icon-box">📚</div>
-    </button>
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-tab="tab-home">
+          <img src="golovna.png" alt="Головна" class="nav-icon-img">
+          <span>Головна сторінка</span>
+        </button>
+        <button class="nav-btn" data-tab="tab-schedule">
+          <img src="rozklad.png" alt="Розклад" class="nav-icon-img">
+          <span>Розклад</span>
+        </button>
+        <button class="nav-btn" data-tab="tab-tasks">
+          <img src="zadanie.png" alt="Завдання" class="nav-icon-img">
+          <span>Завдання</span>
+        </button>
+        <!-- Нова вкладка Повітряні Тривоги -->
+        <button class="nav-btn" data-tab="tab-alerts">
+          <span style="font-size: 18px; margin-right: 8px;">🚨</span>
+          <span>Тривоги</span>
+        </button>
+        <a href="https://web.telegram.org/" target="_blank" class="nav-btn">
+          <img src="telegram.png" alt="Telegram" class="nav-icon-img">
+          <span>Telegram</span>
+        </a>
+        <a href="https://classroom.google.com/" target="_blank" class="nav-btn">
+          <img src="classroom.png" alt="Classroom" class="nav-icon-img">
+          <span>Classroom</span>
+        </a>
+        <a href="https://cabinet.nau.edu.ua/student/session/" target="_blank" class="nav-btn">
+          <img src="digital.png" alt="Digital" class="nav-icon-img">
+          <span>Digital</span>
+        </a>
+        <button class="nav-btn" data-tab="tab-settings">
+          <img src="nastroyka.png" alt="Налаштування" class="nav-icon-img">
+          <span>Налаштування</span>
+        </button>
+        <button class="nav-btn admin-only" data-tab="tab-admin" style="display:none;">
+          <img src="nastroyka.png" alt="Адмін" class="nav-icon-img">
+          <span>Адмін-панель</span>
+        </button>
+      </nav>
+    </aside>
 
-    <button class="nav-btn" data-tab="tab-settings" title="Налаштування">
-      <div class="nav-icon-box">🏛️</div>
-    </button>
-  </nav>
+    <!-- Основна область контенту -->
+    <main class="main-content">
+      
+      <!-- Вкладка 1: Головна сторінка -->
+      <section id="tab-home" class="tab-content active">
+        
+        <!-- Віджет тривог на головній сторінці -->
+        <div class="card mb-20">
+          <div class="alerts-header-actions">
+            <h2>Статус повітряної тривоги</h2>
+            <button id="open-map-btn" class="map-icon-btn" title="Відкрити карту тривог">🗺️ Карта</button>
+          </div>
+          <div id="home-alerts-container" style="margin-top: 15px;">
+            <p>Завантаження даних про тривоги...</p>
+          </div>
+        </div>
 
+        <div class="dashboard-grid">
+          <!-- Ліва колонка: Мій Розклад -->
+          <div class="card schedule-widget">
+            <div class="widget-header">
+              <h2>Мій Розклад</h2>
+            </div>
+            <div class="date-navigator">
+              <button class="nav-arrow" id="prev-day-btn">&lt;</button>
+              <span id="current-day-label">Завантаження...</span>
+              <button class="nav-arrow" id="next-day-btn">&gt;</button>
+            </div>
+            <div id="home-schedule-list" class="time-schedule"></div>
+            <div class="mini-calendar">
+              <div class="cal-header">
+                <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span>
+              </div>
+              <div class="cal-days" id="mini-calendar-days"></div>
+            </div>
+          </div>
+
+          <!-- Права колонка: Завдання та Дедлайни -->
+          <div class="card tasks-widget">
+            <div class="widget-header">
+              <h2>Завдання та Дедлайни</h2>
+            </div>
+            <div id="home-tasks-list" class="tasks-feed"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Нова Вкладка: Тривоги -->
+      <section id="tab-alerts" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Моніторинг Повітряних Тривог</h1>
+            <p class="page-subtitle">Відстеження актуального стану безпеки по регіонах</p>
+          </div>
+          <button id="tab-open-map-btn" class="btn btn-outline">🗺️ Переглянути карту</button>
+        </div>
+
+        <div class="card mb-20">
+          <h3 class="card-title">Додати місто або область для відстеження</h3>
+          <form id="add-region-form" class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Оберіть регіон</label>
+              <select id="region-select" class="form-control" required>
+                <option value="">Завантаження списку регіонів...</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <button type="submit" class="btn btn-primary">Додати регіон</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Ваші відстежувані регіони</h3>
+          <div id="monitored-regions-list" style="margin-top: 15px;"></div>
+        </div>
+      </section>
+
+      <!-- Вкладка 2: Розклад (Повний) -->
+      <section id="tab-schedule" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Розклад занять</h1>
+            <p class="page-subtitle">Перегляд графіку пар за тижнями</p>
+          </div>
+          <span id="current-week-indicator" class="badge">Тиждень 2</span>
+        </div>
+        <div class="card mb-20">
+          <div class="week-selector">
+            <button id="btn-week-1" class="btn btn-outline" onclick="switchWeekView(1)">Тиждень 1</button>
+            <button id="btn-week-2" class="btn btn-primary" onclick="switchWeekView(2)">Тиждень 2</button>
+          </div>
+          <div id="schedule-grid" class="schedule-grid"></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Додати вибіркову дисципліну</h3>
+          <form id="add-subject-form" class="form-grid">
+            <div class="form-group">
+              <label>Тиждень</label>
+              <select id="custom-week" class="form-control">
+                <option value="1">Тиждень 1</option>
+                <option value="2" selected>Тиждень 2</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>День тижня</label>
+              <select id="custom-day" class="form-control">
+                <option value="1">Понеділок</option>
+                <option value="2">Вівторок</option>
+                <option value="3">Середа</option>
+                <option value="4">Четвер</option>
+                <option value="5">П'ятниця</option>
+                <option value="6">Субота</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Назва предмета</label>
+              <input type="text" id="custom-title" class="form-control" placeholder="Наприклад: Вища Математика" required>
+            </div>
+            <div class="form-group">
+              <label>Час проведения</label>
+              <input type="text" id="custom-time" class="form-control" placeholder="10:00 - 11:35" required>
+            </div>
+            <div class="form-group">
+              <label>Аудиторія</label>
+              <input type="text" id="custom-room" class="form-control" placeholder="ауд. 204" required>
+            </div>
+            <div class="form-group">
+              <label>Викладач</label>
+              <input type="text" id="custom-teacher" class="form-control" placeholder="ПІБ викладача" required>
+            </div>
+            <div class="form-group full-width">
+              <button type="submit" class="btn btn-primary">Додати до розкладу</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Вкладка 3: Завдання -->
+      <section id="tab-tasks" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Завдання та дедлайни</h1>
+            <p class="page-subtitle">Керуйте своїми навчальними та особистими тасками</p>
+          </div>
+        </div>
+        <div class="card mb-20">
+          <h3 class="card-title">Створити нове завдання</h3>
+          <form id="create-task-form" class="form-grid">
+            <div class="form-group full-width">
+              <label>Назва завдання</label>
+              <input type="text" id="task-title" class="form-control" placeholder="Введіть опис або назву таски..." required>
+            </div>
+            <div class="form-group">
+              <label>Кінцевий термін (Дедлайн)</label>
+              <input type="datetime-local" id="task-deadline" class="form-control" required>
+            </div>
+            <div class="form-group full-width">
+              <button type="submit" class="btn btn-primary">Зберегти завдання</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Усі завдання</h3>
+          <ul id="all-tasks-list" class="styled-task-list"></ul>
+        </div>
+      </section>
+
+      <!-- Вкладка 4: Налаштування -->
+      <section id="tab-settings" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Налаштування</h1>
+            <p class="page-subtitle">Персональні параметри та тема системи</p>
+          </div>
+        </div>
+        <div class="card mb-20">
+          <h3 class="card-title">Профіль користувача</h3>
+          <form id="settings-form" class="form-grid">
+            <div class="form-group">
+              <label>Академічна група</label>
+              <input type="text" id="setting-group" class="form-control" placeholder="Наприклад: ФКНТ-1">
+            </div>
+            <div class="form-group">
+              <label>Дата народження</label>
+              <input type="date" id="setting-dob" class="form-control">
+            </div>
+            <div class="form-group full-width">
+              <label>Новий пароль</label>
+              <input type="password" id="setting-password" class="form-control" placeholder="Залиште порожнім, якщо не бажаєте змінювати">
+            </div>
+            <div class="form-group full-width">
+              <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Зовнішній вигляд</h3>
+          <div class="theme-setting-row">
+            <span>Переключити колірну схему інтерфейсу (Світла / Темна)</span>
+            <button id="theme-toggle-btn" class="btn btn-outline">Змінити тему</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Вкладка 5: Адмін-панель -->
+      <section id="tab-admin" class="tab-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Адміністративна панель</h1>
+            <p class="page-subtitle">Управління користувачами та загальним розкладом</p>
+          </div>
+        </div>
+        <div class="card mb-20">
+          <h3 class="card-title">Зареєстровані користувачі</h3>
+          <div class="table-responsive">
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>ПІБ</th>
+                  <th>Email / Логін</th>
+                  <th>Пароль</th>
+                  <th>Роль</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Додати предмет у загальний розклад</h3>
+          <form id="admin-schedule-form" class="form-grid">
+            <div class="form-group">
+              <label>Тиждень</label>
+              <select id="admin-week" class="form-control">
+                <option value="1">Тиждень 1</option>
+                <option value="2">Тиждень 2</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>День тижня</label>
+              <select id="admin-day" class="form-control">
+                <option value="1">Понеділок</option>
+                <option value="2">Вівторок</option>
+                <option value="3">Середа</option>
+                <option value="4">Четвер</option>
+                <option value="5">П'ятниця</option>
+                <option value="6">Субота</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Назва дисципліни</label>
+              <input type="text" id="admin-title" class="form-control" placeholder="Предмет" required>
+            </div>
+            <div class="form-group">
+              <label>Час проведення</label>
+              <input type="text" id="admin-time" class="form-control" placeholder="08:30 - 10:05" required>
+            </div>
+            <div class="form-group">
+              <label>Аудиторія</label>
+              <input type="text" id="admin-room" class="form-control" placeholder="Аудиторія" required>
+            </div>
+            <div class="form-group">
+              <label>Викладач</label>
+              <input type="text" id="admin-teacher" class="form-control" placeholder="Викладач" required>
+            </div>
+            <div class="form-group full-width">
+              <button type="submit" class="btn btn-primary">Опублікувати в розклад</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Мобільна панель навігації (Нижня синя плашка) -->
+    <nav class="mobile-nav-bar">
+      <button class="mobile-tab-btn nav-btn" data-tab="tab-alerts">
+        <div class="mobile-icon-box">🚨</div>
+      </button>
+      <button class="mobile-tab-btn nav-btn" data-tab="tab-schedule">
+        <div class="mobile-icon-box"><img src="rozklad.png" alt="Розклад"></div>
+      </button>
+
+      <!-- Центральна кнопка "Головна" -->
+      <button class="mobile-tab-btn nav-btn mobile-home-btn active" data-tab="tab-home">
+        <div class="mobile-icon-box"><img src="golovna.png" alt="Головна"></div>
+      </button>
+
+      <button class="mobile-tab-btn nav-btn" data-tab="tab-tasks">
+        <div class="mobile-icon-box"><img src="zadanie.png" alt="Завдання"></div>
+      </button>
+      <button class="mobile-tab-btn nav-btn" data-tab="tab-settings">
+        <div class="mobile-icon-box"><img src="nastroyka.png" alt="Налаштування"></div>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Модальне вікно для Карти Повітряних Тривог -->
+  <div id="map-modal" class="modal-overlay">
+    <div class="modal-content">
+      <button id="close-map-btn" class="modal-close">&times;</button>
+      <h3>Інтерактивна Карта Тривог</h3>
+      <iframe src="https://alerts.in.ua/" class="map-frame" title="Карта повітряних тривог"></iframe>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+
+  <!-- Скрипт-адаптер для забезпечення сумісності з мобільною панеллю та мобільною кнопкою карти -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Прив'язка відкриття карти до мобільної кнопки у правому верхньому кутку
+      const mobileMapBtn = document.getElementById('mobile-top-map-btn');
+      const openMapBtn = document.getElementById('open-map-btn');
+      if (mobileMapBtn && openMapBtn) {
+        mobileMapBtn.addEventListener('click', () => {
+          openMapBtn.click();
+        });
+      }
+
+      // Синхронізація активних кнопок перемикання розділів для ПК та мобільного меню
+      const allNavBtns = document.querySelectorAll('.nav-btn[data-tab]');
+      allNavBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetTab = btn.getAttribute('data-tab');
+          if (targetTab) {
+            allNavBtns.forEach(b => {
+              if (b.getAttribute('data-tab') === targetTab) {
+                b.classList.add('active');
+              } else {
+                b.classList.remove('active');
+              }
+            });
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
